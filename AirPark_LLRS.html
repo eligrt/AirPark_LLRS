@@ -5,36 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AirPark · LLRS</title>
 <meta property="og:title" content="✈ AirPark · LLRS" />
-<meta property="og:description" content="מעקב חנייה — אנגר עליון ותחתון" />
+<meta property="og:description" content="מעקב חנייה — האנגר העליון והתחתון" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
-<!-- Firebase -->
+<!-- Firebase loads async — does NOT block app boot -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getStorage, ref, uploadString, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
 
-  // ─── REPLACE WITH YOUR FIREBASE CONFIG ───
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  // ─────────────────────────────────────────
+    // ─── REPLACE WITH YOUR FIREBASE CONFIG ───
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    // ─────────────────────────────────────────
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const storage = getStorage(app);
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const storage = getStorage(app);
 
-  window._db = db;
-  window._storage = storage;
-  window._dbOps = { doc, getDoc, setDoc, onSnapshot, collection, ref, uploadString, getDownloadURL };
-  window._firebaseReady = true;
-  document.dispatchEvent(new Event('firebase-ready'));
+    window._db = db;
+    window._storage = storage;
+    window._dbOps = { doc, getDoc, setDoc, onSnapshot, collection, ref, uploadString, getDownloadURL };
+    window._firebaseReady = true;
+    document.dispatchEvent(new Event('firebase-ready'));
+  } catch(e) {
+    console.warn('Firebase failed to load:', e);
+  }
 </script>
 
 <style>
@@ -248,12 +252,11 @@ input[type="file"] { display: none; }
 
 /* ── MAIN SCREEN ── */
 .main-body { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; }
-.far-label { font-size: 11px; color: var(--text2); text-align: center; padding-bottom: 12px; letter-spacing: 0.3px; }
 
 /* cards */
-.cards-list { display: flex; flex-direction: column; }
+.cards-list { display: flex; flex-direction: column; gap: 0; }
 .insert-line {
-  height: 20px;
+  height: 40px;
   margin: 0 4px;
   opacity: 0;
   transition: opacity 0.04s;
@@ -262,65 +265,71 @@ input[type="file"] { display: none; }
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 .insert-line::after {
   content: '';
   position: absolute;
   left: 6px; right: 6px;
-  height: 2px;
+  height: 3px;
   border-radius: 99px;
-  background: repeating-linear-gradient(to left, var(--blue-m) 0px, var(--blue-m) 6px, transparent 6px, transparent 12px);
+  background: var(--blue);
   opacity: 0;
   transition: opacity 0.04s;
 }
 .insert-line.visible { opacity: 1; }
 .insert-line.visible::after { opacity: 1; }
 
+/* card row: pos-number outside left, card takes remaining space */
+.card-row { display: flex; align-items: center; gap: 10px; margin: 0; }
+.pos-label {
+  width: 24px; flex-shrink: 0;
+  font-size: 13px; font-weight: 700; color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  text-align: center; opacity: 0.5;
+}
+
 .plane-card {
+  flex: 1;
   background: var(--white);
   border: 0.5px solid var(--border-med);
   border-radius: var(--radius);
-  padding: 11px 12px 11px 14px;
-  display: flex; align-items: center; gap: 10px;
-  cursor: grab; margin: 4px 0;
+  padding: 12px 10px 12px 12px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: grab;
   user-select: none;
   transition: box-shadow 0.15s, opacity 0.15s;
 }
 .plane-card:active { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 .plane-card.mine { background: var(--blue-l); border-color: var(--blue-m); }
-.plane-card.dragging { opacity: 0.3; }
+.plane-card.dragging {
+  opacity: 0.75;
+  transform: scale(1.03) rotate(1deg);
+  box-shadow: 0 12px 32px rgba(24,95,165,0.25), 0 4px 12px rgba(0,0,0,0.15);
+  border-color: var(--blue-m);
+  background: #F0F7FF;
+  z-index: 10;
+}
 
 .drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; flex-shrink: 0; opacity: 0.18; }
-.drag-handle span { display: block; width: 20px; height: 2px; border-radius: 1px; background: var(--text); }
+.drag-handle span { display: block; width: 18px; height: 2px; border-radius: 1px; background: var(--text); }
 
 .plane-thumb {
-  width: 42px; height: 42px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: var(--bg);
   border: 0.5px solid var(--border);
   flex-shrink: 0; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  font-size: 28px;
 }
 .plane-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-.pos-num {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 0.5px solid var(--border-med);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600; color: var(--text2);
-  flex-shrink: 0;
-  font-family: 'DM Mono', monospace;
-}
-.plane-card.mine .pos-num { background: var(--blue); color: white; border-color: var(--blue); }
-
-.card-info { flex: 1; min-width: 0; }
-.card-tail { font-size: 14px; font-weight: 600; color: var(--text); direction: ltr; font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
+.card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.card-tail { font-size: 20px; font-weight: 700; color: var(--text); direction: ltr; font-family: 'DM Mono', monospace; letter-spacing: 1.5px; }
 .plane-card.mine .card-tail { color: var(--blue); }
-.card-owner { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.mine-badge { display: inline-block; font-size: 9px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 1px 7px; margin-right: 4px; font-weight: 600; vertical-align: middle; }
+.card-owner { font-size: 11px; color: var(--text2); }
+.mine-badge { display: inline-block; font-size: 9px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 1px 7px; font-weight: 600; }
 
 .arrow-btns { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .arr-btn {
@@ -346,9 +355,19 @@ input[type="file"] { display: none; }
 /* step header */
 .step-header { font-size: 19px; font-weight: 600; color: var(--text); text-align: center; letter-spacing: -0.3px; }
 
-/* card move flash */
-@keyframes cardFlash { 0%{box-shadow:0 0 0 3px #378ADD;} 100%{box-shadow:none;} }
-.plane-card.flash { animation: cardFlash 0.7s ease-out; }
+/* card move flash — spring bounce + color pop so landing is unmissable */
+@keyframes cardSettle {
+  0%   { transform: scale(1.05); background: #D0E8FF; box-shadow: 0 0 0 3px #185FA5, 0 8px 24px rgba(24,95,165,0.3); }
+  40%  { transform: scale(0.98); background: #C8E2FF; box-shadow: 0 0 0 2px #85B7EB; }
+  100% { transform: scale(1);   background: var(--white); box-shadow: none; }
+}
+@keyframes cardSettleMine {
+  0%   { transform: scale(1.05); background: #B8D8F8; box-shadow: 0 0 0 3px #185FA5, 0 8px 24px rgba(24,95,165,0.3); }
+  40%  { transform: scale(0.98); background: #C8E2FF; box-shadow: 0 0 0 2px #85B7EB; }
+  100% { transform: scale(1);   background: var(--blue-l); box-shadow: none; }
+}
+.plane-card.flash      { animation: cardSettle     1s cubic-bezier(0.34,1.56,0.64,1); }
+.plane-card.mine.flash { animation: cardSettleMine 1s cubic-bezier(0.34,1.56,0.64,1); }
 
 .footer {
   display: flex;
@@ -456,7 +475,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.15</span>
+      <span class="footer-center">built by eligrt · v1.22</span>
     </div>
   </div>
 
@@ -543,22 +562,20 @@ input[type="file"] { display: none; }
             <text x="132" y="272" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">האנגר</text>
             <text x="132" y="292" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">התחתון</text>
 
-            <!-- East entrance badge — right of lower hangar, arrow → outside pill -->
+            <!-- East entrance badge — right side, arrow > points RIGHT -->
             <g class="entrance-zone" id="ez-E" onclick="pickEntrance('lower','E',this)" style="cursor:pointer">
               <rect x="184" y="218" width="26" height="118" rx="13" fill="#1A5FA8" opacity="0.12"/>
               <rect x="184" y="218" width="26" height="118" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
               <text x="197" y="270" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2" transform="rotate(90,197,270)">כניסה מזרחית</text>
-              <!-- right-pointing triangle below text -->
-              <polygon points="191,318 197,310 203,318" fill="#1A5FA8" opacity="0.65" transform="rotate(-90,197,318)"/>
+              <path d="M 192,312 L 200,319 L 192,326" fill="none" stroke="#1A5FA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </g>
 
-            <!-- West entrance badge — left of lower hangar, arrow ← outside pill -->
+            <!-- West entrance badge — left side, arrow < points LEFT -->
             <g class="entrance-zone" id="ez-W" onclick="pickEntrance('lower','W',this)" style="cursor:pointer">
               <rect x="54" y="218" width="26" height="118" rx="13" fill="#1A5FA8" opacity="0.12"/>
               <rect x="54" y="218" width="26" height="118" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
               <text x="67" y="270" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2" transform="rotate(270,67,270)">כניסה מערבית</text>
-              <!-- left-pointing triangle below text -->
-              <polygon points="61,318 67,310 73,318" fill="#1A5FA8" opacity="0.65" transform="rotate(90,67,318)"/>
+              <path d="M 74,312 L 66,319 L 74,326" fill="none" stroke="#1A5FA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </g>
 
             <!-- N compass -->
@@ -570,7 +587,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.15</span>
+      <span class="footer-center">built by eligrt · v1.22</span>
     </div>
   </div>
 
@@ -626,7 +643,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.15</span>
+      <span class="footer-center">built by eligrt · v1.22</span>
     </div>
   </div>
 
@@ -643,7 +660,7 @@ const LS = {
 
 const HANGAR_DIRS = { upper: ['N','S'], lower: ['E','W'] };
 const DIR_LABELS  = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' };
-const HANGAR_LABELS = { upper:'אנגר עליון', lower:'אנגר תחתון' };
+const HANGAR_LABELS = { upper:'האנגר העליון', lower:'האנגר התחתון' };
 
 // Demo row data — 3 rows per entrance side, 3 planes each
 const DEMO_ROWS = {
@@ -871,28 +888,34 @@ function loadMainScreen() {
 
 function subscribeToRow(rowId, user, rowMeta) {
   if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-  if (!window._firebaseReady) {
-    // Demo mode — render static
-    renderCards(rowMeta ? rowMeta.planes.map(t => ({ tail:'4X-'+t, name: t==='HYD'?user.name:'טייס', photoURL:null })) : [], user, null);
-    document.getElementById('updated-text').textContent = 'מצב דמו — Firebase לא מחובר';
-    return;
-  }
-  const { doc, onSnapshot } = window._dbOps;
-  const ref = doc(window._db, 'rows', rowId);
-  unsubscribe = onSnapshot(ref, snap => {
-    if (snap.exists()) {
-      const data = snap.data();
-      renderCards(data.order, user, data);
-    } else {
-      // Row doesn't exist yet — create it from meta
-      if (rowMeta) {
-        const initOrder = rowMeta.planes.map(t => ({ tail:'4X-'+t, name:'', photoURL:null }));
-        saveRowOrder(rowId, initOrder, user.name, user.tail);
-      }
-    }
-  });
-}
 
+  // Always render demo data immediately — no waiting
+  const demoOrder = rowMeta
+    ? rowMeta.planes.map(t => ({ tail:'4X-'+t, name: t===user.tail.replace('4X-','')?user.name:'', photoURL:null }))
+    : [];
+  renderCards(demoOrder, user, null);
+  document.getElementById('updated-text').textContent = 'טוען...';
+
+  // If Firebase is ready or becomes ready, upgrade to live data
+  const doSubscribe = () => {
+    const { doc, onSnapshot } = window._dbOps;
+    const ref = doc(window._db, 'rows', rowId);
+    unsubscribe = onSnapshot(ref, snap => {
+      if (snap.exists()) {
+        renderCards(snap.data().order, user, snap.data());
+      } else {
+        if (rowMeta) saveRowOrder(rowId, demoOrder, user.name, user.tail);
+        document.getElementById('updated-text').textContent = 'עדכון ראשוני...';
+      }
+    });
+  };
+
+  if (window._firebaseReady) {
+    doSubscribe();
+  } else {
+    document.addEventListener('firebase-ready', doSubscribe, { once: true });
+  }
+}
 async function saveRowOrder(rowId, order, byName, byTail) {
   if (!window._firebaseReady) return;
   const { doc, setDoc } = window._dbOps;
@@ -912,10 +935,17 @@ function renderCards(order, user, data) {
   list.innerHTML = '';
 
   order.forEach((plane, idx) => {
-    // insert line
     const line = document.createElement('div');
     line.className = 'insert-line';
     list.appendChild(line);
+
+    const row = document.createElement('div');
+    row.className = 'card-row';
+
+    const posLabel = document.createElement('div');
+    posLabel.className = 'pos-label';
+    posLabel.textContent = order.length - idx;
+    row.appendChild(posLabel);
 
     const card = document.createElement('div');
     const isMine = plane.tail === user.tail;
@@ -929,19 +959,19 @@ function renderCards(order, user, data) {
     card.innerHTML = `
       <div class="drag-handle"><span></span><span></span><span></span></div>
       <div class="plane-thumb">${thumbContent}</div>
-      <div class="pos-num">${order.length - idx}</div>
       <div class="card-info">
         <div class="card-tail">${plane.tail}</div>
-        <div class="card-owner">${isMine ? `<span class="mine-badge">שלי</span>` : ''}${plane.name || ''}</div>
+        <div class="card-owner">${isMine ? `<span class="mine-badge">שלי</span> ${plane.name||''}` : (plane.name||'')}</div>
       </div>
       <div class="arrow-btns">
         <button class="arr-btn" onclick="moveCard(this,-1)">▲</button>
         <button class="arr-btn" onclick="moveCard(this,1)">▼</button>
       </div>`;
-    list.appendChild(card);
+
+    row.appendChild(card);
+    list.appendChild(row);
   });
 
-  // last insert line
   const lastLine = document.createElement('div');
   lastLine.className = 'insert-line';
   list.appendChild(lastLine);
@@ -956,47 +986,72 @@ function renderCards(order, user, data) {
 
 function flashCard(card) {
   card.classList.remove('flash');
-  void card.offsetWidth; // force reflow
-  card.classList.add('flash');
-  setTimeout(() => card.classList.remove('flash'), 700);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    card.classList.add('flash');
+    setTimeout(() => card.classList.remove('flash'), 1000);
+  }));
 }
 
-function getCards() { return [...document.querySelectorAll('#cardsList .plane-card')]; }
+function getCards()    { return [...document.querySelectorAll('#cardsList .plane-card')]; }
+function getCardRows() { return [...document.querySelectorAll('#cardsList .card-row')]; }
+
+function updatePositions() {
+  const rows = getCardRows();
+  rows.forEach((row, i) => {
+    const lbl = row.querySelector('.pos-label');
+    if (lbl) lbl.textContent = rows.length - i;
+  });
+}
+
+function rebuildInsertLines() {
+  const list = document.getElementById('cardsList');
+  list.querySelectorAll('.insert-line').forEach(l => l.remove());
+  getCardRows().forEach(row => {
+    const line = document.createElement('div');
+    line.className = 'insert-line';
+    list.insertBefore(line, row);
+  });
+  const last = document.createElement('div');
+  last.className = 'insert-line';
+  list.appendChild(last);
+  bindDrag();
+}
 
 function moveCard(btn, dir) {
   const card = btn.closest('.plane-card');
-  const cards = getCards();
-  const i = cards.indexOf(card);
+  const row  = card.closest('.card-row');
+  const rows = getCardRows();
+  const i = rows.indexOf(row);
   if (dir === -1 && i === 0) return;
-  if (dir ===  1 && i === cards.length - 1) return;
-  if (dir === -1) cards[i-1].before(card);
-  else            cards[i+1].after(card);
+  if (dir ===  1 && i === rows.length - 1) return;
+  if (dir === -1) rows[i-1].before(row);
+  else            rows[i+1].after(row);
   updatePositions();
+  rebuildInsertLines();
   flashCard(card);
   persistOrder();
 }
 
-function updatePositions() {
-  const cards = getCards();
-  cards.forEach((c, i) => c.querySelector('.pos-num').textContent = cards.length - i);
-}
+
 
 function persistOrder() {
   const user = LS.get('user');
   const loc  = LS.get('location');
   if (!loc) return;
-  const cards = getCards();
-  const order = cards.map(c => ({
-    tail: c.querySelector('.card-tail').textContent,
-    name: c.querySelector('.mine-badge') ? user.name : c.querySelector('.card-owner').textContent.trim(),
-    photoURL: c.querySelector('.plane-thumb img') ? c.querySelector('.plane-thumb img').src : null,
-  }));
+  const rows = getCardRows();
+  const order = rows.map(row => {
+    const tail  = row.querySelector('.card-tail').textContent;
+    const badge = row.querySelector('.mine-badge');
+    const owner = row.querySelector('.card-owner');
+    const name  = badge ? user.name : (owner ? owner.textContent.trim() : '');
+    const img   = row.querySelector('.plane-thumb img');
+    return { tail, name, photoURL: img ? img.src : null };
+  });
   saveRowOrder(loc.rowId, order, user.name, user.tail);
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
-  const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   document.getElementById('updated-text').textContent =
-    `עודכן ע"י ${user.name} (${user.tail}) · היום ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    `עודכן ע"י ${user.name} (${user.tail}) · ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   showToast('סדר החנייה עודכן ✓');
 }
 
@@ -1019,64 +1074,60 @@ function bindDrag() {
     });
   });
 
-  // Use dragover on the entire list — single reliable handler
-  list.addEventListener('dragover', e => {
+  // Single dragover on list — detect position using card-rows
+  list.ondragover = e => {
     e.preventDefault();
     if (!dragCard) return;
+    const dragRow = dragCard.closest('.card-row');
     const y = e.clientY;
-    const cards = getCards().filter(c => c !== dragCard);
-    if (!cards.length) return;
-
+    const rows = getCardRows().filter(r => r !== dragRow);
+    if (!rows.length) return;
     hideLines();
 
-    // Find which gap the cursor is in
     let inserted = false;
-    for (let i = 0; i < cards.length; i++) {
-      const rect = cards[i].getBoundingClientRect();
-      const mid  = rect.top + rect.height / 2;
-      if (y < mid) {
-        // Show line before cards[i]
-        const prev = cards[i].previousElementSibling;
-        if (prev && prev.classList.contains('insert-line')) prev.classList.add('visible');
+    for (let i = 0; i < rows.length; i++) {
+      const rect = rows[i].getBoundingClientRect();
+      if (y < rect.top + rect.height / 2) {
+        const line = rows[i].previousElementSibling;
+        if (line && line.classList.contains('insert-line')) line.classList.add('visible');
         inserted = true;
         break;
       }
     }
     if (!inserted) {
-      // Cursor is below all cards — show last line
-      const lastCard = cards[cards.length - 1];
-      const next = lastCard.nextElementSibling;
-      if (next && next.classList.contains('insert-line')) next.classList.add('visible');
+      const line = rows[rows.length - 1].nextElementSibling;
+      if (line && line.classList.contains('insert-line')) line.classList.add('visible');
     }
-  });
+  };
 
-  list.addEventListener('dragleave', e => {
-    // Only hide if truly leaving the list
+  list.ondragleave = e => {
     if (!list.contains(e.relatedTarget)) hideLines();
-  });
+  };
 
-  list.addEventListener('drop', e => {
+  list.ondrop = e => {
     e.preventDefault();
     if (!dragCard) return;
+    const dragRow = dragCard.closest('.card-row');
     const y = e.clientY;
-    const cards = getCards().filter(c => c !== dragCard);
+    const rows = getCardRows().filter(r => r !== dragRow);
     hideLines();
 
     let dropped = false;
-    for (let i = 0; i < cards.length; i++) {
-      const rect = cards[i].getBoundingClientRect();
+    for (let i = 0; i < rows.length; i++) {
+      const rect = rows[i].getBoundingClientRect();
       if (y < rect.top + rect.height / 2) {
-        cards[i].before(dragCard);
+        rows[i].before(dragRow);
         dropped = true;
         break;
       }
     }
-    if (!dropped && cards.length) cards[cards.length - 1].after(dragCard);
+    if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
 
     updatePositions();
     flashCard(dragCard);
+    rebuildInsertLines();
     persistOrder();
-  });
+  };
 }
 
 function hideLines() {
@@ -1123,9 +1174,9 @@ function boot() {
 let booted = false;
 function tryBoot() { if (!booted) { booted = true; boot(); } }
 document.addEventListener('firebase-ready', tryBoot);
-// Boot right away without waiting for Firebase
-window.addEventListener('DOMContentLoaded', tryBoot);
-setTimeout(tryBoot, 100); // fallback
+// Boot right away — don't wait for Firebase at all
+document.addEventListener('DOMContentLoaded', tryBoot);
+setTimeout(tryBoot, 50);
 </script>
 </body>
 </html>
