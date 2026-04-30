@@ -331,17 +331,13 @@ input[type="file"] { display: none; }
 .card-owner { font-size: 11px; color: var(--text2); }
 .mine-badge { display: inline-block; font-size: 9px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 1px 7px; font-weight: 600; }
 
-.arrow-btns { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
-.arr-btn {
-  width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
-  border: 0.5px solid var(--border-med);
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 12px; color: var(--text2);
-  transition: all 0.12s;
+/* drag hint */
+.drag-hint-bar {
+  font-size: 17px; font-weight: 600; color: var(--text);
+  text-align: center;
+  padding: 4px 12px 0;
+  opacity: 0.85;
 }
-.arr-btn:active { background: var(--blue-l); color: var(--blue); border-color: var(--blue-m); transform: scale(0.92); }
 
 /* entrance */
 .entrance-divider { margin-top: 12px; }
@@ -475,7 +471,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.22</span>
+      <span class="footer-center">built by eligrt · v1.27</span>
     </div>
   </div>
 
@@ -587,7 +583,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.22</span>
+      <span class="footer-center">built by eligrt · v1.27</span>
     </div>
   </div>
 
@@ -628,6 +624,8 @@ input[type="file"] { display: none; }
 
     <div class="main-body">
 
+      <div class="drag-hint-bar">✋ לחץ והחזק כדי לגרור את המטוס למיקום הנכון</div>
+
       <div class="cards-list" id="cardsList"></div>
 
       <div class="entrance-divider">
@@ -643,7 +641,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.22</span>
+      <span class="footer-center">built by eligrt · v1.27</span>
     </div>
   </div>
 
@@ -962,10 +960,6 @@ function renderCards(order, user, data) {
       <div class="card-info">
         <div class="card-tail">${plane.tail}</div>
         <div class="card-owner">${isMine ? `<span class="mine-badge">שלי</span> ${plane.name||''}` : (plane.name||'')}</div>
-      </div>
-      <div class="arrow-btns">
-        <button class="arr-btn" onclick="moveCard(this,-1)">▲</button>
-        <button class="arr-btn" onclick="moveCard(this,1)">▼</button>
       </div>`;
 
     row.appendChild(card);
@@ -1108,6 +1102,7 @@ function bindDrag() {
     e.preventDefault();
     if (!dragCard) return;
     const dragRow = dragCard.closest('.card-row');
+    const cardToFlash = dragCard; // save ref before dragend nulls it
     const y = e.clientY;
     const rows = getCardRows().filter(r => r !== dragRow);
     hideLines();
@@ -1124,9 +1119,10 @@ function bindDrag() {
     if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
 
     updatePositions();
-    flashCard(dragCard);
     rebuildInsertLines();
     persistOrder();
+    // Flash after dragend has fired and removed the dragging class
+    setTimeout(() => flashCard(cardToFlash), 50);
   };
 }
 
