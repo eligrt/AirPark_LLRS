@@ -271,16 +271,16 @@ input[type="file"] { display: none; }
   content: '';
   position: absolute;
   left: 6px; right: 6px;
-  height: 3px;
+  height: 2px;
   border-radius: 99px;
-  background: var(--blue);
+  background: repeating-linear-gradient(to right, #A8CCF0 0px, #A8CCF0 7px, transparent 7px, transparent 14px);
   opacity: 0;
   transition: opacity 0.04s;
 }
 .insert-line.visible { opacity: 1; }
 .insert-line.visible::after { opacity: 1; }
 
-/* card row: pos-number outside left, card takes remaining space */
+/* card row */
 .card-row { display: flex; align-items: center; gap: 10px; margin: 0; }
 .pos-label {
   width: 24px; flex-shrink: 0;
@@ -298,18 +298,32 @@ input[type="file"] { display: none; }
   display: flex; align-items: center; gap: 12px;
   cursor: grab;
   user-select: none;
-  transition: box-shadow 0.15s, opacity 0.15s;
+  /* NO transition on box-shadow — it fights the flash animation */
 }
-.plane-card:active { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 .plane-card.mine { background: var(--blue-l); border-color: var(--blue-m); }
 .plane-card.dragging {
-  opacity: 0.75;
-  transform: scale(1.03) rotate(1deg);
-  box-shadow: 0 12px 32px rgba(24,95,165,0.25), 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0.72;
+  transform: scale(1.03) rotate(1.5deg);
+  box-shadow: 0 14px 36px rgba(24,95,165,0.3), 0 4px 14px rgba(0,0,0,0.18);
   border-color: var(--blue-m);
-  background: #F0F7FF;
+  background: #EEF5FF;
   z-index: 10;
+  cursor: grabbing;
 }
+
+/* card settle flash — background color change, never clipped by overflow */
+@keyframes cardSettle {
+  0%   { background: #B8D8FF; outline: 3px solid #378ADD; transform: scale(1.03); }
+  50%  { background: #D6EEFF; outline: 2px solid #85B7EB; transform: scale(1.01); }
+  100% { background: white;   outline: none; transform: scale(1); }
+}
+@keyframes cardSettleMine {
+  0%   { background: #B8D8FF; outline: 3px solid #378ADD; transform: scale(1.03); }
+  50%  { background: #D6EEFF; outline: 2px solid #85B7EB; transform: scale(1.01); }
+  100% { background: var(--blue-l); outline: none; transform: scale(1); }
+}
+.plane-card.flash      { animation: cardSettle     1.5s ease-out both; }
+.plane-card.mine.flash { animation: cardSettleMine 1.5s ease-out both; }
 
 .drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; flex-shrink: 0; opacity: 0.18; }
 .drag-handle span { display: block; width: 18px; height: 2px; border-radius: 1px; background: var(--text); }
@@ -351,19 +365,6 @@ input[type="file"] { display: none; }
 /* step header */
 .step-header { font-size: 19px; font-weight: 600; color: var(--text); text-align: center; letter-spacing: -0.3px; }
 
-/* card move flash — spring bounce + color pop so landing is unmissable */
-@keyframes cardSettle {
-  0%   { transform: scale(1.05); background: #D0E8FF; box-shadow: 0 0 0 3px #185FA5, 0 8px 24px rgba(24,95,165,0.3); }
-  40%  { transform: scale(0.98); background: #C8E2FF; box-shadow: 0 0 0 2px #85B7EB; }
-  100% { transform: scale(1);   background: var(--white); box-shadow: none; }
-}
-@keyframes cardSettleMine {
-  0%   { transform: scale(1.05); background: #B8D8F8; box-shadow: 0 0 0 3px #185FA5, 0 8px 24px rgba(24,95,165,0.3); }
-  40%  { transform: scale(0.98); background: #C8E2FF; box-shadow: 0 0 0 2px #85B7EB; }
-  100% { transform: scale(1);   background: var(--blue-l); box-shadow: none; }
-}
-.plane-card.flash      { animation: cardSettle     1s cubic-bezier(0.34,1.56,0.64,1); }
-.plane-card.mine.flash { animation: cardSettleMine 1s cubic-bezier(0.34,1.56,0.64,1); }
 
 .footer {
   display: flex;
@@ -471,7 +472,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.27</span>
+      <span class="footer-center">built by eligrt · v1.48</span>
     </div>
   </div>
 
@@ -583,7 +584,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.27</span>
+      <span class="footer-center">built by eligrt · v1.48</span>
     </div>
   </div>
 
@@ -641,7 +642,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.27</span>
+      <span class="footer-center">built by eligrt · v1.48</span>
     </div>
   </div>
 
@@ -979,11 +980,11 @@ function renderCards(order, user, data) {
 }
 
 function flashCard(card) {
+  card.classList.remove('dragging'); // ensure dragging state is gone
   card.classList.remove('flash');
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    card.classList.add('flash');
-    setTimeout(() => card.classList.remove('flash'), 1000);
-  }));
+  card.offsetHeight; // force reflow
+  card.classList.add('flash');
+  setTimeout(() => card.classList.remove('flash'), 1800);
 }
 
 function getCards()    { return [...document.querySelectorAll('#cardsList .plane-card')]; }
@@ -1008,7 +1009,7 @@ function rebuildInsertLines() {
   const last = document.createElement('div');
   last.className = 'insert-line';
   list.appendChild(last);
-  bindDrag();
+  // DO NOT call bindDrag here — it's already bound on the list via ondragover/ondrop
 }
 
 function moveCard(btn, dir) {
@@ -1055,20 +1056,43 @@ let dragCard = null;
 function bindDrag() {
   const list = document.getElementById('cardsList');
 
+  // Use .ondragstart / .ondragend (not addEventListener) to prevent duplicates
   getCards().forEach(card => {
-    card.addEventListener('dragstart', e => {
+    card.ondragstart = e => {
       dragCard = card;
       e.dataTransfer.effectAllowed = 'move';
       setTimeout(() => card.classList.add('dragging'), 0);
-    });
-    card.addEventListener('dragend', () => {
+    };
+    card.ondragend = () => {
       card.classList.remove('dragging');
       hideLines();
       dragCard = null;
-    });
+      if (card._shouldFlash) {
+        card._shouldFlash = false;
+        const tail = card.querySelector('.card-tail')?.textContent;
+        const isMine = card.classList.contains('mine');
+        setTimeout(() => {
+          // Find card fresh from DOM by tail number
+          const liveCard = [...document.querySelectorAll('.card-tail')]
+            .find(el => el.textContent === tail)?.closest('.plane-card');
+          if (!liveCard) return;
+          liveCard.style.transition = 'none';
+          liveCard.style.background = '#B8D8FF';
+          liveCard.style.outline = '3px solid #378ADD';
+          liveCard.offsetHeight;
+          liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
+          liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
+          liveCard.style.outline = '0px solid transparent';
+          setTimeout(() => {
+            liveCard.style.transition = '';
+            liveCard.style.background = '';
+            liveCard.style.outline = '';
+          }, 1300);
+        }, 0);
+      }
+    };
   });
 
-  // Single dragover on list — detect position using card-rows
   list.ondragover = e => {
     e.preventDefault();
     if (!dragCard) return;
@@ -1077,7 +1101,6 @@ function bindDrag() {
     const rows = getCardRows().filter(r => r !== dragRow);
     if (!rows.length) return;
     hideLines();
-
     let inserted = false;
     for (let i = 0; i < rows.length; i++) {
       const rect = rows[i].getBoundingClientRect();
@@ -1102,7 +1125,8 @@ function bindDrag() {
     e.preventDefault();
     if (!dragCard) return;
     const dragRow = dragCard.closest('.card-row');
-    const cardToFlash = dragCard; // save ref before dragend nulls it
+    const card = dragCard;
+
     const y = e.clientY;
     const rows = getCardRows().filter(r => r !== dragRow);
     hideLines();
@@ -1118,11 +1142,10 @@ function bindDrag() {
     }
     if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
 
+    card._shouldFlash = true;
     updatePositions();
     rebuildInsertLines();
     persistOrder();
-    // Flash after dragend has fired and removed the dragging class
-    setTimeout(() => flashCard(cardToFlash), 50);
   };
 }
 
