@@ -435,7 +435,7 @@ input[type="file"] { display: none; }
       </div>
     </div>
     <div class="content">
-      <div class="step-wrap">
+      <div class="step-wrap" id="step-wrap-name">
         <div class="step-dots">
           <div class="step-dot active" id="d1a"></div>
           <div class="step-dot" id="d1b"></div>
@@ -478,7 +478,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.008</span>
+      <span class="footer-center">built by eligrt · v1.84.010</span>
     </div>
   </div>
 
@@ -498,7 +498,7 @@ input[type="file"] { display: none; }
       <span class="back-btn" onclick="goTo('s-name')">חזור</span>
     </div>
     <div class="content">
-      <div class="step-wrap">
+      <div class="step-wrap" id="step-wrap-hangar">
         <div class="step-dots">
           <div class="step-dot done"></div>
           <div class="step-dot active"></div>
@@ -608,7 +608,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.008</span>
+      <span class="footer-center">built by eligrt · v1.84.010</span>
     </div>
   </div>
 
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.008</span>
+      <span class="footer-center">built by eligrt · v1.84.010</span>
     </div>
   </div>
 
@@ -788,25 +788,26 @@ function goTo(id) {
     photoDataURL = null;
     document.getElementById('photoPreview').style.display = 'none';
     document.getElementById('photoPlaceholder').style.display = 'flex';
+    document.getElementById('photo-meta').textContent = '';
 
     if (user) {
       document.getElementById('inp-name').value = user.name || '';
       document.getElementById('inp-tail').value = (user.tail || '').replace('4X-', '');
-      if (user.photoURL) {
-        // Restore existing photo preview from localStorage
-        const prev = document.getElementById('photoPreview');
-        prev.src = user.photoURL;
-        prev.style.display = 'block';
-        document.getElementById('photoPlaceholder').style.display = 'none';
-        // Don't set photoDataURL — only set it if pilot takes a NEW photo
+      // Fetch photo from Firestore directly — don't rely on localStorage or typing
+      if (user.tail) {
+        document.getElementById('photo-meta').textContent = 'טוען...';
+        fetchPhotoPreview(user.tail);
+        fetchPhotoMeta(user.tail);
       }
     }
-    // Fetch photo metadata from Firestore and show below photo circle
-    document.getElementById('photo-meta').textContent = 'טוען...';
-    fetchPhotoMeta(user?.tail);
   }
 
-  // Reset entrance map state when navigating to hangar screen
+  // Show step indicators only during first-time onboarding (no saved location yet)
+  const isOnboarding = !LS.get('location');
+  const nameSteps  = document.getElementById('step-wrap-name');
+  const hangarSteps = document.getElementById('step-wrap-hangar');
+  if (nameSteps)   nameSteps.style.display   = (id === 's-name'   && isOnboarding) ? 'flex' : 'none';
+  if (hangarSteps) hangarSteps.style.display = (id === 's-hangar' && isOnboarding) ? 'flex' : 'none';
   if (id === 's-hangar') {
     document.querySelectorAll('.entrance-zone').forEach(z => z.classList.remove('selected-entrance'));
     const strip = document.getElementById('entrance-confirm-strip');
