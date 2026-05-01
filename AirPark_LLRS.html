@@ -576,7 +576,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.041</span>
+      <span class="footer-center">built by eligrt · v1.84.043</span>
     </div>
   </div>
 
@@ -706,7 +706,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.041</span>
+      <span class="footer-center">built by eligrt · v1.84.043</span>
     </div>
   </div>
 
@@ -743,6 +743,22 @@ input[type="file"] { display: none; }
     <div style="padding:0 16px 22px;display:flex;flex-direction:column;gap:8px;">
       <button class="btn-primary" onclick="matchConfirm()">כן, קח אותי לשם <span class="plane-flip">✈</span></button>
       <button onclick="matchCancel()" style="width:100%;padding:12px;border-radius:9px;background:transparent;border:0.5px solid rgba(0,0,0,0.14);font-size:14px;font-weight:500;color:#6B7280;font-family:'DM Sans',sans-serif;cursor:pointer;">לא, אבחר ידנית</button>
+    </div>
+  </div>
+
+  <!-- ══ RESET CONFIRM MODAL ══ -->
+  <div id="reset-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;transition:opacity 0.2s;opacity:0;"></div>
+  <div id="reset-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.92);width:calc(100% - 40px);max-width:360px;background:white;border-radius:18px;z-index:101;transition:opacity 0.2s,transform 0.2s;opacity:0;direction:rtl;overflow:hidden;">
+    <div style="padding:28px 20px 6px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:17px;font-weight:700;color:#111827;font-family:'DM Sans',sans-serif;">איפוס הגדרות</div>
+    </div>
+    <div style="padding:8px 24px 22px;text-align:center;">
+      <div style="font-size:14px;color:#6B7280;font-family:'DM Sans',sans-serif;line-height:1.6;">כל הנתונים המקומיים יימחקו ותחזור להגדרה ראשונית.<br/>פעולה זו אינה ניתנת לביטול.</div>
+    </div>
+    <div style="padding:0 16px 22px;display:flex;flex-direction:column;gap:8px;">
+      <button onclick="confirmResetYes()" style="width:100%;padding:14px;border-radius:9px;background:#DC2626;color:white;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">כן, אפס הכל</button>
+      <button onclick="closeResetModal()" style="width:100%;padding:12px;border-radius:9px;background:transparent;border:0.5px solid rgba(0,0,0,0.14);font-size:14px;font-weight:500;color:#6B7280;font-family:'DM Sans',sans-serif;cursor:pointer;">ביטול</button>
     </div>
   </div>
 
@@ -788,7 +804,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.041</span>
+      <span class="footer-center">built by eligrt · v1.84.043</span>
     </div>
   </div>
 
@@ -1672,21 +1688,44 @@ function confirmOrder() {
 }
 
 function confirmReset() {
-  if (confirm('לאפס את כל הנתונים ולחזור להגדרה ראשונית?')) {
-    triggerReset();
-  }
+  const overlay = document.getElementById('reset-overlay');
+  const modal   = document.getElementById('reset-modal');
+  overlay.style.display = 'block';
+  modal.style.display   = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    modal.style.opacity   = '1';
+    modal.style.transform = 'translate(-50%,-50%) scale(1)';
+  }));
+}
+
+function closeResetModal() {
+  const overlay = document.getElementById('reset-overlay');
+  const modal   = document.getElementById('reset-modal');
+  overlay.style.opacity = '0';
+  modal.style.opacity   = '0';
+  modal.style.transform = 'translate(-50%,-50%) scale(0.92)';
+  setTimeout(() => { overlay.style.display = 'none'; modal.style.display = 'none'; }, 200);
+}
+
+function confirmResetYes() {
+  closeResetModal();
+  setTimeout(() => triggerReset(), 200);
 }
 
 function triggerReset() {
   localStorage.removeItem('user');
   localStorage.removeItem('location');
   localStorage.removeItem('launched');
+  // Remove instant-hide in case it was set for returning user
+  const loader = document.getElementById('loader');
+  loader.classList.remove('instant-hide');
+  loader.classList.remove('hide');
   // Restart progress bar animation
   const bar = document.getElementById('loader-bar');
   if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
   const statusEl = document.getElementById('loader-status');
-  if (statusEl) statusEl.textContent = 'מתחבר...';
-  document.getElementById('loader').classList.remove('hide');
+  if (statusEl) statusEl.textContent = 'מתחבר לשדה...';
   const steps = [
     { text: 'טוען מטוסים וחניות...', delay: 2000 },
     { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
@@ -1696,7 +1735,7 @@ function triggerReset() {
     setTimeout(() => { if (statusEl) statusEl.textContent = text; }, delay);
   });
   setTimeout(() => {
-    document.getElementById('loader').classList.add('hide');
+    loader.classList.add('hide');
     goTo('s-name');
   }, 8000);
 }
