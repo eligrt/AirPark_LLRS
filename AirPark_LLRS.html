@@ -412,6 +412,13 @@ input[type="file"] { display: none; }
   opacity: 1;
   animation: pulse-amber 1.5s ease-in-out infinite;
 }
+.confirm-btn.saved {
+  color: var(--blue);
+  border-color: var(--blue-m);
+  background: var(--blue-l);
+  opacity: 1;
+  animation: none;
+}
 @keyframes pulse-amber {
   0%, 100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.3); }
   50%       { box-shadow: 0 0 0 6px rgba(217,119,6,0); }
@@ -444,6 +451,7 @@ input[type="file"] { display: none; }
   transition: transform 0.3s ease;
   z-index: 999; white-space: nowrap; pointer-events: none;
 }
+.toast.blue { background: var(--blue); }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ── LOADING OVERLAY ── */
@@ -563,7 +571,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.033</span>
+      <span class="footer-center">built by eligrt · v1.84.037</span>
     </div>
   </div>
 
@@ -693,7 +701,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.033</span>
+      <span class="footer-center">built by eligrt · v1.84.037</span>
     </div>
   </div>
 
@@ -769,13 +777,13 @@ input[type="file"] { display: none; }
       </div>
 
       <div style="padding: 10px 0 4px; text-align: center;">
-        <span class="confirm-btn changed" id="confirm-btn" onclick="confirmOrder()" style="display:none;">⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה</span>
+        <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
       </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.033</span>
+      <span class="footer-center">built by eligrt · v1.84.037</span>
     </div>
   </div>
 
@@ -904,9 +912,10 @@ function goTo(id) {
   }
 }
 
-function showToast(msg) {
+function showToast(msg, color) {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.className = 'toast' + (color ? ' ' + color : '');
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
@@ -1272,8 +1281,12 @@ function subscribeToRow(rowId, user, rowMeta) {
       document.getElementById('cardsList').classList.remove('loading');
       document.getElementById('cardsList').classList.add('loaded');
       document.querySelector('.updated-line').style.opacity = '1';
-      orderChanged = false;
-      updateConfirmBtn();
+      // Only reset button if not already in saved state
+      const btn = document.getElementById('confirm-btn');
+      if (!btn || !btn.classList.contains('saved')) {
+        orderChanged = false;
+        updateConfirmBtn();
+      }
       if (snap.exists()) {
         renderCards(snap.data().order, user, snap.data());
       } else {
@@ -1614,12 +1627,15 @@ function updateConfirmBtn() {
   const btn = document.getElementById('confirm-btn');
   if (!btn) return;
   if (orderChanged) {
+    btn.classList.remove('saved');
     btn.classList.add('changed');
     btn.style.display = 'inline-block';
     btn.innerHTML = '⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה';
   } else {
     btn.classList.remove('changed');
-    btn.style.display = 'none';
+    btn.classList.remove('saved');
+    btn.style.display = 'inline-block';
+    btn.innerHTML = '✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי';
   }
 }
 
@@ -1638,8 +1654,16 @@ function confirmOrder() {
   const pad = n => String(n).padStart(2,'0');
   const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   document.getElementById('updated-text').textContent = `עודכן ע"י ${user.name} (${user.tail}) · ${ts}`;
+  const wasChanged = orderChanged;
   orderChanged = false;
-  updateConfirmBtn();
+  if (wasChanged) {
+    const btn = document.getElementById('confirm-btn');
+    btn.classList.remove('changed');
+    btn.classList.add('saved');
+    btn.innerHTML = '✓ &nbsp;סדר החנייה נשמר בהצלחה';
+  } else {
+    updateConfirmBtn();
+  }
 }
 
 function confirmReset() {
