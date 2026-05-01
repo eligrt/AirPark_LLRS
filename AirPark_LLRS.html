@@ -454,7 +454,7 @@ input[type="file"] { display: none; }
         <div class="tail-wrap">
           <span class="tail-prefix">4X-</span>
           <input class="tail-input" id="inp-tail" type="text" placeholder="HHH" maxlength="3"
-            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" />
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); onTailInput(this.value)" />
         </div>
       </div>
 
@@ -478,7 +478,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.006</span>
+      <span class="footer-center">built by eligrt · v1.84.008</span>
     </div>
   </div>
 
@@ -608,7 +608,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.006</span>
+      <span class="footer-center">built by eligrt · v1.84.008</span>
     </div>
   </div>
 
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.006</span>
+      <span class="footer-center">built by eligrt · v1.84.008</span>
     </div>
   </div>
 
@@ -849,6 +849,43 @@ function handlePhoto(e) {
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+// When pilot types their tail number — fetch existing photo from Firestore
+let _tailFetchTimer = null;
+function onTailInput(val) {
+  clearTimeout(_tailFetchTimer);
+  if (val.length < 3) {
+    // Reset to empty if pilot is still typing
+    if (!photoDataURL) {
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoPlaceholder').style.display = 'flex';
+      document.getElementById('photo-meta').textContent = '';
+    }
+    return;
+  }
+  // Debounce — wait until they stop typing
+  _tailFetchTimer = setTimeout(() => {
+    const fullTail = '4X-' + val;
+    fetchPhotoMeta(fullTail);
+    fetchPhotoPreview(fullTail);
+  }, 400);
+}
+
+// Fetch and show existing photo from Firestore into the preview circle
+async function fetchPhotoPreview(tail) {
+  if (!window._firebaseReady) return;
+  if (photoDataURL) return; // pilot already took a new photo — don't overwrite
+  try {
+    const { doc, getDoc } = window._dbOps;
+    const snap = await getDoc(doc(window._db, 'pilots', tail));
+    if (snap.exists() && snap.data().photoURL) {
+      const prev = document.getElementById('photoPreview');
+      prev.src = snap.data().photoURL;
+      prev.style.display = 'block';
+      document.getElementById('photoPlaceholder').style.display = 'none';
+    }
+  } catch(e) { /* silently ignore */ }
 }
 
 function step1Next() {
