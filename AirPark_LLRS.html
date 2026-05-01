@@ -563,7 +563,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.032</span>
+      <span class="footer-center">built by eligrt · v1.84.033</span>
     </div>
   </div>
 
@@ -693,7 +693,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.032</span>
+      <span class="footer-center">built by eligrt · v1.84.033</span>
     </div>
   </div>
 
@@ -769,13 +769,13 @@ input[type="file"] { display: none; }
       </div>
 
       <div style="padding: 10px 0 4px; text-align: center;">
-        <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
+        <span class="confirm-btn changed" id="confirm-btn" onclick="confirmOrder()" style="display:none;">⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה</span>
       </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.032</span>
+      <span class="footer-center">built by eligrt · v1.84.033</span>
     </div>
   </div>
 
@@ -1615,10 +1615,11 @@ function updateConfirmBtn() {
   if (!btn) return;
   if (orderChanged) {
     btn.classList.add('changed');
+    btn.style.display = 'inline-block';
     btn.innerHTML = '⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה';
   } else {
     btn.classList.remove('changed');
-    btn.innerHTML = '✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי';
+    btn.style.display = 'none';
   }
 }
 
@@ -1636,12 +1637,9 @@ function confirmOrder() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  document.getElementById('updated-text').textContent = orderChanged
-    ? `עודכן ע"י ${user.name} (${user.tail}) · ${ts}`
-    : `אושר ע"י ${user.name} (${user.tail}) · ${ts}`;
+  document.getElementById('updated-text').textContent = `עודכן ע"י ${user.name} (${user.tail}) · ${ts}`;
   orderChanged = false;
   updateConfirmBtn();
-  showToast(orderChanged ? 'סדר החנייה עודכן ✓' : 'המיקום אושר ✓');
 }
 
 function confirmReset() {
