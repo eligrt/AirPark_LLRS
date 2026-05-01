@@ -478,7 +478,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.010</span>
+      <span class="footer-center">built by eligrt · v1.84.012</span>
     </div>
   </div>
 
@@ -608,7 +608,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.010</span>
+      <span class="footer-center">built by eligrt · v1.84.012</span>
     </div>
   </div>
 
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.010</span>
+      <span class="footer-center">built by eligrt · v1.84.012</span>
     </div>
   </div>
 
@@ -710,62 +710,64 @@ const DIR_LABELS  = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' };
 const HANGAR_LABELS = { upper:'האנגר העליון', lower:'האנגר התחתון' };
 
 // Demo row data — 3 rows per entrance side, 3 planes each
+// Naming: [Direction][Row A-L][Position 1-3]  e.g. NA1 = North, row A, plane 1
+// Row upper-N-5 (row E) has real LLRS planes — do not change
 const DEMO_ROWS = {
   'upper-N': [
-    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['AAA','BBB','CCC'] },
-    { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['GDA','GDB','GDC'] },
-    { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['KFA','KFB','KFC'] },
-    { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['LAA','LAB','LAC'] },
+    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['NA1','NA2','NA3'] },
+    { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['NB1','NB2','NB3'] },
+    { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['NC1','NC2','NC3'] },
+    { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['ND1','ND2','ND3'] },
     { rowId: 'upper-N-5',  label: 'שורה 5',  planes: ['HYD','HRS','HRC'] },
-    { rowId: 'upper-N-6',  label: 'שורה 6',  planes: ['NCA','NCB','NCC'] },
-    { rowId: 'upper-N-7',  label: 'שורה 7',  planes: ['ODA','ODB','ODC'] },
-    { rowId: 'upper-N-8',  label: 'שורה 8',  planes: ['PEA','PEB','PEC'] },
-    { rowId: 'upper-N-9',  label: 'שורה 9',  planes: ['QFA','QFB','QFC'] },
-    { rowId: 'upper-N-10', label: 'שורה 10', planes: ['RGA','RGB','RGC'] },
-    { rowId: 'upper-N-11', label: 'שורה 11', planes: ['SHA','SHB','SHC'] },
-    { rowId: 'upper-N-12', label: 'שורה 12', planes: ['TIA','TIB','TIC'] },
+    { rowId: 'upper-N-6',  label: 'שורה 6',  planes: ['NF1','NF2','NF3'] },
+    { rowId: 'upper-N-7',  label: 'שורה 7',  planes: ['NG1','NG2','NG3'] },
+    { rowId: 'upper-N-8',  label: 'שורה 8',  planes: ['NH1','NH2','NH3'] },
+    { rowId: 'upper-N-9',  label: 'שורה 9',  planes: ['NI1','NI2','NI3'] },
+    { rowId: 'upper-N-10', label: 'שורה 10', planes: ['NJ1','NJ2','NJ3'] },
+    { rowId: 'upper-N-11', label: 'שורה 11', planes: ['NK1','NK2','NK3'] },
+    { rowId: 'upper-N-12', label: 'שורה 12', planes: ['NL1','NL2','NL3'] },
   ],
   'upper-S': [
-    { rowId: 'upper-S-1',  label: 'שורה 1',  planes: ['UJA','UJB','UJC'] },
-    { rowId: 'upper-S-2',  label: 'שורה 2',  planes: ['VKA','VKB','VKC'] },
-    { rowId: 'upper-S-3',  label: 'שורה 3',  planes: ['WLA','WLB','WLC'] },
-    { rowId: 'upper-S-4',  label: 'שורה 4',  planes: ['XMA','XMB','XMC'] },
-    { rowId: 'upper-S-5',  label: 'שורה 5',  planes: ['YNA','YNB','YNC'] },
-    { rowId: 'upper-S-6',  label: 'שורה 6',  planes: ['ZOA','ZOB','ZOC'] },
-    { rowId: 'upper-S-7',  label: 'שורה 7',  planes: ['APA','APB','APC'] },
-    { rowId: 'upper-S-8',  label: 'שורה 8',  planes: ['BQA','BQB','BQC'] },
-    { rowId: 'upper-S-9',  label: 'שורה 9',  planes: ['CRA','CRB','CRC'] },
-    { rowId: 'upper-S-10', label: 'שורה 10', planes: ['DSA','DSB','DSC'] },
-    { rowId: 'upper-S-11', label: 'שורה 11', planes: ['ETA','ETB','ETC'] },
-    { rowId: 'upper-S-12', label: 'שורה 12', planes: ['FUA','FUB','FUC'] },
+    { rowId: 'upper-S-1',  label: 'שורה 1',  planes: ['SA1','SA2','SA3'] },
+    { rowId: 'upper-S-2',  label: 'שורה 2',  planes: ['SB1','SB2','SB3'] },
+    { rowId: 'upper-S-3',  label: 'שורה 3',  planes: ['SC1','SC2','SC3'] },
+    { rowId: 'upper-S-4',  label: 'שורה 4',  planes: ['SD1','SD2','SD3'] },
+    { rowId: 'upper-S-5',  label: 'שורה 5',  planes: ['SE1','SE2','SE3'] },
+    { rowId: 'upper-S-6',  label: 'שורה 6',  planes: ['SF1','SF2','SF3'] },
+    { rowId: 'upper-S-7',  label: 'שורה 7',  planes: ['SG1','SG2','SG3'] },
+    { rowId: 'upper-S-8',  label: 'שורה 8',  planes: ['SH1','SH2','SH3'] },
+    { rowId: 'upper-S-9',  label: 'שורה 9',  planes: ['SI1','SI2','SI3'] },
+    { rowId: 'upper-S-10', label: 'שורה 10', planes: ['SJ1','SJ2','SJ3'] },
+    { rowId: 'upper-S-11', label: 'שורה 11', planes: ['SK1','SK2','SK3'] },
+    { rowId: 'upper-S-12', label: 'שורה 12', planes: ['SL1','SL2','SL3'] },
   ],
   'lower-E': [
-    { rowId: 'lower-E-1',  label: 'שורה 1',  planes: ['GVA','GVB','GVC'] },
-    { rowId: 'lower-E-2',  label: 'שורה 2',  planes: ['HWA','HWB','HWC'] },
-    { rowId: 'lower-E-3',  label: 'שורה 3',  planes: ['IXA','IXB','IXC'] },
-    { rowId: 'lower-E-4',  label: 'שורה 4',  planes: ['JYA','JYB','JYC'] },
-    { rowId: 'lower-E-5',  label: 'שורה 5',  planes: ['KZA','KZB','KZC'] },
-    { rowId: 'lower-E-6',  label: 'שורה 6',  planes: ['LAX','LBX','LCX'] },
-    { rowId: 'lower-E-7',  label: 'שורה 7',  planes: ['MAX','MBX','MCX'] },
-    { rowId: 'lower-E-8',  label: 'שורה 8',  planes: ['NAX','NBX','NCX'] },
-    { rowId: 'lower-E-9',  label: 'שורה 9',  planes: ['OAX','OBX','OCX'] },
-    { rowId: 'lower-E-10', label: 'שורה 10', planes: ['PAX','PBX','PCX'] },
-    { rowId: 'lower-E-11', label: 'שורה 11', planes: ['QAX','QBX','QCX'] },
-    { rowId: 'lower-E-12', label: 'שורה 12', planes: ['RAX','RBX','RCX'] },
+    { rowId: 'lower-E-1',  label: 'שורה 1',  planes: ['EA1','EA2','EA3'] },
+    { rowId: 'lower-E-2',  label: 'שורה 2',  planes: ['EB1','EB2','EB3'] },
+    { rowId: 'lower-E-3',  label: 'שורה 3',  planes: ['EC1','EC2','EC3'] },
+    { rowId: 'lower-E-4',  label: 'שורה 4',  planes: ['ED1','ED2','ED3'] },
+    { rowId: 'lower-E-5',  label: 'שורה 5',  planes: ['EE1','EE2','EE3'] },
+    { rowId: 'lower-E-6',  label: 'שורה 6',  planes: ['EF1','EF2','EF3'] },
+    { rowId: 'lower-E-7',  label: 'שורה 7',  planes: ['EG1','EG2','EG3'] },
+    { rowId: 'lower-E-8',  label: 'שורה 8',  planes: ['EH1','EH2','EH3'] },
+    { rowId: 'lower-E-9',  label: 'שורה 9',  planes: ['EI1','EI2','EI3'] },
+    { rowId: 'lower-E-10', label: 'שורה 10', planes: ['EJ1','EJ2','EJ3'] },
+    { rowId: 'lower-E-11', label: 'שורה 11', planes: ['EK1','EK2','EK3'] },
+    { rowId: 'lower-E-12', label: 'שורה 12', planes: ['EL1','EL2','EL3'] },
   ],
   'lower-W': [
-    { rowId: 'lower-W-1',  label: 'שורה 1',  planes: ['SAX','SBX','SCX'] },
-    { rowId: 'lower-W-2',  label: 'שורה 2',  planes: ['TAX','TBX','TCX'] },
-    { rowId: 'lower-W-3',  label: 'שורה 3',  planes: ['UAX','UBX','UCX'] },
-    { rowId: 'lower-W-4',  label: 'שורה 4',  planes: ['VAX','VBX','VCX'] },
-    { rowId: 'lower-W-5',  label: 'שורה 5',  planes: ['WAX','WBX','WCX'] },
-    { rowId: 'lower-W-6',  label: 'שורה 6',  planes: ['XAX','XBX','XCX'] },
-    { rowId: 'lower-W-7',  label: 'שורה 7',  planes: ['YAX','YBX','YCX'] },
-    { rowId: 'lower-W-8',  label: 'שורה 8',  planes: ['ZAX','ZBX','ZCX'] },
-    { rowId: 'lower-W-9',  label: 'שורה 9',  planes: ['AAX','ABX','ACX'] },
-    { rowId: 'lower-W-10', label: 'שורה 10', planes: ['BAX','BBX','BCX'] },
-    { rowId: 'lower-W-11', label: 'שורה 11', planes: ['CAX','CBX','CCX'] },
-    { rowId: 'lower-W-12', label: 'שורה 12', planes: ['DAX','DBX','DCX'] },
+    { rowId: 'lower-W-1',  label: 'שורה 1',  planes: ['WA1','WA2','WA3'] },
+    { rowId: 'lower-W-2',  label: 'שורה 2',  planes: ['WB1','WB2','WB3'] },
+    { rowId: 'lower-W-3',  label: 'שורה 3',  planes: ['WC1','WC2','WC3'] },
+    { rowId: 'lower-W-4',  label: 'שורה 4',  planes: ['WD1','WD2','WD3'] },
+    { rowId: 'lower-W-5',  label: 'שורה 5',  planes: ['WE1','WE2','WE3'] },
+    { rowId: 'lower-W-6',  label: 'שורה 6',  planes: ['WF1','WF2','WF3'] },
+    { rowId: 'lower-W-7',  label: 'שורה 7',  planes: ['WG1','WG2','WG3'] },
+    { rowId: 'lower-W-8',  label: 'שורה 8',  planes: ['WH1','WH2','WH3'] },
+    { rowId: 'lower-W-9',  label: 'שורה 9',  planes: ['WI1','WI2','WI3'] },
+    { rowId: 'lower-W-10', label: 'שורה 10', planes: ['WJ1','WJ2','WJ3'] },
+    { rowId: 'lower-W-11', label: 'שורה 11', planes: ['WK1','WK2','WK3'] },
+    { rowId: 'lower-W-12', label: 'שורה 12', planes: ['WL1','WL2','WL3'] },
   ],
 };
 
