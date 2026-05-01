@@ -470,7 +470,7 @@ input[type="file"] { display: none; }
           </div>
           <div class="photo-desc">צלם או בחר תמונה של המטוס שלך מהגלרייה</div>
         </div>
-        <div id="photo-meta" style="font-size:11px;color:var(--text2);margin-top:6px;text-align:center;min-height:16px;font-family:'DM Mono',monospace;"></div>
+        <div id="photo-meta" style="font-size:11px;color:var(--text2);margin-top:6px;text-align:center;min-height:16px;font-family:'DM Sans',sans-serif;"></div>
         <input type="file" id="fileInput" accept="image/*" onchange="handlePhoto(event)" />
       </div>
 
@@ -478,7 +478,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.002</span>
+      <span class="footer-center">built by eligrt · v1.84.006</span>
     </div>
   </div>
 
@@ -608,7 +608,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.002</span>
+      <span class="footer-center">built by eligrt · v1.84.006</span>
     </div>
   </div>
 
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.002</span>
+      <span class="footer-center">built by eligrt · v1.84.006</span>
     </div>
   </div>
 
@@ -712,11 +712,11 @@ const HANGAR_LABELS = { upper:'האנגר העליון', lower:'האנגר הת�
 // Demo row data — 3 rows per entrance side, 3 planes each
 const DEMO_ROWS = {
   'upper-N': [
-    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['HYD','HAA','HBB'] },
+    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['AAA','BBB','CCC'] },
     { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['GDA','GDB','GDC'] },
     { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['KFA','KFB','KFC'] },
     { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['LAA','LAB','LAC'] },
-    { rowId: 'upper-N-5',  label: 'שורה 5',  planes: ['MBA','MBB','MBC'] },
+    { rowId: 'upper-N-5',  label: 'שורה 5',  planes: ['HYD','HRS','HRC'] },
     { rowId: 'upper-N-6',  label: 'שורה 6',  planes: ['NCA','NCB','NCC'] },
     { rowId: 'upper-N-7',  label: 'שורה 7',  planes: ['ODA','ODB','ODC'] },
     { rowId: 'upper-N-8',  label: 'שורה 8',  planes: ['PEA','PEB','PEC'] },
@@ -784,18 +784,25 @@ function goTo(id) {
   // Pre-fill name screen with existing values when editing
   if (id === 's-name') {
     const user = LS.get('user');
+    // Reset photo state
+    photoDataURL = null;
+    document.getElementById('photoPreview').style.display = 'none';
+    document.getElementById('photoPlaceholder').style.display = 'flex';
+
     if (user) {
       document.getElementById('inp-name').value = user.name || '';
       document.getElementById('inp-tail').value = (user.tail || '').replace('4X-', '');
       if (user.photoURL) {
+        // Restore existing photo preview from localStorage
         const prev = document.getElementById('photoPreview');
         prev.src = user.photoURL;
         prev.style.display = 'block';
         document.getElementById('photoPlaceholder').style.display = 'none';
+        // Don't set photoDataURL — only set it if pilot takes a NEW photo
       }
     }
-    // Fetch photo metadata from Firestore and show it
-    document.getElementById('photo-meta').textContent = '';
+    // Fetch photo metadata from Firestore and show below photo circle
+    document.getElementById('photo-meta').textContent = 'טוען...';
     fetchPhotoMeta(user?.tail);
   }
 
@@ -1040,16 +1047,20 @@ async function savePhotoToFirestore(tail, base64) {
 // ─── Fetch photo metadata and show on s-name screen ───
 async function fetchPhotoMeta(tail) {
   const el = document.getElementById('photo-meta');
-  if (!el || !tail) return;
+  if (!el || !tail) { if (el) el.textContent = ''; return; }
   const doFetch = async () => {
     try {
       const { doc, getDoc } = window._dbOps;
+      // tail is stored with 4X- prefix in Firestore
       const snap = await getDoc(doc(window._db, 'pilots', tail));
+      console.log('fetchPhotoMeta:', tail, 'exists:', snap.exists(), snap.exists() ? snap.data() : 'no doc');
       if (snap.exists() && snap.data().updatedAt) {
         const d = snap.data();
         el.textContent = `עודכן ע"י ${d.updatedBy} · ${d.updatedAt}`;
+      } else {
+        el.textContent = '';
       }
-    } catch(e) { /* silently ignore */ }
+    } catch(e) { console.warn('fetchPhotoMeta error:', e); el.textContent = ''; }
   };
   if (window._firebaseReady) doFetch();
   else document.addEventListener('firebase-ready', doFetch, { once: true });
@@ -1123,8 +1134,9 @@ function subscribeToRow(rowId, user, rowMeta) {
       if (snap.exists()) {
         renderCards(snap.data().order, user, snap.data());
       } else {
-        if (rowMeta) saveRowOrder(rowId, demoOrder, user.name, user.tail);
-        document.getElementById('updated-text').textContent = 'עדכון ראשוני...';
+        // No Firestore doc yet — just show local order, don't auto-create
+        renderCards(demoOrder, user, null);
+        document.getElementById('updated-text').textContent = 'סדר ברירת מחדל — גרור כדי לעדכן';
       }
       // Fetch photos for all planes in this row after rendering
       if (rowMeta) fetchPhotosForRow(rowMeta.planes.map(t => '4X-' + t));
