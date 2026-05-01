@@ -401,10 +401,21 @@ input[type="file"] { display: none; }
   padding: 6px 14px;
   background: transparent;
   opacity: 0.8;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.15s, background 0.15s, color 0.2s, border-color 0.2s;
   display: inline-block;
 }
 .confirm-btn:active { opacity: 1; background: #E6F7F2; }
+.confirm-btn.changed {
+  color: #D97706;
+  border-color: #D97706;
+  background: #FEF3C7;
+  opacity: 1;
+  animation: pulse-amber 1.5s ease-in-out infinite;
+}
+@keyframes pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.3); }
+  50%       { box-shadow: 0 0 0 6px rgba(217,119,6,0); }
+}
 
 /* step header */
 .step-header { font-size: 19px; font-weight: 600; color: var(--text); text-align: center; letter-spacing: -0.3px; }
@@ -552,7 +563,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.031</span>
+      <span class="footer-center">built by eligrt · v1.84.032</span>
     </div>
   </div>
 
@@ -682,7 +693,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.031</span>
+      <span class="footer-center">built by eligrt · v1.84.032</span>
     </div>
   </div>
 
@@ -758,13 +769,13 @@ input[type="file"] { display: none; }
       </div>
 
       <div style="padding: 10px 0 4px; text-align: center;">
-        <span class="confirm-btn" onclick="confirmNoChange()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
+        <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
       </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.031</span>
+      <span class="footer-center">built by eligrt · v1.84.032</span>
     </div>
   </div>
 
@@ -849,6 +860,7 @@ let selH = null, selDir = null, selRowId = null;
 let currentRowData = null;
 let photoDataURL = null;
 let unsubscribe = null;
+let orderChanged = false; // true when pilot has dragged but not yet confirmed
 
 // ════════════════════════════════════════════
 // NAVIGATION
@@ -1260,6 +1272,8 @@ function subscribeToRow(rowId, user, rowMeta) {
       document.getElementById('cardsList').classList.remove('loading');
       document.getElementById('cardsList').classList.add('loaded');
       document.querySelector('.updated-line').style.opacity = '1';
+      orderChanged = false;
+      updateConfirmBtn();
       if (snap.exists()) {
         renderCards(snap.data().order, user, snap.data());
       } else {
@@ -1417,7 +1431,8 @@ function moveCard(btn, dir) {
   updatePositions();
   rebuildInsertLines();
   flashCard(card);
-  persistOrder();
+  orderChanged = true;
+  updateConfirmBtn();
 }
 
 
@@ -1582,7 +1597,9 @@ function bindDrag() {
 
     updatePositions();
     rebuildInsertLines();
-    persistOrder();
+    // Mark order as changed — don't auto-save, wait for pilot to confirm
+    orderChanged = true;
+    updateConfirmBtn();
   };
 }
 
@@ -1593,11 +1610,22 @@ function hideLines() {
 // ════════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════════
-function confirmNoChange() {
+function updateConfirmBtn() {
+  const btn = document.getElementById('confirm-btn');
+  if (!btn) return;
+  if (orderChanged) {
+    btn.classList.add('changed');
+    btn.innerHTML = '⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה';
+  } else {
+    btn.classList.remove('changed');
+    btn.innerHTML = '✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי';
+  }
+}
+
+function confirmOrder() {
   const user = LS.get('user');
   const loc  = LS.get('location');
   if (!user || !loc) return;
-  // Re-save current order with fresh timestamp
   const cards = getCards();
   const order = cards.map(c => ({
     tail: c.querySelector('.card-tail').textContent,
@@ -1608,8 +1636,12 @@ function confirmNoChange() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  document.getElementById('updated-text').textContent = `אושר ע"י ${user.name} (${user.tail}) · ${ts}`;
-  showToast('המיקום אושר ✓');
+  document.getElementById('updated-text').textContent = orderChanged
+    ? `עודכן ע"י ${user.name} (${user.tail}) · ${ts}`
+    : `אושר ע"י ${user.name} (${user.tail}) · ${ts}`;
+  orderChanged = false;
+  updateConfirmBtn();
+  showToast(orderChanged ? 'סדר החנייה עודכן ✓' : 'המיקום אושר ✓');
 }
 
 function confirmReset() {
