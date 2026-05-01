@@ -18,14 +18,13 @@
 
     // ─── REPLACE WITH YOUR FIREBASE CONFIG ───
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey:            "AIzaSyDlZmmx94yjGiaDBm6g2qtMyguqcl1QJjc",
+      authDomain:        "airpark-llrs-c1350.firebaseapp.com",
+      projectId:         "airpark-llrs-c1350",
+      storageBucket:     "airpark-llrs-c1350.firebasestorage.app",
+      messagingSenderId: "820098934194",
+      appId:             "1:820098934194:web:653e5b93e4a01ce13ff0ab",
     };
-    // ─────────────────────────────────────────
 
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
@@ -174,22 +173,19 @@ body {
 .photo-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
 input[type="file"] { display: none; }
 
-/* ── HANGAR GRID ── */
-.hangar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.hangar-box {
-  background: var(--white);
-  border: 0.5px solid var(--border-med);
-  border-radius: var(--radius);
-  padding: 18px 12px 14px;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
+/* ── ENTRANCE SELECTION CONFIRMATION ── */
+.entrance-confirm-strip {
+  display: none;
+  align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 14px;
+  background: var(--blue-l);
+  border: 1px solid var(--blue-m);
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; color: var(--blue);
+  margin-top: 8px;
+  transition: opacity 0.2s;
 }
-.hangar-box:active { transform: scale(0.97); }
-.hangar-box.selected { border: 1.5px solid var(--blue); background: var(--blue-l); }
-.hangar-icon { font-size: 28px; }
-.hangar-label { font-size: 13px; font-weight: 600; color: var(--text); }
-.hangar-sub { font-size: 11px; color: var(--text2); text-align: center; }
+.entrance-confirm-strip.visible { display: flex; }
 
 /* ── AIRFIELD MAP ── */
 .airfield-map { width: 100%; position: relative; direction: ltr; }
@@ -289,27 +285,8 @@ input[type="file"] { display: none; }
   text-align: center; opacity: 0.5;
 }
 
-.plane-card {
-  flex: 1;
-  background: var(--white);
-  border: 0.5px solid var(--border-med);
-  border-radius: var(--radius);
-  padding: 12px 10px 12px 12px;
-  display: flex; align-items: center; gap: 12px;
-  cursor: grab;
-  user-select: none;
-  /* NO transition on box-shadow — it fights the flash animation */
-}
-.plane-card.mine { background: var(--blue-l); border-color: var(--blue-m); }
-.plane-card.dragging {
-  opacity: 0.72;
-  transform: scale(1.03) rotate(1.5deg);
-  box-shadow: 0 14px 36px rgba(24,95,165,0.3), 0 4px 14px rgba(0,0,0,0.18);
-  border-color: var(--blue-m);
-  background: #EEF5FF;
-  z-index: 10;
-  cursor: grabbing;
-}
+
+
 
 /* card settle flash — background color change, never clipped by overflow */
 @keyframes cardSettle {
@@ -325,25 +302,40 @@ input[type="file"] { display: none; }
 .plane-card.flash      { animation: cardSettle     1.5s ease-out both; }
 .plane-card.mine.flash { animation: cardSettleMine 1.5s ease-out both; }
 
-.drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; flex-shrink: 0; opacity: 0.18; }
 .drag-handle span { display: block; width: 18px; height: 2px; border-radius: 1px; background: var(--text); }
 
-.plane-thumb {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 0.5px solid var(--border);
-  flex-shrink: 0; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px;
+/* Card slots — 4 fixed columns: [drag 32px] [thumb 56px] [tail flex] [star 56px] */
+.plane-card {
+  flex: 1;
+  background: var(--white);
+  border: 0.5px solid var(--border-med);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 0;
+  direction: ltr; /* explicit LTR so slot order is predictable */
+  cursor: grab;
+  user-select: none;
 }
+.plane-card.mine { background: var(--blue-l); border-color: var(--blue-m); }
+.plane-card.dragging {
+  opacity: 0.72;
+  transform: scale(1.03) rotate(1.5deg);
+  box-shadow: 0 14px 36px rgba(24,95,165,0.3), 0 4px 14px rgba(0,0,0,0.18);
+  border-color: var(--blue-m);
+  background: #EEF5FF;
+  z-index: 10;
+  cursor: grabbing;
+}
+.drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; width: 32px; flex-shrink: 0; opacity: 0.18; align-items: center; justify-content: center; }
+.plane-thumb { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); border: 0.5px solid var(--border); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 8px; }
 .plane-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-.card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; direction: rtl; }
 .card-tail { font-size: 20px; font-weight: 700; color: var(--text); direction: ltr; font-family: 'DM Mono', monospace; letter-spacing: 1.5px; }
 .plane-card.mine .card-tail { color: var(--blue); }
 .card-owner { font-size: 11px; color: var(--text2); }
-.mine-badge { display: inline-block; font-size: 9px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 1px 7px; font-weight: 600; }
+/* Star slot — always 52px wide, keeps tail centered whether star shows or not */
+.mine-slot { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.mine-badge { display: inline-flex; align-items: center; font-size: 10px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 3px 8px; font-weight: 600; white-space: nowrap; line-height: 1.2; }
 
 /* drag hint */
 .drag-hint-bar {
@@ -361,6 +353,19 @@ input[type="file"] { display: none; }
 /* updated */
 .updated-line { font-size: 11px; color: var(--text2); text-align: center; padding: 10px 0 2px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .green-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+.confirm-btn {
+  font-size: 12px; font-weight: 500; color: var(--green);
+  cursor: pointer;
+  border: 1px solid var(--green);
+  border-radius: 99px;
+  padding: 6px 14px;
+  background: transparent;
+  opacity: 0.8;
+  transition: opacity 0.15s, background 0.15s;
+  display: inline-block;
+}
+.confirm-btn:active { opacity: 1; background: #E6F7F2; }
 
 /* step header */
 .step-header { font-size: 19px; font-weight: 600; color: var(--text); text-align: center; letter-spacing: -0.3px; }
@@ -472,7 +477,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.48</span>
+      <span class="footer-center">built by eligrt · v1.83.002</span>
     </div>
   </div>
 
@@ -559,32 +564,50 @@ input[type="file"] { display: none; }
             <text x="132" y="272" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">האנגר</text>
             <text x="132" y="292" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">התחתון</text>
 
-            <!-- East entrance badge — right side, arrow > points RIGHT -->
+            <!-- East entrance badge — right side, stacked letters, arrow > -->
             <g class="entrance-zone" id="ez-E" onclick="pickEntrance('lower','E',this)" style="cursor:pointer">
-              <rect x="184" y="218" width="26" height="118" rx="13" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="184" y="218" width="26" height="118" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <text x="197" y="270" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2" transform="rotate(90,197,270)">כניסה מזרחית</text>
-              <path d="M 192,312 L 200,319 L 192,326" fill="none" stroke="#1A5FA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="186" y="216" width="28" height="122" rx="14" fill="#1A5FA8" opacity="0.12"/>
+              <rect x="186" y="216" width="28" height="122" rx="14" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
+              <!-- Arrow pointing right (east) at top -->
+              <text x="200" y="232" text-anchor="middle" font-size="11" fill="#1A5FA8" font-family="'DM Mono',monospace">▶</text>
+              <!-- Stacked Hebrew letters: מ ז ר ח -->
+              <text x="200" y="249" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">מ</text>
+              <text x="200" y="263" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ז</text>
+              <text x="200" y="277" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ר</text>
+              <text x="200" y="291" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ח</text>
+              <!-- Tap hint dot -->
+              <circle cx="200" cy="326" r="3" fill="#1A5FA8" opacity="0.4"/>
             </g>
 
-            <!-- West entrance badge — left side, arrow < points LEFT -->
+            <!-- West entrance badge — left side, stacked letters, arrow < -->
             <g class="entrance-zone" id="ez-W" onclick="pickEntrance('lower','W',this)" style="cursor:pointer">
-              <rect x="54" y="218" width="26" height="118" rx="13" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="54" y="218" width="26" height="118" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <text x="67" y="270" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2" transform="rotate(270,67,270)">כניסה מערבית</text>
-              <path d="M 74,312 L 66,319 L 74,326" fill="none" stroke="#1A5FA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="50" y="216" width="28" height="122" rx="14" fill="#1A5FA8" opacity="0.12"/>
+              <rect x="50" y="216" width="28" height="122" rx="14" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
+              <!-- Arrow pointing left (west) at top -->
+              <text x="64" y="232" text-anchor="middle" font-size="11" fill="#1A5FA8" font-family="'DM Mono',monospace">◀</text>
+              <!-- Stacked Hebrew letters: מ ע ר ב -->
+              <text x="64" y="249" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">מ</text>
+              <text x="64" y="263" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ע</text>
+              <text x="64" y="277" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ר</text>
+              <text x="64" y="291" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ב</text>
+              <!-- Tap hint dot -->
+              <circle cx="64" cy="326" r="3" fill="#1A5FA8" opacity="0.4"/>
             </g>
 
             <!-- N compass -->
             <text x="12" y="394" font-size="10" fill="#9A8F78" font-family="'DM Mono',monospace" font-weight="500">N ↑</text>
           </svg>
         </div>
+        <!-- Entrance confirmation strip — appears after tap -->
+        <div class="entrance-confirm-strip" id="entrance-confirm-strip">
+          <span id="entrance-confirm-text">✈ כניסה נבחרה</span>
+        </div>
       </div>
 
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.48</span>
+      <span class="footer-center">built by eligrt · v1.83.002</span>
     </div>
   </div>
 
@@ -604,6 +627,26 @@ input[type="file"] { display: none; }
     </div>
   </div>
 
+  <!-- ══ AUTO-MATCH CONFIRM MODAL ══ -->
+  <div id="match-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;transition:opacity 0.2s;opacity:0;"></div>
+  <div id="match-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.92);width:calc(100% - 40px);max-width:360px;background:white;border-radius:18px;z-index:101;transition:opacity 0.2s,transform 0.2s;opacity:0;direction:rtl;overflow:hidden;">
+    <!-- Icon + title -->
+    <div style="padding:28px 20px 6px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:10px;">✈</div>
+      <div style="font-size:17px;font-weight:700;color:#111827;font-family:'DM Sans',sans-serif;">מצאנו את המטוס שלך!</div>
+    </div>
+    <!-- Location — plain text, no box -->
+    <div style="padding:14px 24px 22px;text-align:center;">
+      <div id="match-hangar" style="font-size:16px;font-weight:600;color:#0F3F6E;font-family:'DM Sans',sans-serif;"></div>
+      <div id="match-row" style="font-size:14px;color:#185FA5;margin-top:4px;font-family:'DM Mono',monospace;letter-spacing:0.5px;"></div>
+    </div>
+    <!-- Buttons -->
+    <div style="padding:0 16px 22px;display:flex;flex-direction:column;gap:8px;">
+      <button class="btn-primary" onclick="matchConfirm()">כן, קח אותי לשם <span class="plane-flip">✈</span></button>
+      <button onclick="matchCancel()" style="width:100%;padding:12px;border-radius:9px;background:transparent;border:0.5px solid rgba(0,0,0,0.14);font-size:14px;font-weight:500;color:#6B7280;font-family:'DM Sans',sans-serif;cursor:pointer;">לא, אבחר ידנית</button>
+    </div>
+  </div>
+
   <!-- ══ SCREEN 3: MAIN ROW VIEW ══ -->
   <div class="screen" id="s-main">
     <div class="topbar">
@@ -619,7 +662,7 @@ input[type="file"] { display: none; }
       </div>
       <div class="topbar-links">
         <span class="settings-link" onclick="goTo('s-hangar')">✎ החלף חניה</span>
-        <span class="settings-link" onclick="goTo('s-name')">✎ שנה משתמש</span>
+        <span class="settings-link" onclick="goTo('s-name')">✎ פרטי המטוס שלי</span>
       </div>
     </div>
 
@@ -638,11 +681,15 @@ input[type="file"] { display: none; }
         <div class="green-dot"></div>
         <span id="updated-text">טוען...</span>
       </div>
+
+      <div style="padding: 10px 0 4px; text-align: center;">
+        <span class="confirm-btn" onclick="confirmNoChange()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
+      </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.48</span>
+      <span class="footer-center">built by eligrt · v1.83.002</span>
     </div>
   </div>
 
@@ -732,6 +779,31 @@ let unsubscribe = null;
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
+  // Pre-fill name screen with existing values when editing
+  if (id === 's-name') {
+    const user = LS.get('user');
+    if (user) {
+      const nameParts = user.name || '';
+      const tail = (user.tail || '').replace('4X-', '');
+      document.getElementById('inp-name').value = nameParts;
+      document.getElementById('inp-tail').value = tail;
+      if (user.photoURL) {
+        const prev = document.getElementById('photoPreview');
+        prev.src = user.photoURL;
+        prev.style.display = 'block';
+        document.getElementById('photoPlaceholder').style.display = 'none';
+      }
+    }
+  }
+
+  // Reset entrance map state when navigating to hangar screen
+  if (id === 's-hangar') {
+    document.querySelectorAll('.entrance-zone').forEach(z => z.classList.remove('selected-entrance'));
+    const strip = document.getElementById('entrance-confirm-strip');
+    if (strip) strip.classList.remove('visible');
+    selH = null; selDir = null; selRowId = null;
+  }
 }
 
 function showToast(msg) {
@@ -774,7 +846,89 @@ function step1Next() {
   const name = document.getElementById('inp-name').value.trim();
   const tail = document.getElementById('inp-tail').value.trim();
   if (!name || !tail) { showToast('נא למלא שם ומספר זנב'); return; }
-  LS.set('user', { name, tail: '4X-' + tail, photoURL: null });
+
+  const existingUser = LS.get('user');
+  const photoURL = photoDataURL || existingUser?.photoURL || null;
+  LS.set('user', { name, tail: '4X-' + tail, photoURL });
+
+  // Save photo in background — never blocks navigation
+  if (photoDataURL) savePhotoToFirestore('4X-' + tail, photoDataURL);
+
+  // If already has a saved location (editing name/photo only) → go straight to main
+  if (LS.get('location')) {
+    loadMainScreen();
+    goTo('s-main');
+    return;
+  }
+
+  // Try to find this tail number in the row data → offer auto-navigation
+  const match = findRowByTail(tail);
+  if (match) {
+    showMatchModal(match);
+    return;
+  }
+
+  // No match → go to hangar selection
+  goTo('s-hangar');
+}
+
+// Search all rows for a tail number — returns { hangar, dir, rowId, rowLabel } or null
+function findRowByTail(tail) {
+  const tailUpper = tail.toUpperCase();
+  for (const [key, rows] of Object.entries(DEMO_ROWS)) {
+    const lastDash = key.lastIndexOf('-');
+    const hangar = key.slice(0, lastDash);
+    const dir    = key.slice(lastDash + 1);
+    for (const row of rows) {
+      if (row.planes.map(p => p.toUpperCase()).includes(tailUpper)) {
+        return { hangar, dir, rowId: row.rowId, rowLabel: row.label };
+      }
+    }
+  }
+  return null;
+}
+
+let _pendingMatch = null;
+
+function showMatchModal(match) {
+  _pendingMatch = match;
+  const dirLabel = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' }[match.dir];
+  document.getElementById('match-hangar').textContent = HANGAR_NAMES[match.hangar] + ' · ' + dirLabel;
+  document.getElementById('match-row').textContent    = match.rowLabel;
+
+  const overlay = document.getElementById('match-overlay');
+  const modal   = document.getElementById('match-modal');
+  overlay.style.display = 'block';
+  modal.style.display   = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    modal.style.opacity   = '1';
+    modal.style.transform = 'translate(-50%,-50%) scale(1)';
+  }));
+}
+
+function closeMatchModal() {
+  const overlay = document.getElementById('match-overlay');
+  const modal   = document.getElementById('match-modal');
+  overlay.style.opacity = '0';
+  modal.style.opacity   = '0';
+  modal.style.transform = 'translate(-50%,-50%) scale(0.92)';
+  setTimeout(() => { overlay.style.display = 'none'; modal.style.display = 'none'; }, 200);
+}
+
+function matchConfirm() {
+  if (!_pendingMatch) return;
+  const { hangar, dir, rowId } = _pendingMatch;
+  LS.set('location', { hangar, dir, rowId });
+  _pendingMatch = null;
+  closeMatchModal();
+  loadMainScreen();
+  goTo('s-main');
+}
+
+function matchCancel() {
+  _pendingMatch = null;
+  closeMatchModal();
   goTo('s-hangar');
 }
 
@@ -789,6 +943,12 @@ function pickEntrance(hangar, dir, el) {
 
   document.querySelectorAll('.entrance-zone').forEach(z => z.classList.remove('selected-entrance'));
   el.classList.add('selected-entrance');
+
+  // Show confirmation strip
+  const strip = document.getElementById('entrance-confirm-strip');
+  const stripText = document.getElementById('entrance-confirm-text');
+  strip.classList.add('visible');
+  stripText.textContent = '✈ ' + HANGAR_NAMES[hangar] + ' · ' + DIR_NAMES[dir] + ' — בחר שורה למטה';
 
   const key = hangar + '-' + dir;
   const rows = DEMO_ROWS[key] || [];
@@ -840,27 +1000,52 @@ function closeRowSheet() {
   }, 200);
 }
 
-async function finishSetup() {
+function finishSetup() {
   if (!selH || !selDir || !selRowId) return;
   closeRowSheet();
   const user = LS.get('user');
-  // Save location
   LS.set('location', { hangar: selH, dir: selDir, rowId: selRowId });
 
-  // Upload photo if exists
-  if (photoDataURL && window._firebaseReady) {
-    try {
-      const { ref, uploadString, getDownloadURL } = window._dbOps;
-      const storageRef = ref(window._storage, `photos/${user.tail}.jpg`);
-      await uploadString(storageRef, photoDataURL, 'data_url');
-      const url = await getDownloadURL(storageRef);
-      user.photoURL = url;
-      LS.set('user', user);
-    } catch(e) { console.warn('Photo upload failed', e); }
+  // Save photo in background — never blocks navigation
+  if (photoDataURL) {
+    user.photoURL = photoDataURL;
+    LS.set('user', user);
+    savePhotoToFirestore(user.tail, photoDataURL);
   }
 
   loadMainScreen();
   goTo('s-main');
+}
+
+// ─── Save this pilot's photo to Firestore under pilots/{tail} ───
+async function savePhotoToFirestore(tail, base64) {
+  if (!window._firebaseReady) return;
+  try {
+    const { doc, setDoc } = window._dbOps;
+    await setDoc(doc(window._db, 'pilots', tail), { photoURL: base64 }, { merge: true });
+  } catch(e) { console.warn('Photo save failed:', e); }
+}
+
+async function fetchPhotosForRow(tails) {
+  if (!window._firebaseReady) return;
+  for (const tail of tails) {
+    try {
+      const { doc, getDoc } = window._dbOps;
+      const snap = await getDoc(doc(window._db, 'pilots', tail));
+      const thumb = [...document.querySelectorAll('#cardsList .card-tail')]
+        .find(el => el.textContent === tail)
+        ?.closest('.plane-card')
+        ?.querySelector('.plane-thumb');
+      if (!thumb) continue;
+      if (snap.exists() && snap.data().photoURL) {
+        thumb.innerHTML = `<img src="${snap.data().photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;" />`;
+      }
+      // If no photo exists — leave the default ✈ icon, no error shown
+    } catch(e) {
+      console.warn('Photo fetch failed for', tail, e);
+      // Silently fail — thumbnail stays as ✈ icon
+    }
+  }
 }
 
 // ════════════════════════════════════════════
@@ -880,7 +1065,8 @@ function loadMainScreen() {
 
   document.getElementById('main-title').textContent = `${hangarLabel} · ${dirLabel} · ${rowLabel}`;
   document.getElementById('main-sub').textContent   = `${user.name} · ${user.tail}`;
-  document.getElementById('entrance-caption').textContent = `דלת כניסה (${dirLabel}) — ראשון הכי קרוב`;
+  const dirShort = { N:'צפונית', S:'דרומית', E:'מזרחית', W:'מערבית' }[loc.dir] || dirLabel;
+  document.getElementById('entrance-caption').textContent = `דלת כניסה (${dirShort})`;
 
   subscribeToRow(loc.rowId, user, row);
 }
@@ -894,6 +1080,11 @@ function subscribeToRow(rowId, user, rowMeta) {
     : [];
   renderCards(demoOrder, user, null);
   document.getElementById('updated-text').textContent = 'טוען...';
+  // Fallback — if Firebase never responds, show offline message after 6 seconds
+  const loadingTimeout = setTimeout(() => {
+    const el = document.getElementById('updated-text');
+    if (el && el.textContent === 'טוען...') el.textContent = 'מציג נתונים מקומיים — אין חיבור לשרת';
+  }, 6000);
 
   // If Firebase is ready or becomes ready, upgrade to live data
   const doSubscribe = () => {
@@ -906,6 +1097,8 @@ function subscribeToRow(rowId, user, rowMeta) {
         if (rowMeta) saveRowOrder(rowId, demoOrder, user.name, user.tail);
         document.getElementById('updated-text').textContent = 'עדכון ראשוני...';
       }
+      // Fetch photos for all planes in this row after rendering
+      if (rowMeta) fetchPhotosForRow(rowMeta.planes.map(t => '4X-' + t));
     });
   };
 
@@ -914,6 +1107,10 @@ function subscribeToRow(rowId, user, rowMeta) {
   } else {
     document.addEventListener('firebase-ready', doSubscribe, { once: true });
   }
+  // Also fetch photos as soon as Firebase is ready (covers offline-first render)
+  const doFetchPhotos = () => { if (rowMeta) fetchPhotosForRow(rowMeta.planes.map(t => '4X-' + t)); };
+  if (window._firebaseReady) doFetchPhotos();
+  else document.addEventListener('firebase-ready', doFetchPhotos, { once: true });
 }
 async function saveRowOrder(rowId, order, byName, byTail) {
   if (!window._firebaseReady) return;
@@ -956,12 +1153,13 @@ function renderCards(order, user, data) {
       : '✈';
 
     card.innerHTML = `
-      <div class="drag-handle"><span></span><span></span><span></span></div>
-      <div class="plane-thumb">${thumbContent}</div>
+      <div class="mine-slot">${isMine ? '<span class="mine-badge">⭐ המטוס שלי</span>' : ''}</div>
       <div class="card-info">
         <div class="card-tail">${plane.tail}</div>
-        <div class="card-owner">${isMine ? `<span class="mine-badge">שלי</span> ${plane.name||''}` : (plane.name||'')}</div>
-      </div>`;
+        <div class="card-owner">${isMine ? '' : (plane.name||'')}</div>
+      </div>
+      <div class="plane-thumb">${thumbContent}</div>
+      <div class="drag-handle"><span></span><span></span><span></span></div>`;
 
     row.appendChild(card);
     list.appendChild(row);
@@ -1069,25 +1267,45 @@ function bindDrag() {
       dragCard = null;
       if (card._shouldFlash) {
         card._shouldFlash = false;
+        const flipData = card._flipData || [];
+        card._flipData = null;
         const tail = card.querySelector('.card-tail')?.textContent;
         const isMine = card.classList.contains('mine');
+
         setTimeout(() => {
-          // Find card fresh from DOM by tail number
+          // Flash the dropped card
           const liveCard = [...document.querySelectorAll('.card-tail')]
             .find(el => el.textContent === tail)?.closest('.plane-card');
-          if (!liveCard) return;
-          liveCard.style.transition = 'none';
-          liveCard.style.background = '#B8D8FF';
-          liveCard.style.outline = '3px solid #378ADD';
-          liveCard.offsetHeight;
-          liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
-          liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
-          liveCard.style.outline = '0px solid transparent';
-          setTimeout(() => {
-            liveCard.style.transition = '';
-            liveCard.style.background = '';
-            liveCard.style.outline = '';
-          }, 1300);
+          if (liveCard) {
+            liveCard.style.transition = 'none';
+            liveCard.style.background = '#B8D8FF';
+            liveCard.style.outline = '3px solid #378ADD';
+            liveCard.offsetHeight;
+            liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
+            liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
+            liveCard.style.outline = '0px solid transparent';
+            setTimeout(() => {
+              liveCard.style.transition = '';
+              liveCard.style.background = '';
+              liveCard.style.outline = '';
+            }, 1300);
+          }
+
+          // FLIP: slide displaced cards from their old positions
+          flipData.forEach(({ tail, delta }) => {
+            const liveInnerCard = [...document.querySelectorAll('.card-tail')]
+              .find(el => el.textContent === tail)?.closest('.plane-card');
+            if (!liveInnerCard) return;
+            liveInnerCard.style.transition = 'none';
+            liveInnerCard.style.transform = `translateY(${delta}px)`;
+            liveInnerCard.offsetHeight;
+            liveInnerCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            liveInnerCard.style.transform = 'translateY(0)';
+            setTimeout(() => {
+              liveInnerCard.style.transition = '';
+              liveInnerCard.style.transform = '';
+            }, 420);
+          });
         }, 0);
       }
     };
@@ -1131,6 +1349,14 @@ function bindDrag() {
     const rows = getCardRows().filter(r => r !== dragRow);
     hideLines();
 
+    // FLIP — step 1: record positions of ALL rows before move
+    const allRows = getCardRows();
+    const firstPositions = new Map();
+    allRows.forEach(row => {
+      firstPositions.set(row, row.getBoundingClientRect().top);
+    });
+
+    // Move the DOM
     let dropped = false;
     for (let i = 0; i < rows.length; i++) {
       const rect = rows[i].getBoundingClientRect();
@@ -1142,7 +1368,23 @@ function bindDrag() {
     }
     if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
 
+    // Store tail + delta for FLIP (by tail so we can look up live elements later)
+    const flipData = [];
+    getCardRows().forEach(row => {
+      if (row === dragRow) return;
+      const oldTop = firstPositions.get(row);
+      if (oldTop === undefined) return;
+      const newTop = row.getBoundingClientRect().top;
+      const delta = oldTop - newTop;
+      if (Math.abs(delta) < 2) return;
+      const tail = row.querySelector('.card-tail')?.textContent;
+      if (tail) flipData.push({ tail, delta });
+    });
+
+    // Apply FLIP after dragend fires (same fix as blue flash)
     card._shouldFlash = true;
+    card._flipData = flipData;
+
     updatePositions();
     rebuildInsertLines();
     persistOrder();
@@ -1156,6 +1398,25 @@ function hideLines() {
 // ════════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════════
+function confirmNoChange() {
+  const user = LS.get('user');
+  const loc  = LS.get('location');
+  if (!user || !loc) return;
+  // Re-save current order with fresh timestamp
+  const cards = getCards();
+  const order = cards.map(c => ({
+    tail: c.querySelector('.card-tail').textContent,
+    name: c.querySelector('.mine-badge') ? user.name : c.querySelector('.card-owner').textContent.trim(),
+    photoURL: c.querySelector('.plane-thumb img') ? c.querySelector('.plane-thumb img').src : null,
+  }));
+  saveRowOrder(loc.rowId, order, user.name, user.tail);
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('updated-text').textContent = `אושר ע"י ${user.name} (${user.tail}) · ${ts}`;
+  showToast('המיקום אושר ✓');
+}
+
 function confirmReset() {
   if (confirm('לאפס את כל הנתונים ולחזור להגדרה ראשונית?')) {
     triggerReset();
