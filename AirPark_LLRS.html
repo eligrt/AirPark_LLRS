@@ -6,8 +6,20 @@
 <title>AirPark · LLRS</title>
 <meta property="og:title" content="✈ AirPark · LLRS" />
 <meta property="og:description" content="מעקב חנייה — האנגר העליון והתחתון" />
+<meta property="og:image" content="https://eligrt.github.io/AirPark_LLRS/icon.png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<link rel="icon" type="image/png" href="https://eligrt.github.io/AirPark_LLRS/icon.png" />
+<link rel="apple-touch-icon" href="https://eligrt.github.io/AirPark_LLRS/icon.png" />
+<meta name="theme-color" content="#0F3F6E" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="AirPark" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<!-- Hide splash instantly for returning users — runs before page renders -->
+<script>if (localStorage.getItem('launched') && !location.search.includes('reset')) { document.addEventListener('DOMContentLoaded', () => { const l = document.getElementById('loader'); if (l) l.classList.add('instant-hide'); }); }</script>
 
 <!-- Firebase loads async — does NOT block app boot -->
 <script type="module">
@@ -251,6 +263,9 @@ input[type="file"] { display: none; }
 
 /* cards */
 .cards-list { display: flex; flex-direction: column; gap: 0; }
+.cards-list.loading { opacity: 0.5; }
+.cards-list.loaded { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .insert-line {
   height: 40px;
   margin: 0 4px;
@@ -337,8 +352,32 @@ input[type="file"] { display: none; }
 .mine-slot { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .mine-badge { display: inline-flex; align-items: center; font-size: 10px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 3px 8px; font-weight: 600; white-space: nowrap; line-height: 1.2; }
 
-/* drag hint */
-.drag-hint-bar {
+/* ── SKELETON CARDS ── */
+.skeleton-row { display: flex; align-items: center; gap: 0; margin: 0; }
+.skeleton-card {
+  flex: 1;
+  height: 72px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton-pos { width: 32px; flex-shrink: 0; text-align: center; font-size: 13px; font-weight: 700; color: var(--border-med); font-family: 'DM Mono', monospace; }
   font-size: 17px; font-weight: 600; color: var(--text);
   text-align: center;
   padding: 4px 12px 0;
@@ -401,19 +440,54 @@ input[type="file"] { display: none; }
   position: fixed; inset: 0; background: white;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; z-index: 9999;
-  transition: opacity 0.3s;
+  transition: opacity 0.4s;
 }
 #loader.hide { opacity: 0; pointer-events: none; }
+#loader.instant-hide { display: none; }
 .loader-plane { font-size: 36px; animation: fly 1.2s ease-in-out infinite alternate; }
 @keyframes fly { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
 .loader-text { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
+
+/* progress bar */
+.loader-progress-wrap {
+  width: 160px; height: 3px;
+  background: #E6F1FB;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+  direction: ltr;
+}
+.loader-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--blue);
+  border-radius: 99px;
+  animation: progress 7.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes progress {
+  0%   { width: 0%; }
+  60%  { width: 75%; }
+  85%  { width: 90%; }
+  100% { width: 100%; }
+}
+.loader-status {
+  font-size: 11px; color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 4px;
+}
 </style>
 </head>
 <body>
 
 <div id="loader">
-  <div class="loader-plane">✈</div>
-  <div class="loader-text">טוען...</div>
+  <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:96px;height:96px;border-radius:22px;margin-bottom:4px;" />
+  <div style="font-size:22px;font-weight:700;color:#0F3F6E;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;">AirPark · LLRS</div>
+  <div style="font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;margin-top:2px;">Rishon LeZion Airfield</div>
+  <div style="font-size:13px;color:#185FA5;font-family:'DM Sans',sans-serif;margin-top:10px;text-align:center;padding:0 32px;line-height:1.5;">לדעת איפה המטוס עומד עוד לפני שהגעת למנחת</div>
+  <div class="loader-progress-wrap">
+    <div class="loader-progress-bar" id="loader-bar"></div>
+  </div>
+  <div class="loader-status" id="loader-status">מתחבר...</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -478,7 +552,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.012</span>
+      <span class="footer-center">built by eligrt · v1.84.031</span>
     </div>
   </div>
 
@@ -608,7 +682,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.012</span>
+      <span class="footer-center">built by eligrt · v1.84.031</span>
     </div>
   </div>
 
@@ -669,7 +743,7 @@ input[type="file"] { display: none; }
 
     <div class="main-body">
 
-      <div class="drag-hint-bar">✋ לחץ והחזק כדי לגרור את המטוס למיקום הנכון</div>
+      <div class="drag-hint-bar" style="text-align:center;width:100%;font-size:15px;font-weight:600;color:var(--text);padding:4px 12px 0;opacity:0.85;">✋ לחץ והחזק כדי לגרור את המטוס למיקום הנכון</div>
 
       <div class="cards-list" id="cardsList"></div>
 
@@ -690,7 +764,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.012</span>
+      <span class="footer-center">built by eligrt · v1.84.031</span>
     </div>
   </div>
 
@@ -1154,31 +1228,44 @@ function loadMainScreen() {
 function subscribeToRow(rowId, user, rowMeta) {
   if (unsubscribe) { unsubscribe(); unsubscribe = null; }
 
-  // Always render demo data immediately — no waiting
   const demoOrder = rowMeta
     ? rowMeta.planes.map(t => ({ tail:'4X-'+t, name: t===user.tail.replace('4X-','')?user.name:'', photoURL:null }))
     : [];
-  renderCards(demoOrder, user, null);
-  document.getElementById('updated-text').textContent = 'טוען...';
-  // Fallback — if Firebase never responds, show offline message after 6 seconds
+
+  // Show skeleton cards while waiting for Firestore
+  renderSkeletons();
+  document.getElementById('cardsList').classList.add('loading');
+  document.getElementById('updated-text').textContent = '';
+  document.querySelector('.updated-line').style.opacity = '0';
+
+  // Fallback — after 3 seconds show local order with offline banner
   const loadingTimeout = setTimeout(() => {
     const el = document.getElementById('updated-text');
-    if (el && el.textContent === 'טוען...') el.textContent = 'מציג נתונים מקומיים — אין חיבור לשרת';
-  }, 6000);
+    if (el && el.textContent === '') {
+      renderCards(demoOrder, user, null);
+      document.getElementById('cardsList').classList.remove('loading');
+      document.getElementById('cardsList').classList.add('loaded');
+      document.querySelector('.updated-line').style.opacity = '1';
+      el.textContent = 'מציג סדר מקומי — ייתכן שאינו מעודכן';
+      if (rowMeta) fetchPhotosForRow(rowMeta.planes.map(t => '4X-' + t));
+    }
+  }, 3000);
 
   // If Firebase is ready or becomes ready, upgrade to live data
   const doSubscribe = () => {
     const { doc, onSnapshot } = window._dbOps;
     const ref = doc(window._db, 'rows', rowId);
     unsubscribe = onSnapshot(ref, snap => {
+      clearTimeout(loadingTimeout);
+      document.getElementById('cardsList').classList.remove('loading');
+      document.getElementById('cardsList').classList.add('loaded');
+      document.querySelector('.updated-line').style.opacity = '1';
       if (snap.exists()) {
         renderCards(snap.data().order, user, snap.data());
       } else {
-        // No Firestore doc yet — just show local order, don't auto-create
         renderCards(demoOrder, user, null);
         document.getElementById('updated-text').textContent = 'סדר ברירת מחדל — גרור כדי לעדכן';
       }
-      // Fetch photos for all planes in this row after rendering
       if (rowMeta) fetchPhotosForRow(rowMeta.planes.map(t => '4X-' + t));
     });
   };
@@ -1205,6 +1292,33 @@ async function saveRowOrder(rowId, order, byName, byTail) {
     updatedTail: byTail,
     updatedAt: ts,
   }, { merge: true });
+}
+
+function renderSkeletons() {
+  const list = document.getElementById('cardsList');
+  list.innerHTML = '';
+  document.getElementById('updated-text').textContent = '';
+  document.querySelector('.updated-line').style.opacity = '0';
+
+  // Mirror exact structure of renderCards: insert-line before each card + one at end
+  [3, 2, 1].forEach(pos => {
+    const line = document.createElement('div');
+    line.className = 'insert-line'; // same height (40px) as real insert-lines
+    list.appendChild(line);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    wrap.innerHTML = `
+      <div class="pos-label" style="opacity:0.3;">${pos}</div>
+      <div class="skeleton-card">
+        <span style="font-size:12px;color:#B0B7C3;font-family:'DM Sans',sans-serif;">טוען...</span>
+      </div>`;
+    list.appendChild(wrap);
+  });
+
+  const lastLine = document.createElement('div');
+  lastLine.className = 'insert-line';
+  list.appendChild(lastLine);
 }
 
 function renderCards(order, user, data) {
@@ -1507,32 +1621,77 @@ function confirmReset() {
 function triggerReset() {
   localStorage.removeItem('user');
   localStorage.removeItem('location');
-  goTo('s-name');
-  showToast('איפוס — התחלה מחדש');
+  localStorage.removeItem('launched');
+  // Restart progress bar animation
+  const bar = document.getElementById('loader-bar');
+  if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+  const statusEl = document.getElementById('loader-status');
+  if (statusEl) statusEl.textContent = 'מתחבר...';
+  document.getElementById('loader').classList.remove('hide');
+  const steps = [
+    { text: 'טוען מטוסים וחניות...', delay: 2000 },
+    { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
+    { text: 'מוכן להמראה ✈', delay: 7000 },
+  ];
+  steps.forEach(({ text, delay }) => {
+    setTimeout(() => { if (statusEl) statusEl.textContent = text; }, delay);
+  });
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+    goTo('s-name');
+  }, 8000);
 }
 
 function boot() {
-  // ?reset clears all local data — useful for testing
   if (window.location.search.includes('reset')) {
     localStorage.removeItem('user');
     localStorage.removeItem('location');
+    localStorage.removeItem('launched');
     window.history.replaceState({}, '', window.location.pathname);
   }
-  document.getElementById('loader').classList.add('hide');
-  const user = LS.get('user');
-  const loc  = LS.get('location');
-  if (user && loc) {
-    loadMainScreen();
-    goTo('s-main');
-  } else if (user) {
-    goTo('s-hangar');
+
+  const isFirstLaunch = !localStorage.getItem('launched');
+  localStorage.setItem('launched', '1');
+
+  const hideSplash = () => {
+    document.getElementById('loader').classList.add('hide');
+    const user = LS.get('user');
+    const loc  = LS.get('location');
+    if (user && loc) {
+      loadMainScreen();
+      goTo('s-main');
+    } else if (user) {
+      goTo('s-hangar');
+    } else {
+      goTo('s-name');
+    }
+  };
+
+  if (isFirstLaunch) {
+    // First launch — show splash for 8 seconds with status messages
+    const statusEl = document.getElementById('loader-status');
+    const elapsed = Date.now() - (window._appStart || Date.now());
+    const remaining = Math.max(0, 8000 - elapsed);
+
+    // Messages at 0s, 2s, 4s — then final "מוכן להמראה" at 7s (1s before launch)
+    const steps = [
+      { text: 'טוען מטוסים וחניות...', delay: 2000 },
+      { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
+      { text: 'מוכן להמראה ✈', delay: 7000 },
+    ];
+    steps.forEach(({ text, delay }) => {
+      setTimeout(() => { if (statusEl) statusEl.textContent = text; }, delay);
+    });
+    setTimeout(hideSplash, remaining);
   } else {
-    goTo('s-name');
+    // Returning user — hide splash immediately
+    hideSplash();
   }
 }
 
 // Boot immediately — Firebase syncs in background when ready
 let booted = false;
+window._appStart = Date.now();
 function tryBoot() { if (!booted) { booted = true; boot(); } }
 document.addEventListener('firebase-ready', tryBoot);
 // Boot right away — don't wait for Firebase at all
