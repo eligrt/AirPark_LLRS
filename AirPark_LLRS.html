@@ -330,6 +330,8 @@ input[type="file"] { display: none; }
   direction: ltr; /* explicit LTR so slot order is predictable */
   cursor: grab;
   user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: element;
 }
 .plane-card.mine { background: var(--blue-l); border-color: var(--blue-m); }
 .plane-card.dragging {
@@ -341,7 +343,7 @@ input[type="file"] { display: none; }
   z-index: 10;
   cursor: grabbing;
 }
-.drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; width: 32px; flex-shrink: 0; opacity: 0.18; align-items: center; justify-content: center; }
+.drag-handle { display: flex; flex-direction: column; gap: 4px; padding: 4px 3px; width: 32px; flex-shrink: 0; opacity: 0.18; align-items: center; justify-content: center; touch-action: none; }
 .plane-thumb { width: 52px; height: 52px; border-radius: 50%; background: var(--bg); border: 0.5px solid var(--border); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 8px; }
 .plane-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; direction: rtl; }
@@ -507,6 +509,7 @@ input[type="file"] { display: none; }
     <div class="loader-progress-bar" id="loader-bar"></div>
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
+  <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -571,7 +574,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.038</span>
+      <span class="footer-center">built by eligrt · v1.84.040</span>
     </div>
   </div>
 
@@ -701,7 +704,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.038</span>
+      <span class="footer-center">built by eligrt · v1.84.040</span>
     </div>
   </div>
 
@@ -783,7 +786,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.038</span>
+      <span class="footer-center">built by eligrt · v1.84.040</span>
     </div>
   </div>
 
