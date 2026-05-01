@@ -470,6 +470,7 @@ input[type="file"] { display: none; }
           </div>
           <div class="photo-desc">צלם או בחר תמונה של המטוס שלך מהגלרייה</div>
         </div>
+        <div id="photo-meta" style="font-size:11px;color:var(--text2);margin-top:6px;text-align:center;min-height:16px;font-family:'DM Mono',monospace;"></div>
         <input type="file" id="fileInput" accept="image/*" onchange="handlePhoto(event)" />
       </div>
 
@@ -477,7 +478,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.83.002</span>
+      <span class="footer-center">built by eligrt · v1.84.002</span>
     </div>
   </div>
 
@@ -607,7 +608,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.83.002</span>
+      <span class="footer-center">built by eligrt · v1.84.002</span>
     </div>
   </div>
 
@@ -689,7 +690,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.83.002</span>
+      <span class="footer-center">built by eligrt · v1.84.002</span>
     </div>
   </div>
 
@@ -784,10 +785,8 @@ function goTo(id) {
   if (id === 's-name') {
     const user = LS.get('user');
     if (user) {
-      const nameParts = user.name || '';
-      const tail = (user.tail || '').replace('4X-', '');
-      document.getElementById('inp-name').value = nameParts;
-      document.getElementById('inp-tail').value = tail;
+      document.getElementById('inp-name').value = user.name || '';
+      document.getElementById('inp-tail').value = (user.tail || '').replace('4X-', '');
       if (user.photoURL) {
         const prev = document.getElementById('photoPreview');
         prev.src = user.photoURL;
@@ -795,6 +794,9 @@ function goTo(id) {
         document.getElementById('photoPlaceholder').style.display = 'none';
       }
     }
+    // Fetch photo metadata from Firestore and show it
+    document.getElementById('photo-meta').textContent = '';
+    fetchPhotoMeta(user?.tail);
   }
 
   // Reset entrance map state when navigating to hangar screen
@@ -1022,8 +1024,35 @@ async function savePhotoToFirestore(tail, base64) {
   if (!window._firebaseReady) return;
   try {
     const { doc, setDoc } = window._dbOps;
-    await setDoc(doc(window._db, 'pilots', tail), { photoURL: base64 }, { merge: true });
+    const user = LS.get('user');
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    await setDoc(doc(window._db, 'pilots', tail), {
+      photoURL:      base64,
+      updatedBy:     user?.name || '',
+      updatedByTail: user?.tail || tail,
+      updatedAt:     ts,
+    }, { merge: true });
   } catch(e) { console.warn('Photo save failed:', e); }
+}
+
+// ─── Fetch photo metadata and show on s-name screen ───
+async function fetchPhotoMeta(tail) {
+  const el = document.getElementById('photo-meta');
+  if (!el || !tail) return;
+  const doFetch = async () => {
+    try {
+      const { doc, getDoc } = window._dbOps;
+      const snap = await getDoc(doc(window._db, 'pilots', tail));
+      if (snap.exists() && snap.data().updatedAt) {
+        const d = snap.data();
+        el.textContent = `עודכן ע"י ${d.updatedBy} · ${d.updatedAt}`;
+      }
+    } catch(e) { /* silently ignore */ }
+  };
+  if (window._firebaseReady) doFetch();
+  else document.addEventListener('firebase-ready', doFetch, { once: true });
 }
 
 async function fetchPhotosForRow(tails) {
