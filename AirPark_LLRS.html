@@ -512,7 +512,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.047</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.046-touch</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.047</span>
+      <span class="footer-center">built by eligrt · v1.84.046-touch</span>
     </div>
   </div>
 
@@ -707,7 +707,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.047</span>
+      <span class="footer-center">built by eligrt · v1.84.046-touch</span>
     </div>
   </div>
 
@@ -805,7 +805,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.047</span>
+      <span class="footer-center">built by eligrt · v1.84.046-touch</span>
     </div>
   </div>
 
@@ -1494,41 +1494,192 @@ function persistOrder() {
 }
 
 // ── DRAG & DROP ──
+// Touch-drag rewrite: instant pickup on mobile (no hold), native HTML5 drag kept for desktop.
 let dragCard = null;
 
-// Cancel any in-progress FLIP or flash animation on a card so the next drag starts clean
-function cancelCardAnimation(card) {
-  if (card._flipCleanup) {
-    clearTimeout(card._flipCleanup);
-    card._flipCleanup = null;
+// ── shared drop logic — used by both touch and native drag ──
+function applyDrop(dragRow, y) {
+  const card = dragRow.querySelector('.plane-card');
+  const rows = getCardRows().filter(r => r !== dragRow);
+  hideLines();
+
+  // FLIP step 1 — snapshot positions before DOM move
+  const firstPositions = new Map();
+  getCardRows().forEach(row => firstPositions.set(row, row.getBoundingClientRect().top));
+
+  // Move DOM
+  let dropped = false;
+  for (let i = 0; i < rows.length; i++) {
+    const rect = rows[i].getBoundingClientRect();
+    if (y < rect.top + rect.height / 2) {
+      rows[i].before(dragRow);
+      dropped = true;
+      break;
+    }
   }
-  if (card._flashCleanup) {
-    clearTimeout(card._flashCleanup);
-    card._flashCleanup = null;
+  if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
+
+  // FLIP step 2 — compute deltas and animate displaced cards
+  const flipData = [];
+  getCardRows().forEach(row => {
+    if (row === dragRow) return;
+    const oldTop = firstPositions.get(row);
+    if (oldTop === undefined) return;
+    const delta = oldTop - row.getBoundingClientRect().top;
+    if (Math.abs(delta) < 2) return;
+    const tail = row.querySelector('.card-tail')?.textContent;
+    if (tail) flipData.push({ tail, delta });
+  });
+
+  updatePositions();
+  rebuildInsertLines();
+  orderChanged = true;
+  updateConfirmBtn();
+
+  return { card, flipData };
+}
+
+// ── shared settle animation — flash dropped card + FLIP displaced ones ──
+function settleAfterDrop(card, flipData) {
+  const tail   = card.querySelector('.card-tail')?.textContent;
+  const isMine = card.classList.contains('mine');
+
+  // Flash the dropped card
+  const liveCard = [...document.querySelectorAll('.card-tail')]
+    .find(el => el.textContent === tail)?.closest('.plane-card');
+  if (liveCard) {
+    liveCard.style.transition = 'none';
+    liveCard.style.background = '#B8D8FF';
+    liveCard.style.outline    = '3px solid #378ADD';
+    liveCard.offsetHeight;
+    liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
+    liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
+    liveCard.style.outline    = '0px solid transparent';
+    setTimeout(() => {
+      liveCard.style.transition = '';
+      liveCard.style.background = '';
+      liveCard.style.outline    = '';
+    }, 1300);
   }
-  card.style.transition = '';
-  card.style.transform  = '';
-  card.style.background = '';
-  card.style.outline    = '';
-  card._shouldFlash = false;
-  card._flipData    = null;
+
+  // FLIP displaced cards
+  flipData.forEach(({ tail, delta }) => {
+    const c = [...document.querySelectorAll('.card-tail')]
+      .find(el => el.textContent === tail)?.closest('.plane-card');
+    if (!c) return;
+    c.style.transition = 'none';
+    c.style.transform  = `translateY(${delta}px)`;
+    c.offsetHeight;
+    c.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    c.style.transform  = 'translateY(0)';
+    setTimeout(() => { c.style.transition = ''; c.style.transform = ''; }, 420);
+  });
+}
+
+// ── show insert-line indicator at y position ──
+function showInsertIndicator(dragRow, y) {
+  const rows = getCardRows().filter(r => r !== dragRow);
+  if (!rows.length) return;
+  hideLines();
+  let inserted = false;
+  for (let i = 0; i < rows.length; i++) {
+    const rect = rows[i].getBoundingClientRect();
+    if (y < rect.top + rect.height / 2) {
+      const line = rows[i].previousElementSibling;
+      if (line?.classList.contains('insert-line')) line.classList.add('visible');
+      inserted = true;
+      break;
+    }
+  }
+  if (!inserted) {
+    const line = rows[rows.length - 1].nextElementSibling;
+    if (line?.classList.contains('insert-line')) line.classList.add('visible');
+  }
+}
+
+// ── TOUCH DRAG ──
+let _touchDragCard = null;
+let _touchClone    = null;
+let _touchOffsetY  = 0;
+let _touchOffsetX  = 0;
+
+function bindTouchDrag(card) {
+  card.addEventListener('touchstart', e => {
+    // Only one finger
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const rect  = card.getBoundingClientRect();
+
+    _touchDragCard = card;
+    _touchOffsetY  = touch.clientY - rect.top;
+    _touchOffsetX  = touch.clientX - rect.left;
+
+    // Clone card as floating ghost
+    _touchClone = card.cloneNode(true);
+    _touchClone.style.cssText = `
+      position: fixed;
+      left: ${rect.left}px;
+      top:  ${rect.top}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      margin: 0;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.85;
+      transform: scale(1.04) rotate(1.5deg);
+      box-shadow: 0 14px 36px rgba(24,95,165,0.3), 0 4px 14px rgba(0,0,0,0.18);
+      border-radius: 14px;
+      background: #EEF5FF;
+      transition: none;
+    `;
+    document.body.appendChild(_touchClone);
+
+    // Dim the original in place
+    card.style.opacity = '0.25';
+
+    e.preventDefault(); // prevent scroll while dragging
+  }, { passive: false });
+
+  card.addEventListener('touchmove', e => {
+    if (!_touchDragCard || _touchDragCard !== card) return;
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+
+    // Move the clone
+    if (_touchClone) {
+      _touchClone.style.left = `${touch.clientX - _touchOffsetX}px`;
+      _touchClone.style.top  = `${touch.clientY - _touchOffsetY}px`;
+    }
+
+    // Show insert indicator
+    const dragRow = card.closest('.card-row');
+    showInsertIndicator(dragRow, touch.clientY);
+
+    e.preventDefault();
+  }, { passive: false });
+
+  card.addEventListener('touchend', e => {
+    if (!_touchDragCard || _touchDragCard !== card) return;
+    const touch = e.changedTouches[0];
+
+    // Remove clone and restore card opacity
+    if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+    card.style.opacity = '';
+
+    const dragRow = card.closest('.card-row');
+    const { card: droppedCard, flipData } = applyDrop(dragRow, touch.clientY);
+    settleAfterDrop(droppedCard, flipData);
+
+    _touchDragCard = null;
+  }, { passive: true });
 }
 
 function bindDrag() {
   const list = document.getElementById('cardsList');
 
-  // Use .ondragstart / .ondragend (not addEventListener) to prevent duplicates
   getCards().forEach(card => {
+    // ── Native HTML5 drag (desktop) ──
     card.ondragstart = e => {
-      // Cancel any pending animation cleanup timers on all cards so they
-      // don't fire mid-drag and stomp on the new drag's animation.
-      // No style changes here — browser needs an untouched card to capture the drag ghost.
-      getCards().forEach(c => {
-        if (c._flipCleanup)  { clearTimeout(c._flipCleanup);  c._flipCleanup  = null; }
-        if (c._flashCleanup) { clearTimeout(c._flashCleanup); c._flashCleanup = null; }
-        c._shouldFlash = false;
-        c._flipData    = null;
-      });
       dragCard = card;
       e.dataTransfer.effectAllowed = 'move';
       setTimeout(() => card.classList.add('dragging'), 0);
@@ -1540,73 +1691,20 @@ function bindDrag() {
       if (card._shouldFlash) {
         card._shouldFlash = false;
         const flipData = card._flipData || [];
-        card._flipData = null;
-        const tail = card.querySelector('.card-tail')?.textContent;
-        const isMine = card.classList.contains('mine');
-
-        setTimeout(() => {
-          // Flash the dropped card
-          const liveCard = [...document.querySelectorAll('.card-tail')]
-            .find(el => el.textContent === tail)?.closest('.plane-card');
-          if (liveCard) {
-            liveCard.style.transition = 'none';
-            liveCard.style.background = '#B8D8FF';
-            liveCard.style.outline = '3px solid #378ADD';
-            liveCard.offsetHeight;
-            liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
-            liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
-            liveCard.style.outline = '0px solid transparent';
-            liveCard._flashCleanup = setTimeout(() => {
-              liveCard.style.transition = '';
-              liveCard.style.background = '';
-              liveCard.style.outline    = '';
-              liveCard._flashCleanup = null;
-            }, 1300);
-          }
-
-          // FLIP: slide displaced cards from their old positions
-          flipData.forEach(({ tail, delta }) => {
-            const liveInnerCard = [...document.querySelectorAll('.card-tail')]
-              .find(el => el.textContent === tail)?.closest('.plane-card');
-            if (!liveInnerCard) return;
-            liveInnerCard.style.transition = 'none';
-            liveInnerCard.style.transform = `translateY(${delta}px)`;
-            liveInnerCard.offsetHeight;
-            liveInnerCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            liveInnerCard.style.transform = 'translateY(0)';
-            liveInnerCard._flipCleanup = setTimeout(() => {
-              liveInnerCard.style.transition = '';
-              liveInnerCard.style.transform  = '';
-              liveInnerCard._flipCleanup = null;
-            }, 420);
-          });
-        }, 0);
+        card._flipData  = null;
+        setTimeout(() => settleAfterDrop(card, flipData), 0);
       }
     };
+
+    // ── Touch drag (mobile — instant, no hold) ──
+    bindTouchDrag(card);
   });
 
+  // Native drag — hover indicator
   list.ondragover = e => {
     e.preventDefault();
     if (!dragCard) return;
-    const dragRow = dragCard.closest('.card-row');
-    const y = e.clientY;
-    const rows = getCardRows().filter(r => r !== dragRow);
-    if (!rows.length) return;
-    hideLines();
-    let inserted = false;
-    for (let i = 0; i < rows.length; i++) {
-      const rect = rows[i].getBoundingClientRect();
-      if (y < rect.top + rect.height / 2) {
-        const line = rows[i].previousElementSibling;
-        if (line && line.classList.contains('insert-line')) line.classList.add('visible');
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted) {
-      const line = rows[rows.length - 1].nextElementSibling;
-      if (line && line.classList.contains('insert-line')) line.classList.add('visible');
-    }
+    showInsertIndicator(dragCard.closest('.card-row'), e.clientY);
   };
 
   list.ondragleave = e => {
@@ -1617,53 +1715,10 @@ function bindDrag() {
     e.preventDefault();
     if (!dragCard) return;
     const dragRow = dragCard.closest('.card-row');
-    const card = dragCard;
-
-    const y = e.clientY;
-    const rows = getCardRows().filter(r => r !== dragRow);
-    hideLines();
-
-    // FLIP — step 1: record positions of ALL rows before move
-    const allRows = getCardRows();
-    const firstPositions = new Map();
-    allRows.forEach(row => {
-      firstPositions.set(row, row.getBoundingClientRect().top);
-    });
-
-    // Move the DOM
-    let dropped = false;
-    for (let i = 0; i < rows.length; i++) {
-      const rect = rows[i].getBoundingClientRect();
-      if (y < rect.top + rect.height / 2) {
-        rows[i].before(dragRow);
-        dropped = true;
-        break;
-      }
-    }
-    if (!dropped && rows.length) rows[rows.length - 1].after(dragRow);
-
-    // Store tail + delta for FLIP (by tail so we can look up live elements later)
-    const flipData = [];
-    getCardRows().forEach(row => {
-      if (row === dragRow) return;
-      const oldTop = firstPositions.get(row);
-      if (oldTop === undefined) return;
-      const newTop = row.getBoundingClientRect().top;
-      const delta = oldTop - newTop;
-      if (Math.abs(delta) < 2) return;
-      const tail = row.querySelector('.card-tail')?.textContent;
-      if (tail) flipData.push({ tail, delta });
-    });
-
-    // Apply FLIP after dragend fires (same fix as blue flash)
+    const card    = dragCard;
+    const { flipData } = applyDrop(dragRow, e.clientY);
     card._shouldFlash = true;
-    card._flipData = flipData;
-
-    updatePositions();
-    rebuildInsertLines();
-    // Mark order as changed — don't auto-save, wait for pilot to confirm
-    orderChanged = true;
-    updateConfirmBtn();
+    card._flipData    = flipData;
   };
 }
 
