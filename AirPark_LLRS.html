@@ -512,7 +512,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.002</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.003</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.002</span>
+      <span class="footer-center">built by eligrt · v1.85.003</span>
     </div>
   </div>
 
@@ -707,7 +707,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.002</span>
+      <span class="footer-center">built by eligrt · v1.85.003</span>
     </div>
   </div>
 
@@ -805,7 +805,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.002</span>
+      <span class="footer-center">built by eligrt · v1.85.003</span>
     </div>
   </div>
 
@@ -1573,14 +1573,12 @@ function initTouchDrag(card) {
     touchClone.remove();
     touchClone = null;
 
-    // Find drop target
+    // Find drop target + record FLIP positions BEFORE any DOM move
     const dragRow = touchDragCard.closest('.card-row');
     const allRows = getCardRows();
     const rows = allRows.filter(r => r !== dragRow);
     hideLines();
 
-    // FLIP — record positions BEFORE move
-    const allRows = getCardRows();
     const firstPositions = new Map();
     allRows.forEach(row => {
       firstPositions.set(row.querySelector('.card-tail').textContent, row.getBoundingClientRect().top);
