@@ -512,7 +512,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.044</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.001</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.044</span>
+      <span class="footer-center">built by eligrt · v1.85.001</span>
     </div>
   </div>
 
@@ -707,7 +707,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.044</span>
+      <span class="footer-center">built by eligrt · v1.85.001</span>
     </div>
   </div>
 
@@ -805,7 +805,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.044</span>
+      <span class="footer-center">built by eligrt · v1.85.001</span>
     </div>
   </div>
 
@@ -1391,6 +1391,7 @@ function renderCards(order, user, data) {
     const isMine = plane.tail === user.tail;
     card.className = 'plane-card' + (isMine ? ' mine' : '');
     card.draggable = true;
+    initTouchDrag(card); // instant touch drag for mobile
 
     const thumbContent = plane.photoURL
       ? `<img src="${plane.photoURL}" alt="" />`
@@ -1495,6 +1496,135 @@ function persistOrder() {
 
 // ── DRAG & DROP ──
 let dragCard = null;
+
+// ── TOUCH DRAG (mobile — instant, no hold required) ──
+let touchDragCard = null;
+let touchClone    = null;
+let touchOffsetY  = 0;
+let touchOffsetX  = 0;
+
+function initTouchDrag(card) {
+  card.addEventListener('touchstart', e => {
+    // Only initiate from drag handle area OR if touch lasts > 80ms (prevent accidental)
+    touchDragCard = card;
+    const touch = e.touches[0];
+    const rect = card.getBoundingClientRect();
+    touchOffsetX = touch.clientX - rect.left;
+    touchOffsetY = touch.clientY - rect.top;
+
+    // Create floating clone
+    touchClone = card.cloneNode(true);
+    touchClone.style.cssText = `
+      position: fixed;
+      width: ${rect.width}px;
+      left: ${rect.left}px;
+      top: ${rect.top}px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.92;
+      transform: scale(1.03) rotate(1.5deg);
+      box-shadow: 0 14px 36px rgba(24,95,165,0.3);
+      border-radius: 14px;
+      transition: none;
+    `;
+    document.body.appendChild(touchClone);
+    card.style.opacity = '0.3';
+    card.closest('.card-row').style.opacity = '0.3';
+    e.preventDefault();
+  }, { passive: false });
+
+  card.addEventListener('touchmove', e => {
+    if (!touchDragCard || !touchClone) return;
+    const touch = e.touches[0];
+    touchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
+    touchClone.style.top  = (touch.clientY - touchOffsetY) + 'px';
+
+    // Show insert lines
+    const list = document.getElementById('cardsList');
+    const dragRow = touchDragCard.closest('.card-row');
+    const y = touch.clientY;
+    const rows = getCardRows().filter(r => r !== dragRow);
+    hideLines();
+    let inserted = false;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect();
+      if (y < r.top + r.height / 2) {
+        const line = rows[i].previousElementSibling;
+        if (line?.classList.contains('insert-line')) line.classList.add('visible');
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) {
+      const line = rows[rows.length - 1]?.nextElementSibling;
+      if (line?.classList.contains('insert-line')) line.classList.add('visible');
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  card.addEventListener('touchend', e => {
+    if (!touchDragCard || !touchClone) return;
+    const touch = e.changedTouches[0];
+    const y = touch.clientY;
+
+    // Restore card appearance
+    touchDragCard.style.opacity = '';
+    touchDragCard.closest('.card-row').style.opacity = '';
+    touchClone.remove();
+    touchClone = null;
+
+    // Find drop target
+    const dragRow = touchDragCard.closest('.card-row');
+    const allRows = getCardRows();
+    const rows = allRows.filter(r => r !== dragRow);
+    hideLines();
+
+    // FLIP — record positions before move
+    const firstPositions = new Map();
+    allRows.forEach(row => {
+      firstPositions.set(row.querySelector('.card-tail').textContent, row.getBoundingClientRect().top);
+    });
+
+    let targetRow = null;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect();
+      if (y < r.top + r.height / 2) { targetRow = rows[i]; break; }
+    }
+
+    if (targetRow) {
+      targetRow.parentNode.insertBefore(dragRow, targetRow);
+    } else if (rows.length) {
+      rows[rows.length - 1].after(dragRow);
+    }
+
+    updatePositions();
+    rebuildInsertLines();
+
+    // Flash dropped card
+    flashCard(touchDragCard);
+
+    // FLIP animate displaced cards
+    allRows.forEach(row => {
+      const tail = row.querySelector('.card-tail').textContent;
+      const oldTop = firstPositions.get(tail);
+      const newTop = row.getBoundingClientRect().top;
+      const delta = oldTop - newTop;
+      if (Math.abs(delta) > 2 && row !== dragRow) {
+        const c = row.querySelector('.plane-card');
+        c.style.transition = 'none';
+        c.style.transform = `translateY(${delta}px)`;
+        c.offsetHeight;
+        c.style.transition = 'transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
+        c.style.transform = 'translateY(0)';
+        setTimeout(() => { c.style.transition = ''; c.style.transform = ''; }, 420);
+      }
+    });
+
+    orderChanged = true;
+    updateConfirmBtn();
+    touchDragCard = null;
+  }, { passive: false });
+}
 
 function bindDrag() {
   const list = document.getElementById('cardsList');
