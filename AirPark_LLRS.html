@@ -512,7 +512,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.003</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.004</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.003</span>
+      <span class="footer-center">built by eligrt · v1.85.004</span>
     </div>
   </div>
 
@@ -707,7 +707,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.003</span>
+      <span class="footer-center">built by eligrt · v1.85.004</span>
     </div>
   </div>
 
@@ -805,7 +805,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.003</span>
+      <span class="footer-center">built by eligrt · v1.85.004</span>
     </div>
   </div>
 
@@ -1597,28 +1597,32 @@ function initTouchDrag(card) {
     }
 
     updatePositions();
-    rebuildInsertLines();
 
-    // Flash dropped card
-    flashCard(touchDragCard);
-
-    // FLIP — force reflow THEN read new positions and animate
+    // FLIP — read new positions BEFORE rebuildInsertLines changes the DOM again
     const updatedRows = getCardRows();
+    const flipData = [];
     updatedRows.forEach(row => {
+      if (row === dragRow) return;
       const tail = row.querySelector('.card-tail').textContent;
       const oldTop = firstPositions.get(tail);
       if (oldTop === undefined) return;
       const newTop = row.getBoundingClientRect().top;
       const delta = oldTop - newTop;
-      if (Math.abs(delta) > 2 && row !== dragRow) {
-        const c = row.querySelector('.plane-card');
-        c.style.transition = 'none';
-        c.style.transform = `translateY(${delta}px)`;
-        c.offsetHeight; // force reflow
-        c.style.transition = 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)';
-        c.style.transform = 'translateY(0)';
-        setTimeout(() => { c.style.transition = ''; c.style.transform = ''; }, 460);
-      }
+      if (Math.abs(delta) > 2) flipData.push({ row, delta });
+    });
+
+    rebuildInsertLines(); // now safe — positions already captured
+    flashCard(touchDragCard);
+
+    // Apply FLIP animations
+    flipData.forEach(({ row, delta }) => {
+      const c = row.querySelector('.plane-card');
+      c.style.transition = 'none';
+      c.style.transform = `translateY(${delta}px)`;
+      c.offsetHeight; // force reflow
+      c.style.transition = 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)';
+      c.style.transform = 'translateY(0)';
+      setTimeout(() => { c.style.transition = ''; c.style.transform = ''; }, 460);
     });
 
     orderChanged = true;
