@@ -512,7 +512,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.004</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.045</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.004</span>
+      <span class="footer-center">built by eligrt · v1.84.045</span>
     </div>
   </div>
 
@@ -707,7 +707,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.004</span>
+      <span class="footer-center">built by eligrt · v1.84.045</span>
     </div>
   </div>
 
@@ -805,7 +805,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.004</span>
+      <span class="footer-center">built by eligrt · v1.84.045</span>
     </div>
   </div>
 
@@ -1391,7 +1391,6 @@ function renderCards(order, user, data) {
     const isMine = plane.tail === user.tail;
     card.className = 'plane-card' + (isMine ? ' mine' : '');
     card.draggable = true;
-    initTouchDrag(card); // instant touch drag for mobile
 
     const thumbContent = plane.photoURL
       ? `<img src="${plane.photoURL}" alt="" />`
@@ -1497,138 +1496,22 @@ function persistOrder() {
 // ── DRAG & DROP ──
 let dragCard = null;
 
-// ── TOUCH DRAG (mobile — instant, no hold required) ──
-let touchDragCard = null;
-let touchClone    = null;
-let touchOffsetY  = 0;
-let touchOffsetX  = 0;
-
-function initTouchDrag(card) {
-  card.addEventListener('touchstart', e => {
-    // Only initiate from drag handle area OR if touch lasts > 80ms (prevent accidental)
-    touchDragCard = card;
-    const touch = e.touches[0];
-    const rect = card.getBoundingClientRect();
-    touchOffsetX = touch.clientX - rect.left;
-    touchOffsetY = touch.clientY - rect.top;
-
-    // Create floating clone
-    touchClone = card.cloneNode(true);
-    touchClone.style.cssText = `
-      position: fixed;
-      width: ${rect.width}px;
-      left: ${rect.left}px;
-      top: ${rect.top}px;
-      z-index: 1000;
-      pointer-events: none;
-      opacity: 0.92;
-      transform: scale(1.03) rotate(1.5deg);
-      box-shadow: 0 14px 36px rgba(24,95,165,0.3);
-      border-radius: 14px;
-      transition: none;
-    `;
-    document.body.appendChild(touchClone);
-    card.style.opacity = '0.3';
-    card.closest('.card-row').style.opacity = '0.3';
-    e.preventDefault();
-  }, { passive: false });
-
-  card.addEventListener('touchmove', e => {
-    if (!touchDragCard || !touchClone) return;
-    const touch = e.touches[0];
-    touchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
-    touchClone.style.top  = (touch.clientY - touchOffsetY) + 'px';
-
-    // Show insert lines
-    const list = document.getElementById('cardsList');
-    const dragRow = touchDragCard.closest('.card-row');
-    const y = touch.clientY;
-    const rows = getCardRows().filter(r => r !== dragRow);
-    hideLines();
-    let inserted = false;
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i].getBoundingClientRect();
-      if (y < r.top + r.height / 2) {
-        const line = rows[i].previousElementSibling;
-        if (line?.classList.contains('insert-line')) line.classList.add('visible');
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted) {
-      const line = rows[rows.length - 1]?.nextElementSibling;
-      if (line?.classList.contains('insert-line')) line.classList.add('visible');
-    }
-    e.preventDefault();
-  }, { passive: false });
-
-  card.addEventListener('touchend', e => {
-    if (!touchDragCard || !touchClone) return;
-    const touch = e.changedTouches[0];
-    const y = touch.clientY;
-
-    // Restore card appearance
-    touchDragCard.style.opacity = '';
-    touchDragCard.closest('.card-row').style.opacity = '';
-    touchClone.remove();
-    touchClone = null;
-
-    // Find drop target + record FLIP positions BEFORE any DOM move
-    const dragRow = touchDragCard.closest('.card-row');
-    const allRows = getCardRows();
-    const rows = allRows.filter(r => r !== dragRow);
-    hideLines();
-
-    const firstPositions = new Map();
-    allRows.forEach(row => {
-      firstPositions.set(row.querySelector('.card-tail').textContent, row.getBoundingClientRect().top);
-    });
-
-    let targetRow = null;
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i].getBoundingClientRect();
-      if (y < r.top + r.height / 2) { targetRow = rows[i]; break; }
-    }
-
-    if (targetRow) {
-      targetRow.parentNode.insertBefore(dragRow, targetRow);
-    } else if (rows.length) {
-      rows[rows.length - 1].after(dragRow);
-    }
-
-    updatePositions();
-
-    // FLIP — read new positions BEFORE rebuildInsertLines changes the DOM again
-    const updatedRows = getCardRows();
-    const flipData = [];
-    updatedRows.forEach(row => {
-      if (row === dragRow) return;
-      const tail = row.querySelector('.card-tail').textContent;
-      const oldTop = firstPositions.get(tail);
-      if (oldTop === undefined) return;
-      const newTop = row.getBoundingClientRect().top;
-      const delta = oldTop - newTop;
-      if (Math.abs(delta) > 2) flipData.push({ row, delta });
-    });
-
-    rebuildInsertLines(); // now safe — positions already captured
-    flashCard(touchDragCard);
-
-    // Apply FLIP animations
-    flipData.forEach(({ row, delta }) => {
-      const c = row.querySelector('.plane-card');
-      c.style.transition = 'none';
-      c.style.transform = `translateY(${delta}px)`;
-      c.offsetHeight; // force reflow
-      c.style.transition = 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)';
-      c.style.transform = 'translateY(0)';
-      setTimeout(() => { c.style.transition = ''; c.style.transform = ''; }, 460);
-    });
-
-    orderChanged = true;
-    updateConfirmBtn();
-    touchDragCard = null;
-  }, { passive: false });
+// Cancel any in-progress FLIP or flash animation on a card so the next drag starts clean
+function cancelCardAnimation(card) {
+  if (card._flipCleanup) {
+    clearTimeout(card._flipCleanup);
+    card._flipCleanup = null;
+  }
+  if (card._flashCleanup) {
+    clearTimeout(card._flashCleanup);
+    card._flashCleanup = null;
+  }
+  card.style.transition = '';
+  card.style.transform  = '';
+  card.style.background = '';
+  card.style.outline    = '';
+  card._shouldFlash = false;
+  card._flipData    = null;
 }
 
 function bindDrag() {
@@ -1637,6 +1520,10 @@ function bindDrag() {
   // Use .ondragstart / .ondragend (not addEventListener) to prevent duplicates
   getCards().forEach(card => {
     card.ondragstart = e => {
+      // Cancel any leftover animation from a previous drag before starting a new one
+      cancelCardAnimation(card);
+      getCards().forEach(c => { if (c !== card) cancelCardAnimation(c); });
+
       dragCard = card;
       e.dataTransfer.effectAllowed = 'move';
       setTimeout(() => card.classList.add('dragging'), 0);
@@ -1664,10 +1551,11 @@ function bindDrag() {
             liveCard.style.transition = 'background 1.2s ease-out, outline 1.2s ease-out';
             liveCard.style.background = isMine ? 'var(--blue-l)' : 'white';
             liveCard.style.outline = '0px solid transparent';
-            setTimeout(() => {
+            liveCard._flashCleanup = setTimeout(() => {
               liveCard.style.transition = '';
               liveCard.style.background = '';
-              liveCard.style.outline = '';
+              liveCard.style.outline    = '';
+              liveCard._flashCleanup = null;
             }, 1300);
           }
 
@@ -1681,9 +1569,10 @@ function bindDrag() {
             liveInnerCard.offsetHeight;
             liveInnerCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
             liveInnerCard.style.transform = 'translateY(0)';
-            setTimeout(() => {
+            liveInnerCard._flipCleanup = setTimeout(() => {
               liveInnerCard.style.transition = '';
-              liveInnerCard.style.transform = '';
+              liveInnerCard.style.transform  = '';
+              liveInnerCard._flipCleanup = null;
             }, 420);
           });
         }, 0);
