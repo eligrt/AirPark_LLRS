@@ -3,7 +3,7 @@
   "short_name": "AirPark",
   "description": "לדעת איפה המטוס עומד עוד לפני שהגעת למנחת",
   "start_url": "/AirPark_LLRS/AirPark_LLRS.html",
-  "scope": "/AirPark_LLRS/",
+  "scope": "/AirPark_LLRS/AirPark_LLRS.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
