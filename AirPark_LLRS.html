@@ -20,9 +20,6 @@
 <meta name="apple-mobile-web-app-title" content="AirPark" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<!-- Hide splash instantly for returning users — runs before page renders -->
-<script>if (localStorage.getItem('launched') && !location.search.includes('reset')) { document.addEventListener('DOMContentLoaded', () => { const l = document.getElementById('loader'); if (l) l.classList.add('instant-hide'); }); }</script>
-
 <!-- Firebase loads async — does NOT block app boot -->
 <script type="module">
   try {
@@ -530,6 +527,18 @@ input[type="file"] { display: none; }
 }
 #loader.hide { opacity: 0; pointer-events: none; }
 #loader.instant-hide { display: none; }
+/* lean splash — icon only for returning users */
+#loader.lean { gap: 0; }
+.loader-icon {
+  width: 96px; height: 96px;
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(15,63,110,0.15);
+  animation: loaderIconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
+}
+@keyframes loaderIconPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
 .loader-plane { font-size: 36px; animation: fly 1.2s ease-in-out infinite alternate; }
 @keyframes fly { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
 .loader-text { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
@@ -561,21 +570,26 @@ input[type="file"] { display: none; }
   font-family: 'DM Sans', sans-serif;
   margin-top: 4px;
 }
+/* hide full splash elements in lean mode */
+#loader.lean .loader-full { display: none; }
+.loader-full { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 </style>
 </head>
 <body>
 
 <div id="loader">
-  <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:96px;height:96px;border-radius:22px;margin-bottom:4px;" />
-  <div style="font-size:22px;font-weight:700;color:#0F3F6E;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;">AirPark · LLRS</div>
-  <div style="font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;margin-top:2px;">Rishon LeZion Airfield</div>
-  <div style="font-size:13px;color:#185FA5;font-family:'DM Sans',sans-serif;margin-top:10px;text-align:center;padding:0 32px;line-height:1.5;">לדעת איפה המטוס עומד עוד לפני שהגעת למנחת</div>
-  <div class="loader-progress-wrap">
-    <div class="loader-progress-bar" id="loader-bar"></div>
+  <img class="loader-icon" src="https://eligrt.github.io/AirPark_LLRS/icon.png" alt="AirPark" />
+  <div class="loader-full">
+    <div style="font-size:22px;font-weight:700;color:#0F3F6E;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;text-align:center;">AirPark · LLRS</div>
+    <div style="font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;margin-top:2px;text-align:center;">Rishon LeZion Airfield</div>
+    <div style="font-size:13px;color:#185FA5;font-family:'DM Sans',sans-serif;margin-top:10px;text-align:center;padding:0 32px;line-height:1.5;">לדעת איפה המטוס עומד עוד לפני שהגעת למנחת</div>
+    <div class="loader-progress-wrap">
+      <div class="loader-progress-bar" id="loader-bar"></div>
+    </div>
+    <div class="loader-status" id="loader-status">מתחבר...</div>
+    <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div class="loader-status" id="loader-status">מתחבר...</div>
-  <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.054.001</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.057.003</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -640,7 +654,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.054.001</span>
+      <span class="footer-center">built by eligrt · v1.84.057.003</span>
     </div>
   </div>
 
@@ -770,7 +784,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.054.001</span>
+      <span class="footer-center">built by eligrt · v1.84.057.003</span>
     </div>
   </div>
 
@@ -875,7 +889,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.054.001</span>
+      <span class="footer-center">built by eligrt · v1.84.057.003</span>
     </div>
   </div>
 
@@ -1882,11 +1896,14 @@ function triggerReset() {
   const loader = document.getElementById('loader');
   loader.classList.remove('instant-hide');
   loader.classList.remove('hide');
-  // Restart progress bar animation
+  loader.classList.remove('lean');
+
+  // Reset progress bar animation
   const bar = document.getElementById('loader-bar');
   if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+
   const statusEl = document.getElementById('loader-status');
-  if (statusEl) statusEl.textContent = 'מתחבר לשדה...';
+  if (statusEl) statusEl.textContent = 'מתחבר...';
   const steps = [
     { text: 'טוען מטוסים וחניות...', delay: 2000 },
     { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
@@ -1897,7 +1914,7 @@ function triggerReset() {
   });
   setTimeout(() => {
     loader.classList.add('hide');
-    goTo('s-name');
+    setTimeout(() => goTo('s-name'), 400);
   }, 8000);
 }
 
@@ -1927,12 +1944,10 @@ function boot() {
   };
 
   if (isFirstLaunch) {
-    // First launch — show splash for 8 seconds with status messages
+    // First launch — full 8-second splash with progress bar and status messages
     const statusEl = document.getElementById('loader-status');
     const elapsed = Date.now() - (window._appStart || Date.now());
     const remaining = Math.max(0, 8000 - elapsed);
-
-    // Messages at 0s, 2s, 4s — then final "מוכן להמראה" at 7s (1s before launch)
     const steps = [
       { text: 'טוען מטוסים וחניות...', delay: 2000 },
       { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
@@ -1943,8 +1958,9 @@ function boot() {
     });
     setTimeout(hideSplash, remaining);
   } else {
-    // Returning user — hide splash immediately
-    hideSplash();
+    // Returning user — lean 1.5s icon-only splash
+    document.getElementById('loader').classList.add('lean');
+    setTimeout(hideSplash, 1500);
   }
 }
 
