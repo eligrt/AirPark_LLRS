@@ -459,15 +459,17 @@ input[type="file"] { display: none; }
 .green-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 
 .confirm-btn {
-  font-size: 12px; font-weight: 500; color: var(--green);
+  font-size: 15px; font-weight: 600; color: var(--green);
   cursor: pointer;
-  border: 1px solid var(--green);
+  border: 1.5px solid var(--green);
   border-radius: 99px;
-  padding: 6px 14px;
+  padding: 14px 20px;
   background: transparent;
-  opacity: 0.8;
+  opacity: 0.9;
   transition: opacity 0.15s, background 0.15s, color 0.2s, border-color 0.2s;
-  display: inline-block;
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 .confirm-btn:active { opacity: 1; background: #E6F7F2; }
 .confirm-btn.changed {
@@ -590,7 +592,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.058.009</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.059</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -655,7 +657,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.058.009</span>
+      <span class="footer-center">built by eligrt · v1.84.059</span>
     </div>
   </div>
 
@@ -785,7 +787,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.058.009</span>
+      <span class="footer-center">built by eligrt · v1.84.059</span>
     </div>
   </div>
 
@@ -883,14 +885,14 @@ input[type="file"] { display: none; }
         <span id="updated-text">טוען...</span>
       </div>
 
-      <div style="padding: 10px 0 4px; text-align: center;">
+      <div style="padding: 10px 0 4px;">
         <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
       </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.058.009</span>
+      <span class="footer-center">built by eligrt · v1.84.059</span>
     </div>
   </div>
 
