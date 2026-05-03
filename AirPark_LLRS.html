@@ -463,13 +463,14 @@ input[type="file"] { display: none; }
   cursor: pointer;
   border: 1.5px solid var(--green);
   border-radius: 99px;
-  padding: 14px 20px;
+  padding: 7px 20px;
   background: transparent;
   opacity: 0.9;
   transition: opacity 0.15s, background 0.15s, color 0.2s, border-color 0.2s;
   display: block;
   width: 100%;
   text-align: center;
+  line-height: 1.6;
 }
 .confirm-btn:active { opacity: 1; background: #E6F7F2; }
 .confirm-btn.changed {
@@ -592,7 +593,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.059</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.059.003</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -657,7 +658,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059</span>
+      <span class="footer-center">built by eligrt · v1.84.059.003</span>
     </div>
   </div>
 
@@ -787,7 +788,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059</span>
+      <span class="footer-center">built by eligrt · v1.84.059.003</span>
     </div>
   </div>
 
@@ -886,13 +887,13 @@ input[type="file"] { display: none; }
       </div>
 
       <div style="padding: 10px 0 4px;">
-        <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי</span>
+        <span class="confirm-btn" id="confirm-btn" onclick="confirmOrder()">✓ אין שינוי במיקום המטוסים<br/>אשר מצב נוכחי</span>
       </div>
     </div>
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059</span>
+      <span class="footer-center">built by eligrt · v1.84.059.003</span>
     </div>
   </div>
 
@@ -1829,12 +1830,12 @@ function updateConfirmBtn() {
     btn.classList.remove('saved');
     btn.classList.add('changed');
     btn.style.display = 'inline-block';
-    btn.innerHTML = '⚠ &nbsp;סדר המטוסים השתנה — לחץ לשמירה';
+    btn.innerHTML = '⚠ סדר המטוסים השתנה<br/>לחץ לשמירה';
   } else {
     btn.classList.remove('changed');
     btn.classList.remove('saved');
     btn.style.display = 'inline-block';
-    btn.innerHTML = '✓ &nbsp;אין שינוי במיקום המטוסים | אשר מצב נוכחי';
+    btn.innerHTML = '✓ אין שינוי במיקום המטוסים<br/>אשר מצב נוכחי';
   }
 }
 
@@ -1859,7 +1860,7 @@ function confirmOrder() {
     const btn = document.getElementById('confirm-btn');
     btn.classList.remove('changed');
     btn.classList.add('saved');
-    btn.innerHTML = '✓ &nbsp;סדר החנייה נשמר בהצלחה';
+    btn.innerHTML = '✓ סדר החנייה נשמר בהצלחה';
   } else {
     updateConfirmBtn();
   }
