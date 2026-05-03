@@ -82,7 +82,18 @@
       ]},
     ];
 
-    function ageBucket(ts) {
+    function parseTs(raw) {
+      // stored as "DD/MM/YYYY HH:MM" string
+      if (!raw) return null;
+      if (typeof raw === 'number') return raw;
+      if (raw.toMillis) return raw.toMillis();
+      const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
+      if (!m) return null;
+      return new Date(`${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:00`).getTime();
+    }
+
+    function ageBucket(raw) {
+      const ts = parseTs(raw);
       if (!ts) return 'inactive';
       const days = (Date.now() - ts) / 86400000;
       if (days <= 7)  return '7';
@@ -91,7 +102,8 @@
       return 'inactive';
     }
 
-    function formatAge(ts) {
+    function formatAge(raw) {
+      const ts = parseTs(raw);
       if (!ts) return '—';
       const mins  = Math.floor((Date.now() - ts) / 60000);
       const hours = Math.floor(mins / 60);
@@ -113,7 +125,7 @@
       rowsSnap.forEach(doc => {
         const d = doc.data();
         rowsMap[doc.id] = {
-          updatedAt: d.updatedAt?.toMillis?.() || null,
+          updatedAt: d.updatedAt || null,
           updatedBy: d.updatedBy || '',
         };
       });
@@ -130,7 +142,8 @@
       // Summary stats
       let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0;
       for (const [, row] of Object.entries(rowsMap)) {
-        if (row.updatedAt) { totalActive++; if (row.updatedAt > lastUpdated) lastUpdated = row.updatedAt; }
+        const rowTs = parseTs(row.updatedAt);
+        if (rowTs) { totalActive++; if (rowTs > lastUpdated) lastUpdated = rowTs; }
       }
       for (const [, pilots] of Object.entries(pilotsMap)) {
         totalPilots += pilots.length;
@@ -178,7 +191,7 @@
           </div>`;
         }).join('');
 
-        const collapsed = activeCount === 0 ? ' collapsed' : '';
+        const collapsed = ' collapsed';
         container.innerHTML += `
           <div class="hangar${collapsed}" id="h-${hangar.id}">
             <div class="hangar-header" onclick="toggleHangar('h-${hangar.id}')">
@@ -362,7 +375,7 @@
 
     <div id="hangars"></div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.12</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.16</span></div>
   </div>
 </body>
 </html>
