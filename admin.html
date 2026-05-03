@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AirPark · מבט על</title>
+  <link rel="icon" type="image/png" href="https://eligrt.github.io/AirPark_LLRS/icon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script type="module">
+    import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDlZmmx94yjGiaDBm6g2qtMyguqcl1QJjc",
+      authDomain:        "airpark-llrs-c1350.firebaseapp.com",
+      projectId:         "airpark-llrs-c1350",
+      storageBucket:     "airpark-llrs-c1350.firebasestorage.app",
+      messagingSenderId: "820098934194",
+      appId:             "1:820098934194:web:653e5b93e4a01ce13ff0ab",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const HANGARS = [
+      { id: 'upper-N', label: 'האנגר העליון · כניסה צפונית', rows: [
+        { rowId: 'upper-N-1',  num: 1,  planes: ['NA1','NA2','NA3'] },
+        { rowId: 'upper-N-2',  num: 2,  planes: ['NB1','NB2','NB3'] },
+        { rowId: 'upper-N-3',  num: 3,  planes: ['NC1','NC2','NC3'] },
+        { rowId: 'upper-N-4',  num: 4,  planes: ['ND1','ND2','ND3'] },
+        { rowId: 'upper-N-5',  num: 5,  planes: ['HYD','HRS','HRC'] },
+        { rowId: 'upper-N-6',  num: 6,  planes: ['NF1','NF2','NF3'] },
+        { rowId: 'upper-N-7',  num: 7,  planes: ['NG1','NG2','NG3'] },
+        { rowId: 'upper-N-8',  num: 8,  planes: ['NH1','NH2','NH3'] },
+        { rowId: 'upper-N-9',  num: 9,  planes: ['NI1','NI2','NI3'] },
+        { rowId: 'upper-N-10', num: 10, planes: ['NJ1','NJ2','NJ3'] },
+        { rowId: 'upper-N-11', num: 11, planes: ['NK1','NK2','NK3'] },
+        { rowId: 'upper-N-12', num: 12, planes: ['NL1','NL2','NL3'] },
+      ]},
+      { id: 'upper-S', label: 'האנגר העליון · כניסה דרומית', rows: [
+        { rowId: 'upper-S-1',  num: 1,  planes: ['SA1','SA2','SA3'] },
+        { rowId: 'upper-S-2',  num: 2,  planes: ['SB1','SB2','SB3'] },
+        { rowId: 'upper-S-3',  num: 3,  planes: ['SC1','SC2','SC3'] },
+        { rowId: 'upper-S-4',  num: 4,  planes: ['SD1','SD2','SD3'] },
+        { rowId: 'upper-S-5',  num: 5,  planes: ['SE1','SE2','SE3'] },
+        { rowId: 'upper-S-6',  num: 6,  planes: ['SF1','SF2','SF3'] },
+        { rowId: 'upper-S-7',  num: 7,  planes: ['SG1','SG2','SG3'] },
+        { rowId: 'upper-S-8',  num: 8,  planes: ['SH1','SH2','SH3'] },
+        { rowId: 'upper-S-9',  num: 9,  planes: ['SI1','SI2','SI3'] },
+        { rowId: 'upper-S-10', num: 10, planes: ['SJ1','SJ2','SJ3'] },
+        { rowId: 'upper-S-11', num: 11, planes: ['SK1','SK2','SK3'] },
+        { rowId: 'upper-S-12', num: 12, planes: ['SL1','SL2','SL3'] },
+      ]},
+      { id: 'lower-E', label: 'האנגר התחתון · כניסה מזרחית', rows: [
+        { rowId: 'lower-E-1',  num: 1,  planes: ['EA1','EA2','EA3'] },
+        { rowId: 'lower-E-2',  num: 2,  planes: ['EB1','EB2','EB3'] },
+        { rowId: 'lower-E-3',  num: 3,  planes: ['EC1','EC2','EC3'] },
+        { rowId: 'lower-E-4',  num: 4,  planes: ['ED1','ED2','ED3'] },
+        { rowId: 'lower-E-5',  num: 5,  planes: ['EE1','EE2','EE3'] },
+        { rowId: 'lower-E-6',  num: 6,  planes: ['EF1','EF2','EF3'] },
+        { rowId: 'lower-E-7',  num: 7,  planes: ['EG1','EG2','EG3'] },
+        { rowId: 'lower-E-8',  num: 8,  planes: ['EH1','EH2','EH3'] },
+        { rowId: 'lower-E-9',  num: 9,  planes: ['EI1','EI2','EI3'] },
+        { rowId: 'lower-E-10', num: 10, planes: ['EJ1','EJ2','EJ3'] },
+        { rowId: 'lower-E-11', num: 11, planes: ['EK1','EK2','EK3'] },
+        { rowId: 'lower-E-12', num: 12, planes: ['EL1','EL2','EL3'] },
+      ]},
+      { id: 'lower-W', label: 'האנגר התחתון · כניסה מערבית', rows: [
+        { rowId: 'lower-W-1',  num: 1,  planes: ['WA1','WA2','WA3'] },
+        { rowId: 'lower-W-2',  num: 2,  planes: ['WB1','WB2','WB3'] },
+        { rowId: 'lower-W-3',  num: 3,  planes: ['HYH','HLR','HMZ'] },
+        { rowId: 'lower-W-4',  num: 4,  planes: ['WD1','WD2','WD3'] },
+        { rowId: 'lower-W-5',  num: 5,  planes: ['WE1','WE2','WE3'] },
+        { rowId: 'lower-W-6',  num: 6,  planes: ['WF1','WF2','WF3'] },
+        { rowId: 'lower-W-7',  num: 7,  planes: ['WG1','WG2','WG3'] },
+        { rowId: 'lower-W-8',  num: 8,  planes: ['WH1','WH2','WH3'] },
+        { rowId: 'lower-W-9',  num: 9,  planes: ['WI1','WI2','WI3'] },
+        { rowId: 'lower-W-10', num: 10, planes: ['WJ1','WJ2','WJ3'] },
+        { rowId: 'lower-W-11', num: 11, planes: ['WK1','WK2','WK3'] },
+        { rowId: 'lower-W-12', num: 12, planes: ['WL1','WL2','WL3'] },
+      ]},
+    ];
+
+    function ageBucket(ts) {
+      if (!ts) return 'inactive';
+      const days = (Date.now() - ts) / 86400000;
+      if (days <= 7)  return '7';
+      if (days <= 30) return '30';
+      if (days <= 90) return '90';
+      return 'inactive';
+    }
+
+    function formatAge(ts) {
+      if (!ts) return '—';
+      const mins  = Math.floor((Date.now() - ts) / 60000);
+      const hours = Math.floor(mins / 60);
+      const days  = Math.floor(hours / 24);
+      if (mins  < 60)  return `לפני ${mins}ד׳`;
+      if (hours < 24)  return `לפני ${hours}ש׳`;
+      return `לפני ${days}י׳`;
+    }
+
+    async function load() {
+      // Fetch rows and pilots in parallel
+      const [rowsSnap, pilotsSnap] = await Promise.all([
+        getDocs(collection(db, 'rows')),
+        getDocs(collection(db, 'pilots')),
+      ]);
+
+      // Build rows map: rowId → { updatedAt, updatedBy }
+      const rowsMap = {};
+      rowsSnap.forEach(doc => {
+        const d = doc.data();
+        rowsMap[doc.id] = {
+          updatedAt: d.updatedAt?.toMillis?.() || null,
+          updatedBy: d.updatedBy || '',
+        };
+      });
+
+      // Build pilots map: tail → { name, hasPhoto }
+      const pilotsMap = {};
+      pilotsSnap.forEach(doc => {
+        const d = doc.data();
+        const tail = doc.id.replace('4X-', '');
+        if (!pilotsMap[tail]) pilotsMap[tail] = [];
+        pilotsMap[tail].push({ name: d.updatedBy || '', hasPhoto: !!d.photoURL });
+      });
+
+      // Summary stats
+      let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0;
+      for (const [, row] of Object.entries(rowsMap)) {
+        if (row.updatedAt) { totalActive++; if (row.updatedAt > lastUpdated) lastUpdated = row.updatedAt; }
+      }
+      for (const [, pilots] of Object.entries(pilotsMap)) {
+        totalPilots += pilots.length;
+        totalPhotos += pilots.filter(p => p.hasPhoto).length;
+      }
+
+      document.getElementById('stat-active').textContent   = totalActive;
+      document.getElementById('stat-pilots').textContent   = totalPilots;
+      document.getElementById('stat-photos').textContent   = totalPhotos;
+      document.getElementById('stat-last').textContent     = lastUpdated ? formatAge(lastUpdated) : '—';
+
+      // Render hangars
+      const container = document.getElementById('hangars');
+      container.innerHTML = '';
+
+      HANGARS.forEach(hangar => {
+        let activeCount = 0;
+        const rowsHtml = hangar.rows.map(row => {
+          const rowData  = rowsMap[row.rowId] || {};
+          const bucket   = ageBucket(rowData.updatedAt);
+          const age      = formatAge(rowData.updatedAt);
+          if (bucket !== 'inactive') activeCount++;
+
+          const planesHtml = row.planes.map(tail => {
+            const pilots   = pilotsMap[tail] || [];
+            const pilotCnt = pilots.length;
+            const photoCnt = pilots.filter(p => p.hasPhoto).length;
+            const hasPhoto = photoCnt > 0 ? 'yes' : 'no';
+            return `<div class="plane-cell">
+              <div class="plane-tail">4X-${tail}</div>
+              <div class="plane-badges">
+                <span class="badge">${pilotCnt} 👤</span>
+                <span class="badge">${photoCnt} 📷</span>
+              </div>
+            </div>`;
+          }).join('');
+
+          // photo status for the row = any pilot in the row has a photo
+          const rowHasPhoto = row.planes.some(t => (pilotsMap[t]||[]).some(p => p.hasPhoto)) ? 'yes' : 'no';
+
+          return `<div class="row-item" data-days="${bucket}" data-photo="${rowHasPhoto}">
+            <div class="row-num">${row.num}</div>
+            <div class="planes-wrap">${planesHtml}</div>
+            <div class="row-updated">${age}</div>
+          </div>`;
+        }).join('');
+
+        const collapsed = activeCount === 0 ? ' collapsed' : '';
+        container.innerHTML += `
+          <div class="hangar${collapsed}" id="h-${hangar.id}">
+            <div class="hangar-header" onclick="toggleHangar('h-${hangar.id}')">
+              <div class="hangar-title">${hangar.label}</div>
+              <div style="display:flex;align-items:center;">
+                <div class="hangar-meta">${activeCount} / ${hangar.rows.length} פעילות</div>
+                <div class="chevron">▼</div>
+              </div>
+            </div>
+            <div class="hangar-body">${rowsHtml}</div>
+          </div>`;
+      });
+
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('main').style.display   = 'block';
+
+      // Apply default filter: 30 days
+      updateHighlights();
+    }
+
+    window.toggleHangar = id => document.getElementById(id).classList.toggle('collapsed');
+
+    let activeActivity = '30';
+    let activePhoto    = 'all';
+
+    window.applyFilter = function(el) {
+      const filter = el.dataset.filter;
+      const val    = el.dataset.val;
+      document.querySelectorAll(`.pill[data-filter="${filter}"]`).forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      if (filter === 'activity') activeActivity = val;
+      if (filter === 'photo')    activePhoto    = val;
+      updateHighlights();
+    };
+
+    function updateHighlights() {
+      document.querySelectorAll('.row-item').forEach(row => {
+        const days  = row.dataset.days;
+        const photo = row.dataset.photo;
+        let actMatch = false;
+        if      (activeActivity === 'all')      actMatch = true;
+        else if (activeActivity === '7')        actMatch = days === '7';
+        else if (activeActivity === '30')       actMatch = days === '7' || days === '30';
+        else if (activeActivity === '90')       actMatch = days === '7' || days === '30' || days === '90';
+        else if (activeActivity === 'inactive') actMatch = days === 'inactive';
+        const photoMatch = activePhoto === 'all' || (activePhoto === 'yes' ? photo === 'yes' : photo === 'no');
+        row.classList.toggle('highlighted', actMatch && photoMatch);
+      });
+    }
+    window.updateHighlights = updateHighlights;
+
+    load().catch(err => {
+      document.getElementById('loader').textContent = 'שגיאה בטעינה: ' + err.message;
+    });
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0F3F6E; --blue: #185FA5; --blue-l: #E6F1FB; --blue-m: #85B7EB;
+      --green: #1D9E75; --bg: #F4F6FA; --white: #FFFFFF;
+      --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
+      --text: #111827; --text2: #6B7280; --radius: 12px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; }
+    #loader { display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 14px; color: var(--text2); gap: 8px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--blue-m); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #main { display: none; max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+
+    /* header */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .page-logo { display: flex; align-items: center; gap: 10px; }
+    .page-logo img { width: 36px; height: 36px; border-radius: 8px; }
+    .page-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .page-sub { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
+
+    /* stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat { background: var(--white); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 12px 14px; }
+    .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+    .stat-val { font-size: 22px; font-weight: 600; color: var(--text); }
+
+    /* filters */
+    .filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .filter-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filter-label { font-size: 11px; color: var(--text2); min-width: 52px; }
+    .pill { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid var(--border-med); cursor: pointer; color: var(--text2); background: var(--white); transition: all 0.15s; user-select: none; }
+    .pill.active { color: var(--blue); border-color: var(--blue-m); background: var(--blue-l); font-weight: 600; }
+
+    /* hangars */
+    .hangar { background: var(--white); border: 0.5px solid var(--border-med); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+    .hangar-header { padding: 10px 14px; background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+    .hangar-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .hangar-meta { font-size: 11px; color: var(--text2); }
+    .chevron { font-size: 10px; color: var(--text2); transition: transform 0.2s; margin-right: 8px; }
+    .hangar.collapsed .chevron { transform: rotate(-90deg); }
+    .hangar.collapsed .hangar-body { display: none; }
+    .hangar-body { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 3px; }
+
+    /* rows */
+    .row-item { display: flex; align-items: center; gap: 8px; border-radius: 7px; padding: 6px 8px; border: 0.5px solid transparent; transition: background 0.15s, border-color 0.15s; }
+    .row-item.highlighted { background: var(--blue-l); border-color: var(--blue-m); }
+    .row-item.highlighted .plane-tail,
+    .row-item.highlighted .row-num,
+    .row-item.highlighted .row-updated { color: var(--navy); }
+    .row-item.highlighted .badge { background: #B5D4F4; color: var(--navy); }
+    .row-num { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; width: 18px; flex-shrink: 0; text-align: center; }
+    .row-updated { font-size: 9px; color: var(--text2); min-width: 58px; text-align: left; white-space: nowrap; font-family: 'DM Mono', monospace; }
+    .planes-wrap { display: flex; gap: 4px; flex: 1; }
+    .plane-cell { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .plane-tail { font-size: 10px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); }
+    .plane-badges { display: flex; gap: 3px; }
+    .badge { font-size: 9px; color: var(--text2); background: var(--bg); border-radius: 4px; padding: 1px 4px; }
+
+    /* footer */
+    .page-footer { text-align: center; font-size: 10px; color: var(--text2); margin-top: 24px; font-family: 'DM Mono', monospace; }
+
+    /* footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      padding: 12px 18px 16px;
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.3px;
+      border-top: 0.5px solid var(--border);
+      margin-top: 24px;
+    }
+    .footer-center { flex: 1; text-align: center; opacity: 0.55; }
+
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat-val { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <div class="spinner"></div>
+    טוען נתונים מ-Firestore...
+  </div>
+
+  <div id="main">
+    <div class="page-header">
+      <div class="page-logo">
+        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" alt="AirPark"/>
+        <div>
+          <div class="page-title">AirPark · מבט על</div>
+          <div class="page-sub">admin · LLRS</div>
+        </div>
+      </div>
+      <div class="page-sub" style="text-align:left;">
+        <a href="https://eligrt.github.io/AirPark_LLRS/AirPark_LLRS.html" style="color:var(--blue);text-decoration:none;">← חזור לאפליקציה</a>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-label">שורות פעילות</div><div class="stat-val" id="stat-active">—</div></div>
+      <div class="stat"><div class="stat-label">טייסים רשומים</div><div class="stat-val" id="stat-pilots">—</div></div>
+      <div class="stat"><div class="stat-label">עם תמונה</div><div class="stat-val" id="stat-photos">—</div></div>
+      <div class="stat"><div class="stat-label">עדכון אחרון</div><div class="stat-val" id="stat-last" style="font-size:14px;padding-top:4px;">—</div></div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-row">
+        <div class="filter-label">עדכון</div>
+        <div class="pill" data-filter="activity" data-val="all" onclick="applyFilter(this)">הכל</div>
+        <div class="pill" data-filter="activity" data-val="7" onclick="applyFilter(this)">7 ימים</div>
+        <div class="pill active" data-filter="activity" data-val="30" onclick="applyFilter(this)">30 ימים</div>
+        <div class="pill" data-filter="activity" data-val="90" onclick="applyFilter(this)">90 ימים</div>
+        <div class="pill" data-filter="activity" data-val="inactive" onclick="applyFilter(this)">לא פעיל</div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-label">תמונות</div>
+        <div class="pill active" data-filter="photo" data-val="all" onclick="applyFilter(this)">הכל</div>
+        <div class="pill" data-filter="photo" data-val="yes" onclick="applyFilter(this)">יש תמונה</div>
+        <div class="pill" data-filter="photo" data-val="no" onclick="applyFilter(this)">אין תמונה</div>
+      </div>
+    </div>
+
+    <div id="hangars"></div>
+
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.12</span></div>
+  </div>
+</body>
+</html>
