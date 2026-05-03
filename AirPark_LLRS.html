@@ -357,9 +357,8 @@ input[type="file"] { display: none; }
 .card-tail { font-size: 20px; font-weight: 700; color: var(--text); direction: ltr; font-family: 'DM Mono', monospace; letter-spacing: 1.5px; }
 .plane-card.mine .card-tail { color: var(--blue); }
 .card-owner { font-size: 11px; color: var(--text2); }
-/* Star slot — always 52px wide, keeps tail centered whether star shows or not */
-.mine-slot { width: 80px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.mine-badge { display: inline-flex; align-items: center; font-size: 10px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 3px 8px; font-weight: 600; white-space: nowrap; line-height: 1.2; }
+.mine-slot { display: none; }
+.mine-badge { display: inline-flex; align-items: center; font-size: 10px; color: var(--blue); background: white; border: 0.5px solid var(--blue-m); border-radius: 99px; padding: 3px 8px; font-weight: 600; white-space: nowrap; line-height: 1.2; margin-top: 3px; }
 
 /* ── SKELETON CARDS ── */
 .skeleton-row { display: flex; align-items: center; gap: 0; margin: 0; }
@@ -578,7 +577,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.053</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.053.001</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -643,7 +642,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053</span>
+      <span class="footer-center">built by eligrt · v1.84.053.001</span>
     </div>
   </div>
 
@@ -773,7 +772,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053</span>
+      <span class="footer-center">built by eligrt · v1.84.053.001</span>
     </div>
   </div>
 
@@ -877,7 +876,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053</span>
+      <span class="footer-center">built by eligrt · v1.84.053.001</span>
     </div>
   </div>
 
@@ -1471,10 +1470,10 @@ function renderCards(order, user, data) {
       : '✈';
 
     card.innerHTML = `
-      <div class="mine-slot">${isMine ? '<span class="mine-badge">⭐ המטוס שלי</span>' : ''}</div>
+      <div class="mine-slot"></div>
       <div class="card-info">
         <div class="card-tail">${plane.tail}</div>
-        <div class="card-owner">${isMine ? '' : (plane.name||'')}</div>
+        ${isMine ? '<span class="mine-badge">⭐ המטוס שלי</span>' : `<div class="card-owner">${plane.name||''}</div>`}
       </div>
       <div class="plane-thumb">${thumbContent}</div>
       <div class="drag-handle"><span></span><span></span><span></span></div>`;
