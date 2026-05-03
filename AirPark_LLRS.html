@@ -294,13 +294,18 @@ input[type="file"] { display: none; }
 .insert-line.visible::after { opacity: 1; }
 
 /* card row */
-.card-row { display: flex; align-items: center; gap: 10px; margin: 0; }
+.card-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0 4px; }
 .pos-label {
-  width: 24px; flex-shrink: 0;
-  font-size: 13px; font-weight: 700; color: var(--text2);
+  width: 30px; height: 30px; flex-shrink: 0;
+  font-size: 13px; font-weight: 700;
   font-family: 'DM Mono', monospace;
-  text-align: center; opacity: 0.5;
+  text-align: center;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
 }
+.pos-label[data-pos="1"] { background: #D1FAE5; color: #065F46; }
+.pos-label[data-pos="2"] { background: #FEF3C7; color: #92400E; }
+.pos-label[data-pos="3"] { background: #FED7AA; color: #7C2D12; }
 
 
 
@@ -389,9 +394,70 @@ input[type="file"] { display: none; }
 }
 
 /* entrance */
-.entrance-divider { margin-top: 12px; }
+.entrance-divider { margin-top: 0; }
 .entrance-line { height: 4px; border-radius: 99px; background: var(--navy); }
 .entrance-caption { font-size: 11px; color: var(--text2); text-align: center; margin-top: 6px; letter-spacing: 0.2px; }
+
+/* ── HANGAR FRAME ── */
+.hangar-frame {
+  position: relative;
+  background: var(--white);
+  border: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  margin: 0;
+}
+.hangar-frame::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 16px;
+  background: var(--navy);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.hangar-frame::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 16px; bottom: 0;
+  background: var(--navy);
+}
+.hangar-frame-right-wall {
+  position: absolute;
+  top: 0; right: 0;
+  width: 16px; bottom: 0;
+  background: var(--navy);
+  pointer-events: none;
+}
+.hangar-frame .cards-list {
+  padding: 18px 20px 8px;
+}
+.hangar-entrance {
+  display: flex;
+  height: 32px;
+}
+.hangar-entrance-post {
+  width: 16px;
+  background: var(--navy);
+  flex-shrink: 0;
+}
+.hangar-entrance-post.left  { border-radius: 0 0 0 5px; }
+.hangar-entrance-post.right { border-radius: 0 0 5px 0; }
+.hangar-entrance-gap {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+
+}
+.hangar-entrance-arrow {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--green);
+}
+.hangar-entrance-label {
+  font-size: 17px; font-weight: 700; color: var(--green);
+  font-family: 'DM Sans', sans-serif;
+}
+
 
 /* updated */
 .updated-line { font-size: 11px; color: var(--text2); text-align: center; padding: 10px 0 2px; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -512,7 +578,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.052</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.053</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -577,7 +643,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.052</span>
+      <span class="footer-center">built by eligrt · v1.84.053</span>
     </div>
   </div>
 
@@ -707,7 +773,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.052</span>
+      <span class="footer-center">built by eligrt · v1.84.053</span>
     </div>
   </div>
 
@@ -786,11 +852,17 @@ input[type="file"] { display: none; }
 
       <div class="drag-hint-bar" style="text-align:center;width:100%;font-size:19px;font-weight:700;color:var(--text);padding:10px 12px 4px;opacity:1;">גרור את המטוסים למיקום הנכון 🖐️</div>
 
-      <div class="cards-list" id="cardsList"></div>
-
-      <div class="entrance-divider">
-        <div class="entrance-line"></div>
-        <div class="entrance-caption" id="entrance-caption">דלת כניסה</div>
+      <div class="hangar-frame" id="hangarFrame">
+        <div class="hangar-frame-right-wall"></div>
+        <div class="cards-list" id="cardsList"></div>
+      </div>
+      <div class="hangar-entrance">
+        <div class="hangar-entrance-post left"></div>
+        <div class="hangar-entrance-gap">
+          <div class="hangar-entrance-arrow"></div>
+          <div class="hangar-entrance-label" id="entrance-caption">כניסה</div>
+        </div>
+        <div class="hangar-entrance-post right"></div>
       </div>
 
       <div class="updated-line">
@@ -805,7 +877,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.052</span>
+      <span class="footer-center">built by eligrt · v1.84.053</span>
     </div>
   </div>
 
@@ -1358,7 +1430,7 @@ function renderSkeletons() {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;align-items:center;gap:10px;';
     wrap.innerHTML = `
-      <div class="pos-label" style="opacity:0.3;">${pos}</div>
+      <div class="pos-label" data-pos="${pos}" style="opacity:0.3;">${pos}</div>
       <div class="skeleton-card">
         <span style="font-size:12px;color:#B0B7C3;font-family:'DM Sans',sans-serif;">טוען...</span>
       </div>`;
@@ -1384,7 +1456,9 @@ function renderCards(order, user, data) {
 
     const posLabel = document.createElement('div');
     posLabel.className = 'pos-label';
-    posLabel.textContent = order.length - idx;
+    const posNum = order.length - idx;
+    posLabel.textContent = posNum;
+    posLabel.dataset.pos = posNum;
     row.appendChild(posLabel);
 
     const card = document.createElement('div');
@@ -1436,7 +1510,11 @@ function updatePositions() {
   const rows = getCardRows();
   rows.forEach((row, i) => {
     const lbl = row.querySelector('.pos-label');
-    if (lbl) lbl.textContent = rows.length - i;
+    if (lbl) {
+      const posNum = rows.length - i;
+      lbl.textContent = posNum;
+      lbl.dataset.pos = posNum;
+    }
   });
 }
 
