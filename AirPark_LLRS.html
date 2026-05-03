@@ -261,7 +261,7 @@ input[type="file"] { display: none; }
 .tail-input::placeholder  { color: #B0B7C3; }
 
 /* ── MAIN SCREEN ── */
-.main-body { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; }
+.main-body { flex: 1; padding: 0 18px 16px; display: flex; flex-direction: column; }
 
 /* cards */
 .cards-list { display: flex; flex-direction: column; gap: 0; }
@@ -428,7 +428,7 @@ input[type="file"] { display: none; }
   pointer-events: none;
 }
 .hangar-frame .cards-list {
-  padding: 18px 20px 8px;
+  padding: 18px 20px 4px;
 }
 .hangar-entrance {
   display: flex;
@@ -439,12 +439,11 @@ input[type="file"] { display: none; }
   background: var(--navy);
   flex-shrink: 0;
 }
-.hangar-entrance-post.left  { border-radius: 0 0 0 5px; }
-.hangar-entrance-post.right { border-radius: 0 0 5px 0; }
+.hangar-entrance-post.left  { border-radius: 0 0 0 8px; }
+.hangar-entrance-post.right { border-radius: 0 0 8px 0; }
 .hangar-entrance-gap {
   flex: 1;
   display: flex; align-items: center; justify-content: center; gap: 6px;
-
 }
 .hangar-entrance-arrow {
   width: 0; height: 0;
@@ -456,7 +455,6 @@ input[type="file"] { display: none; }
   font-size: 17px; font-weight: 700; color: var(--green);
   font-family: 'DM Sans', sans-serif;
 }
-
 
 /* updated */
 .updated-line { font-size: 11px; color: var(--text2); text-align: center; padding: 10px 0 2px; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -577,7 +575,7 @@ input[type="file"] { display: none; }
   </div>
   <div class="loader-status" id="loader-status">מתחבר...</div>
   <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.053.001</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.054.001</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -642,7 +640,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053.001</span>
+      <span class="footer-center">built by eligrt · v1.84.054.001</span>
     </div>
   </div>
 
@@ -772,7 +770,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053.001</span>
+      <span class="footer-center">built by eligrt · v1.84.054.001</span>
     </div>
   </div>
 
@@ -863,6 +861,7 @@ input[type="file"] { display: none; }
         </div>
         <div class="hangar-entrance-post right"></div>
       </div>
+      <div style="margin-top: 14px;"></div>
 
       <div class="updated-line">
         <div class="green-dot"></div>
@@ -876,7 +875,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.053.001</span>
+      <span class="footer-center">built by eligrt · v1.84.054.001</span>
     </div>
   </div>
 
