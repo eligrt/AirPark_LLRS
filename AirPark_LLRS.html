@@ -593,7 +593,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.060</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.061</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -658,7 +658,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.060</span>
+      <span class="footer-center">built by eligrt · v1.84.061</span>
     </div>
   </div>
 
@@ -788,7 +788,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.060</span>
+      <span class="footer-center">built by eligrt · v1.84.061</span>
     </div>
   </div>
 
@@ -893,7 +893,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.060</span>
+      <span class="footer-center">built by eligrt · v1.84.061</span>
     </div>
   </div>
 
@@ -1417,19 +1417,34 @@ function subscribeToRow(rowId, user, rowMeta) {
   if (window._firebaseReady) doFetchPhotos();
   else document.addEventListener('firebase-ready', doFetchPhotos, { once: true });
 }
-async function notifyTelegram(rowId, order, byName, byTail, ts) {
+async function notifyEmail(rowId, order, byName, byTail, ts) {
   try {
-    const token  = '7914880697:AAGCpOT_xM_eDekSobm5LQTBF0ZVWfVDyaE';
-    const chatId = '75070370';
-    const text = `✈️ <b>AirPark · עדכון חניה</b>\n` +
-      `📍 ${rowId.replace(/-/g,' · ')}\n` +
-      `👤 ${byName} (4X-${byTail})\n` +
-      `🔢 סדר חדש: ${order.map(t => '4X-'+t).join(' → ')}\n` +
-      `🕐 ${ts}`;
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const apiKey = 'xkeysib-5f4fe6df0e66a97b5f4f37a30fc0e09c7f952b673c5e9fa3e6e9a51db03e3d6-VxKz8YqN2mPwRtLj';
+    const hangarLabel = rowId.replace('upper-', 'האנגר העליון · ').replace('lower-', 'האנגר התחתון · ')
+      .replace('-N-', 'כניסה צפונית · שורה ').replace('-S-', 'כניסה דרומית · שורה ')
+      .replace('-E-', 'כניסה מזרחית · שורה ').replace('-W-', 'כניסה מערבית · שורה ');
+    const orderStr = order.map(t => '4X-' + t).join(' → ');
+    await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify({
+        sender: { name: 'AirPark-LLRS', email: 'eligrt@gmail.com' },
+        to: [{ email: 'eligrt@gmail.com' }],
+        subject: `✈ AirPark · עדכון חניה · ${byName}`,
+        htmlContent: `
+          <div dir="rtl" style="font-family:Arial,sans-serif;font-size:14px;color:#111;">
+            <h2 style="color:#0F3F6E;">✈ AirPark-LLRS · עדכון חניה</h2>
+            <p><b>מיקום:</b> ${hangarLabel}</p>
+            <p><b>עודכן ע"י:</b> ${byName} (4X-${byTail})</p>
+            <p><b>סדר חדש:</b> ${orderStr}</p>
+            <p><b>זמן:</b> ${ts}</p>
+            <hr style="margin-top:16px;border:none;border-top:1px solid #eee;"/>
+            <p style="font-size:11px;color:#999;">AirPark-LLRS · Rishon LeZion Airfield</p>
+          </div>`
+      })
     });
   } catch(e) { /* silent fail — never block the main flow */ }
 }
@@ -1446,7 +1461,7 @@ async function saveRowOrder(rowId, order, byName, byTail) {
     updatedTail: byTail,
     updatedAt: ts,
   }, { merge: true });
-  notifyTelegram(rowId, order, byName, byTail, ts);
+  notifyEmail(rowId, order, byName, byTail, ts);
 }
 
 function renderSkeletons() {
