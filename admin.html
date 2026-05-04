@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script type="module">
     import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey:            "AIzaSyDlZmmx94yjGiaDBm6g2qtMyguqcl1QJjc",
@@ -308,7 +308,20 @@
           <td><div class="p-loc">${p.location}</div></td>
           <td class="${p.photo ? 'p-photo-yes' : 'p-photo-no'}">${p.photo ? p.photoDate : '—'}</td>
           <td><div class="p-date">${p.updated || '—'}</div></td>
+          <td><button class="del-btn" onclick="deletePilot('${p.tail}')">🗑</button></td>
         </tr>`).join('');
+    };
+
+    window.deletePilot = async function(tail) {
+      if (!confirm(`מחוק את הטייס ${tail}?`)) return;
+      try {
+        await deleteDoc(doc(db, 'pilots', tail));
+        window._pilotsData = window._pilotsData.filter(p => p.tail !== tail);
+        document.getElementById('pilots-title').textContent = `טייסים רשומים — ${window._pilotsData.length}`;
+        renderPilots();
+      } catch(e) {
+        alert('שגיאה במחיקה: ' + e.message);
+      }
     };
 
     window.sortPilots = function(col) {
@@ -405,6 +418,8 @@
     .p-photo-yes { color: #065F46; font-size: 11px; font-family: 'DM Mono', monospace; }
     .p-photo-no  { color: var(--text2); font-size: 11px; opacity: 0.4; }
     .p-date { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
+    .del-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.4; padding: 2px 4px; border-radius: 4px; transition: opacity 0.15s; }
+    .del-btn:hover { opacity: 1; background: #FEE2E2; }
 
     /* footer */
     .footer {
@@ -483,6 +498,7 @@
               <th onclick="sortPilots('location'" id="th-location">מיקום</th>
               <th onclick="sortPilots('photo')"   id="th-photo">תמונה עודכנה</th>
               <th onclick="sortPilots('updated')" id="th-updated">עדכון אחרון</th>
+              <th style="width:36px;"></th>
             </tr>
           </thead>
           <tbody id="pilots-body"></tbody>
@@ -490,7 +506,7 @@
       </div>
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.20</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.21</span></div>
   </div>
 </body>
 </html>
