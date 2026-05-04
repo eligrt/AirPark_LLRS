@@ -593,7 +593,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.059.004</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.060</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -658,7 +658,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059.004</span>
+      <span class="footer-center">built by eligrt · v1.84.060</span>
     </div>
   </div>
 
@@ -788,7 +788,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059.004</span>
+      <span class="footer-center">built by eligrt · v1.84.060</span>
     </div>
   </div>
 
@@ -893,7 +893,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.059.004</span>
+      <span class="footer-center">built by eligrt · v1.84.060</span>
     </div>
   </div>
 
@@ -1417,6 +1417,23 @@ function subscribeToRow(rowId, user, rowMeta) {
   if (window._firebaseReady) doFetchPhotos();
   else document.addEventListener('firebase-ready', doFetchPhotos, { once: true });
 }
+async function notifyTelegram(rowId, order, byName, byTail, ts) {
+  try {
+    const token  = '7914880697:AAGCpOT_xM_eDekSobm5LQTBF0ZVWfVDyaE';
+    const chatId = '75070370';
+    const text = `✈️ <b>AirPark · עדכון חניה</b>\n` +
+      `📍 ${rowId.replace(/-/g,' · ')}\n` +
+      `👤 ${byName} (4X-${byTail})\n` +
+      `🔢 סדר חדש: ${order.map(t => '4X-'+t).join(' → ')}\n` +
+      `🕐 ${ts}`;
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
+    });
+  } catch(e) { /* silent fail — never block the main flow */ }
+}
+
 async function saveRowOrder(rowId, order, byName, byTail) {
   if (!window._firebaseReady) return;
   const { doc, setDoc } = window._dbOps;
@@ -1429,6 +1446,7 @@ async function saveRowOrder(rowId, order, byName, byTail) {
     updatedTail: byTail,
     updatedAt: ts,
   }, { merge: true });
+  notifyTelegram(rowId, order, byName, byTail, ts);
 }
 
 function renderSkeletons() {

@@ -225,11 +225,13 @@
         const fullTail = doc.id; // e.g. "4X-HYD"
         const shortTail = fullTail.replace('4X-', '');
         window._pilotsData.push({
-          name:     d.updatedBy || '—',
-          tail:     fullTail,
-          location: tailLocMap[shortTail] || '—',
-          photo:    !!d.photoURL,
-          updated:  d.updatedAt || '',
+          name:      d.updatedBy || '—',
+          tail:      fullTail,
+          location:  tailLocMap[shortTail] || '—',
+          photo:     !!d.photoURL,
+          photoDate: d.photoURL ? (d.updatedAt || '—') : null,
+          photoTs:   d.photoURL ? (parseTs(d.updatedAt) || 0) : 0,
+          updated:   d.updatedAt || '',
           updatedTs: parseTs(d.updatedAt) || 0,
         });
       });
@@ -283,7 +285,7 @@
       const data = [...(window._pilotsData || [])].sort((a, b) => {
         let va = a[col], vb = b[col];
         if (col === 'updated') { va = a.updatedTs; vb = b.updatedTs; }
-        if (col === 'photo')   { va = a.photo ? 1 : 0; vb = b.photo ? 1 : 0; }
+        if (col === 'photo')   { va = a.photoTs; vb = b.photoTs; }
         if (typeof va === 'string') va = va.toLowerCase();
         if (typeof vb === 'string') vb = vb.toLowerCase();
         if (va < vb) return dir === 'asc' ? -1 : 1;
@@ -304,7 +306,7 @@
           <td><div class="p-name">${p.name}</div></td>
           <td><div class="p-tail">${p.tail}</div></td>
           <td><div class="p-loc">${p.location}</div></td>
-          <td class="${p.photo ? 'p-photo-yes' : 'p-photo-no'}">${p.photo ? '✓' : '✗'}</td>
+          <td class="${p.photo ? 'p-photo-yes' : 'p-photo-no'}">${p.photo ? p.photoDate : '—'}</td>
           <td><div class="p-date">${p.updated || '—'}</div></td>
         </tr>`).join('');
     };
@@ -400,8 +402,8 @@
     .p-name { font-weight: 500; }
     .p-tail { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 11px; }
     .p-loc  { font-size: 11px; color: var(--text2); }
-    .p-photo-yes { color: #065F46; text-align: center; font-size: 14px; }
-    .p-photo-no  { color: var(--text2); text-align: center; font-size: 14px; opacity: 0.3; }
+    .p-photo-yes { color: #065F46; font-size: 11px; font-family: 'DM Mono', monospace; }
+    .p-photo-no  { color: var(--text2); font-size: 11px; opacity: 0.4; }
     .p-date { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
 
     /* footer */
@@ -479,7 +481,7 @@
               <th onclick="sortPilots('name')"    id="th-name">שם</th>
               <th onclick="sortPilots('tail')"    id="th-tail">מטוס</th>
               <th onclick="sortPilots('location'" id="th-location">מיקום</th>
-              <th onclick="sortPilots('photo')"   id="th-photo" style="text-align:center;">📷</th>
+              <th onclick="sortPilots('photo')"   id="th-photo">תמונה עודכנה</th>
               <th onclick="sortPilots('updated')" id="th-updated">עדכון אחרון</th>
             </tr>
           </thead>
@@ -488,7 +490,7 @@
       </div>
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.19</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.20</span></div>
   </div>
 </body>
 </html>
