@@ -593,7 +593,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.062</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.065</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -658,7 +658,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.062</span>
+      <span class="footer-center">built by eligrt · v1.84.065</span>
     </div>
   </div>
 
@@ -788,7 +788,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.062</span>
+      <span class="footer-center">built by eligrt · v1.84.065</span>
     </div>
   </div>
 
@@ -801,7 +801,7 @@ input[type="file"] { display: none; }
       <div onclick="closeRowSheet()" style="width:28px;height:28px;border-radius:50%;background:#F4F6FA;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:#6B7280;flex-shrink:0;">✕</div>
     </div>
     <!-- Row list -->
-    <div id="row-modal-list" style="padding:10px 14px;display:flex;flex-direction:column;gap:7px;height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+    <div id="row-modal-list" style="padding:10px 14px;display:flex;flex-direction:column;gap:7px;height:auto;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
     <!-- Confirm button -->
     <div style="padding:10px 16px 18px;border-top:0.5px solid rgba(0,0,0,0.06);">
       <button class="btn-primary" id="btn-done-sheet" disabled onclick="finishSetup()">קח אותי לחניה שלי <span class="plane-flip">✈</span></button>
@@ -893,7 +893,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.062</span>
+      <span class="footer-center">built by eligrt · v1.84.065</span>
     </div>
   </div>
 
@@ -912,57 +912,50 @@ const HANGAR_DIRS = { upper: ['N','S'], lower: ['E','W'] };
 const DIR_LABELS  = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' };
 const HANGAR_LABELS = { upper:'האנגר העליון', lower:'האנגר התחתון' };
 
-// Demo row data — 3 rows per entrance side, 3 planes each
-// Naming: [Direction][Row A-L][Position 1-3]  e.g. NA1 = North, row A, plane 1
-// Row upper-N-5 (row E) has real LLRS planes — do not change
 const DEMO_ROWS = {
+  // ✓ REAL DATA
   'upper-N': [
-    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['NA1','NA2','NA3'] },
-    { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['NB1','NB2','NB3'] },
-    { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['NC1','NC2','NC3'] },
-    { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['ND1','ND2','ND3'] },
-    { rowId: 'upper-N-5',  label: 'שורה 5',  planes: ['HYD','HRS','HRC'] },
-    { rowId: 'upper-N-6',  label: 'שורה 6',  planes: ['NF1','NF2','NF3'] },
-    { rowId: 'upper-N-7',  label: 'שורה 7',  planes: ['NG1','NG2','NG3'] },
-    { rowId: 'upper-N-8',  label: 'שורה 8',  planes: ['NH1','NH2','NH3'] },
-    { rowId: 'upper-N-9',  label: 'שורה 9',  planes: ['NI1','NI2','NI3'] },
-    { rowId: 'upper-N-10', label: 'שורה 10', planes: ['NJ1','NJ2','NJ3'] },
-    { rowId: 'upper-N-11', label: 'שורה 11', planes: ['NK1','NK2','NK3'] },
-    { rowId: 'upper-N-12', label: 'שורה 12', planes: ['NL1','NL2','NL3'] },
+    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['HIL','HIC','TBD'] }, // ✓ real (TBD = placeholder)
+    { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['HYA','HZP','HYF'] }, // ✓ real
+    { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['HYD','HRC','HRS'] }, // ✓ real
+    { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['OED','HGM','ONZ'] }, // ✓ real
   ],
+  // ✓ REAL DATA
   'upper-S': [
-    { rowId: 'upper-S-1',  label: 'שורה 1',  planes: ['HTX','HMN','HPB'] },
-    { rowId: 'upper-S-2',  label: 'שורה 2',  planes: ['HLE','HMD','HZZ'] },
-    { rowId: 'upper-S-3',  label: 'שורה 3',  planes: ['HLY','HMC','HZR'] },
-    { rowId: 'upper-S-4',  label: 'שורה 4',  planes: ['OZZ','HKH','HID'] },
+    { rowId: 'upper-S-1',  label: 'שורה 1',  planes: ['HTX','HMN','HPB'] }, // ✓ real
+    { rowId: 'upper-S-2',  label: 'שורה 2',  planes: ['HLE','HMD','HZZ'] }, // ✓ real
+    { rowId: 'upper-S-3',  label: 'שורה 3',  planes: ['HLY','HMC','HZR'] }, // ✓ real
+    { rowId: 'upper-S-4',  label: 'שורה 4',  planes: ['OZZ','HKH','HID'] }, // ✓ real
   ],
+  // ⚠ DUMMY DATA — replace with real tails
   'lower-E': [
-    { rowId: 'lower-E-1',  label: 'שורה 1',  planes: ['EA1','EA2','EA3'] },
-    { rowId: 'lower-E-2',  label: 'שורה 2',  planes: ['EB1','EB2','EB3'] },
-    { rowId: 'lower-E-3',  label: 'שורה 3',  planes: ['EC1','EC2','EC3'] },
-    { rowId: 'lower-E-4',  label: 'שורה 4',  planes: ['ED1','ED2','ED3'] },
-    { rowId: 'lower-E-5',  label: 'שורה 5',  planes: ['EE1','EE2','EE3'] },
-    { rowId: 'lower-E-6',  label: 'שורה 6',  planes: ['EF1','EF2','EF3'] },
-    { rowId: 'lower-E-7',  label: 'שורה 7',  planes: ['EG1','EG2','EG3'] },
-    { rowId: 'lower-E-8',  label: 'שורה 8',  planes: ['EH1','EH2','EH3'] },
-    { rowId: 'lower-E-9',  label: 'שורה 9',  planes: ['EI1','EI2','EI3'] },
-    { rowId: 'lower-E-10', label: 'שורה 10', planes: ['EJ1','EJ2','EJ3'] },
-    { rowId: 'lower-E-11', label: 'שורה 11', planes: ['EK1','EK2','EK3'] },
-    { rowId: 'lower-E-12', label: 'שורה 12', planes: ['EL1','EL2','EL3'] },
+    { rowId: 'lower-E-1',  label: 'שורה 1',  planes: ['EA1','EA2','EA3'] }, // ⚠ dummy
+    { rowId: 'lower-E-2',  label: 'שורה 2',  planes: ['EB1','EB2','EB3'] }, // ⚠ dummy
+    { rowId: 'lower-E-3',  label: 'שורה 3',  planes: ['EC1','EC2','EC3'] }, // ⚠ dummy
+    { rowId: 'lower-E-4',  label: 'שורה 4',  planes: ['ED1','ED2','ED3'] }, // ⚠ dummy
+    { rowId: 'lower-E-5',  label: 'שורה 5',  planes: ['EE1','EE2','EE3'] }, // ⚠ dummy
+    { rowId: 'lower-E-6',  label: 'שורה 6',  planes: ['EF1','EF2','EF3'] }, // ⚠ dummy
+    { rowId: 'lower-E-7',  label: 'שורה 7',  planes: ['EG1','EG2','EG3'] }, // ⚠ dummy
+    { rowId: 'lower-E-8',  label: 'שורה 8',  planes: ['EH1','EH2','EH3'] }, // ⚠ dummy
+    { rowId: 'lower-E-9',  label: 'שורה 9',  planes: ['EI1','EI2','EI3'] }, // ⚠ dummy
+    { rowId: 'lower-E-10', label: 'שורה 10', planes: ['EJ1','EJ2','EJ3'] }, // ⚠ dummy
+    { rowId: 'lower-E-11', label: 'שורה 11', planes: ['EK1','EK2','EK3'] }, // ⚠ dummy
+    { rowId: 'lower-E-12', label: 'שורה 12', planes: ['EL1','EL2','EL3'] }, // ⚠ dummy
   ],
+  // ⚠ PARTIAL — row 3 real, rest dummy
   'lower-W': [
-    { rowId: 'lower-W-1',  label: 'שורה 1',  planes: ['WA1','WA2','WA3'] },
-    { rowId: 'lower-W-2',  label: 'שורה 2',  planes: ['WB1','WB2','WB3'] },
-    { rowId: 'lower-W-3',  label: 'שורה 3',  planes: ['HYH','HLR','HMZ'] },
-    { rowId: 'lower-W-4',  label: 'שורה 4',  planes: ['WD1','WD2','WD3'] },
-    { rowId: 'lower-W-5',  label: 'שורה 5',  planes: ['WE1','WE2','WE3'] },
-    { rowId: 'lower-W-6',  label: 'שורה 6',  planes: ['WF1','WF2','WF3'] },
-    { rowId: 'lower-W-7',  label: 'שורה 7',  planes: ['WG1','WG2','WG3'] },
-    { rowId: 'lower-W-8',  label: 'שורה 8',  planes: ['WH1','WH2','WH3'] },
-    { rowId: 'lower-W-9',  label: 'שורה 9',  planes: ['WI1','WI2','WI3'] },
-    { rowId: 'lower-W-10', label: 'שורה 10', planes: ['WJ1','WJ2','WJ3'] },
-    { rowId: 'lower-W-11', label: 'שורה 11', planes: ['WK1','WK2','WK3'] },
-    { rowId: 'lower-W-12', label: 'שורה 12', planes: ['WL1','WL2','WL3'] },
+    { rowId: 'lower-W-1',  label: 'שורה 1',  planes: ['WA1','WA2','WA3'] }, // ⚠ dummy
+    { rowId: 'lower-W-2',  label: 'שורה 2',  planes: ['WB1','WB2','WB3'] }, // ⚠ dummy
+    { rowId: 'lower-W-3',  label: 'שורה 3',  planes: ['HYH','HLR','HMZ'] }, // ✓ real
+    { rowId: 'lower-W-4',  label: 'שורה 4',  planes: ['WD1','WD2','WD3'] }, // ⚠ dummy
+    { rowId: 'lower-W-5',  label: 'שורה 5',  planes: ['WE1','WE2','WE3'] }, // ⚠ dummy
+    { rowId: 'lower-W-6',  label: 'שורה 6',  planes: ['WF1','WF2','WF3'] }, // ⚠ dummy
+    { rowId: 'lower-W-7',  label: 'שורה 7',  planes: ['WG1','WG2','WG3'] }, // ⚠ dummy
+    { rowId: 'lower-W-8',  label: 'שורה 8',  planes: ['WH1','WH2','WH3'] }, // ⚠ dummy
+    { rowId: 'lower-W-9',  label: 'שורה 9',  planes: ['WI1','WI2','WI3'] }, // ⚠ dummy
+    { rowId: 'lower-W-10', label: 'שורה 10', planes: ['WJ1','WJ2','WJ3'] }, // ⚠ dummy
+    { rowId: 'lower-W-11', label: 'שורה 11', planes: ['WK1','WK2','WK3'] }, // ⚠ dummy
+    { rowId: 'lower-W-12', label: 'שורה 12', planes: ['WL1','WL2','WL3'] }, // ⚠ dummy
   ],
 };
 
