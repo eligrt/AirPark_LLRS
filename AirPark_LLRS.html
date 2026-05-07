@@ -223,6 +223,7 @@ input[type="file"] { display: none; }
 }
 .list-item:active { background: var(--bg); }
 .list-item.selected { border: 1.5px solid var(--blue); background: var(--blue-l); }
+.list-item.disabled { opacity: 0.38; cursor: default; pointer-events: none; }
 .list-item-label { font-size: 14px; font-weight: 500; color: var(--text); }
 .list-item-sub { font-size: 11px; color: var(--text2); margin-top: 2px; direction: ltr; font-family: 'DM Mono', monospace; }
 .list-arrow { color: var(--text2); font-size: 16px; opacity: 0.5; }
@@ -607,7 +608,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.009</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.011</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -672,7 +673,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.009</span>
+      <span class="footer-center">built by eligrt · v1.85.011</span>
     </div>
   </div>
 
@@ -737,7 +738,7 @@ input[type="file"] { display: none; }
             <div style="width:36px;height:36px;border-radius:8px;background:#185FA5;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;letter-spacing:0.5px;flex-shrink:0;">H-L</div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:600;color:#111827;">האנגר התחתון</div>
-              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 9 שורות</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 6 שורות</div>
             </div>
             <div style="color:#9ca3af;font-size:16px;">‹</div>
           </div>
@@ -774,7 +775,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.009</span>
+      <span class="footer-center">built by eligrt · v1.85.011</span>
     </div>
   </div>
 
@@ -790,7 +791,7 @@ input[type="file"] { display: none; }
     <div id="row-modal-list" style="padding:10px 14px;display:flex;flex-direction:column;gap:7px;height:auto;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
     <!-- Confirm button -->
     <div style="padding:10px 16px 18px;border-top:0.5px solid rgba(0,0,0,0.06);">
-      <button class="btn-primary" id="btn-done-sheet" disabled onclick="finishSetup()">קח אותי לחניה שלי <span class="plane-flip">✈</span></button>
+      <button class="btn-primary" id="btn-done-sheet" disabled onclick="finishSetup()" style="display:none;">קח אותי לחניה שלי</button>
     </div>
   </div>
 
@@ -881,7 +882,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.009</span>
+      <span class="footer-center">built by eligrt · v1.85.011</span>
     </div>
   </div>
 
@@ -917,33 +918,21 @@ const DEMO_ROWS = {
   ],
   // ⚠ DUMMY DATA — replace with real tails
   'lower-E': [
-    { rowId: 'lower-E-1',  label: 'שורה 1',  planes: ['EA1','EA2','EA3'] }, // ⚠ dummy
-    { rowId: 'lower-E-2',  label: 'שורה 2',  planes: ['EB1','EB2','EB3'] }, // ⚠ dummy
-    { rowId: 'lower-E-3',  label: 'שורה 3',  planes: ['EC1','EC2','EC3'] }, // ⚠ dummy
-    { rowId: 'lower-E-4',  label: 'שורה 4',  planes: ['ED1','ED2','ED3'] }, // ⚠ dummy
-    { rowId: 'lower-E-5',  label: 'שורה 5',  planes: ['EE1','EE2','EE3'] }, // ⚠ dummy
-    { rowId: 'lower-E-6',  label: 'שורה 6',  planes: ['EF1','EF2','EF3'] }, // ⚠ dummy
-    { rowId: 'lower-E-7',  label: 'שורה 7',  planes: ['EG1','EG2','EG3'] }, // ⚠ dummy
-    { rowId: 'lower-E-8',  label: 'שורה 8',  planes: ['EH1','EH2','EH3'] }, // ⚠ dummy
-    { rowId: 'lower-E-9',  label: 'שורה 9',  planes: ['EI1','EI2','EI3'] }, // ⚠ dummy
-    { rowId: 'lower-E-10', label: 'שורה 10', planes: ['EJ1','EJ2','EJ3'] }, // ⚠ dummy
-    { rowId: 'lower-E-11', label: 'שורה 11', planes: ['EK1','EK2','EK3'] }, // ⚠ dummy
-    { rowId: 'lower-E-12', label: 'שורה 12', planes: ['EL1','EL2','EL3'] }, // ⚠ dummy
+    { rowId: 'lower-E-1', label: 'שורה 1', planes: ['EA1','EA2','EA3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-E-2', label: 'שורה 2', planes: ['EB1','EB2','EB3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-E-3', label: 'שורה 3', planes: ['EC1','EC2','EC3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-E-4', label: 'שורה 4', planes: ['ED1','ED2','ED3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-E-5', label: 'שורה 5', planes: ['EE1','EE2','EE3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-E-6', label: 'שורה 6', planes: ['EF1','EF2','EF3'], active: false }, // ⚠ dummy
   ],
   // ⚠ PARTIAL — row 3 real, rest dummy
   'lower-W': [
-    { rowId: 'lower-W-1',  label: 'שורה 1',  planes: ['WA1','WA2','WA3'] }, // ⚠ dummy
-    { rowId: 'lower-W-2',  label: 'שורה 2',  planes: ['WB1','WB2','WB3'] }, // ⚠ dummy
-    { rowId: 'lower-W-3',  label: 'שורה 3',  planes: ['HYH','HLR','HMZ'] }, // ✓ real
-    { rowId: 'lower-W-4',  label: 'שורה 4',  planes: ['WD1','WD2','WD3'] }, // ⚠ dummy
-    { rowId: 'lower-W-5',  label: 'שורה 5',  planes: ['WE1','WE2','WE3'] }, // ⚠ dummy
-    { rowId: 'lower-W-6',  label: 'שורה 6',  planes: ['WF1','WF2','WF3'] }, // ⚠ dummy
-    { rowId: 'lower-W-7',  label: 'שורה 7',  planes: ['WG1','WG2','WG3'] }, // ⚠ dummy
-    { rowId: 'lower-W-8',  label: 'שורה 8',  planes: ['WH1','WH2','WH3'] }, // ⚠ dummy
-    { rowId: 'lower-W-9',  label: 'שורה 9',  planes: ['WI1','WI2','WI3'] }, // ⚠ dummy
-    { rowId: 'lower-W-10', label: 'שורה 10', planes: ['WJ1','WJ2','WJ3'] }, // ⚠ dummy
-    { rowId: 'lower-W-11', label: 'שורה 11', planes: ['WK1','WK2','WK3'] }, // ⚠ dummy
-    { rowId: 'lower-W-12', label: 'שורה 12', planes: ['WL1','WL2','WL3'] }, // ⚠ dummy
+    { rowId: 'lower-W-1', label: 'שורה 1', planes: ['WA1','WA2','WA3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-W-2', label: 'שורה 2', planes: ['WB1','WB2','WB3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-W-3', label: 'שורה 3', planes: ['HYH','HLR','HMZ'], active: true  }, // ✓ real
+    { rowId: 'lower-W-4', label: 'שורה 4', planes: ['WD1','WD2','WD3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-W-5', label: 'שורה 5', planes: ['WE1','WE2','WE3'], active: false }, // ⚠ dummy
+    { rowId: 'lower-W-6', label: 'שורה 6', planes: ['WF1','WF2','WF3'], active: false }, // ⚠ dummy
   ],
 };
 
@@ -1175,10 +1164,14 @@ function showEntrancePicker(hangar) {
   const list = document.getElementById('row-modal-list');
   list.innerHTML = '';
   entrances.forEach(({ dir, label }) => {
+    const key = hangar + '-' + dir;
+    const dirRows = DEMO_ROWS[key] || [];
+    const hasActive = dirRows.some(r => r.active !== false);
     const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `<div><div class="list-item-label">${label}</div></div><div class="list-arrow">›</div>`;
-    div.onclick = () => pickEntrance(hangar, dir, null);
+    div.className = 'list-item' + (hasActive ? '' : ' disabled');
+    const sub = hasActive ? '' : '<div class="list-item-sub">בקרוב</div>';
+    div.innerHTML = `<div><div class="list-item-label">${label}</div>${sub}</div><div class="list-arrow">›</div>`;
+    if (hasActive) div.onclick = () => pickEntrance(hangar, dir, null);
     list.appendChild(div);
   });
   openRowSheet();
@@ -1225,15 +1218,19 @@ function pickEntrance(hangar, dir, el) {
   document.getElementById('btn-done-sheet').disabled = true;
 
   rows.forEach(r => {
+    const isActive = r.active !== false;
     const div = document.createElement('div');
-    div.className = 'list-item';
-    div.innerHTML = `<div><div class="list-item-label">${r.label}</div><div class="list-item-sub">4X-${r.planes.join(' · 4X-')}</div></div><div class="list-arrow">›</div>`;
-    div.onclick = () => {
-      document.querySelectorAll('#row-modal-list .list-item').forEach(i => i.classList.remove('selected'));
-      div.classList.add('selected');
-      selRowId = r.rowId;
-      document.getElementById('btn-done-sheet').disabled = false;
-    };
+    div.className = 'list-item' + (isActive ? '' : ' disabled');
+    const planesText = isActive ? `4X-${r.planes.join(' · 4X-')}` : 'בקרוב';
+    div.innerHTML = `<div><div class="list-item-label">${r.label}</div><div class="list-item-sub">${planesText}</div></div>${isActive ? '<div class="list-arrow">›</div>' : ''}`;
+    if (isActive) {
+      div.onclick = () => {
+        document.querySelectorAll('#row-modal-list .list-item').forEach(i => i.classList.remove('selected'));
+        div.classList.add('selected');
+        selRowId = r.rowId;
+        setTimeout(finishSetup, 120); // brief flash so selection is visible
+      };
+    }
     list.appendChild(div);
   });
 
