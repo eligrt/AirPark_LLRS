@@ -220,10 +220,11 @@ input[type="file"] { display: none; }
   cursor: pointer;
   display: flex; justify-content: space-between; align-items: center;
   transition: all 0.15s;
+  min-height: 56px;
 }
 .list-item:active { background: var(--bg); }
 .list-item.selected { border: 1.5px solid var(--blue); background: var(--blue-l); }
-.list-item.disabled { opacity: 0.38; cursor: default; pointer-events: none; }
+.list-item.disabled { opacity: 0.45; cursor: default; pointer-events: none; }
 .list-item-label { font-size: 14px; font-weight: 500; color: var(--text); }
 .list-item-sub { font-size: 11px; color: var(--text2); margin-top: 2px; direction: ltr; font-family: 'DM Mono', monospace; }
 .list-arrow { color: var(--text2); font-size: 16px; opacity: 0.5; }
@@ -608,7 +609,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.011</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.016</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -673,7 +674,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.011</span>
+      <span class="footer-center">built by eligrt · v1.85.016</span>
     </div>
   </div>
 
@@ -721,6 +722,30 @@ input[type="file"] { display: none; }
       </div>
 
       <!-- hangar list + runway -->
+      <!-- find-plane button -->
+      <div style="margin-bottom:14px;display:flex;justify-content:center;">
+        <div onclick="openFindPlane()" style="display:inline-flex;align-items:center;gap:8px;background:#1a2b4a;color:white;border-radius:99px;padding:11px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.2px;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="white" stroke-width="1.6"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+          חפש מטוס לפי זנב
+        </div>
+      </div>
+
+      <!-- find-plane modal overlay — centered like hangar picker -->
+      <div id="find-plane-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;" onclick="closeFindPlane()">
+        <div style="background:white;border-radius:18px;padding:20px 16px 24px;width:calc(100% - 40px);max-width:420px;direction:rtl;" onclick="event.stopPropagation()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-size:16px;font-weight:700;color:#111827;">חפש מטוס לפי זנב</div>
+            <div onclick="closeFindPlane()" style="width:30px;height:30px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:#6b7280;">✕</div>
+          </div>
+          <div class="tail-wrap" style="margin-bottom:14px;">
+            <span class="tail-prefix">4X-</span>
+            <input class="tail-input" id="find-plane-input" type="text" placeholder="HHH" maxlength="3"
+              oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); onFindPlaneInput(this.value)" />
+          </div>
+          <div id="find-plane-result"></div>
+        </div>
+      </div>
+
       <div class="sec-label" style="margin-bottom:6px;">בחר הנגר</div>
       <div style="display:flex;gap:10px;align-items:stretch;">
         <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
@@ -743,7 +768,7 @@ input[type="file"] { display: none; }
             <div style="color:#9ca3af;font-size:16px;">‹</div>
           </div>
 
-          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.58;">
+          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.45;">
             <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-3</div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 3</div>
@@ -751,7 +776,7 @@ input[type="file"] { display: none; }
             </div>
           </div>
 
-          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.58;">
+          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.45;">
             <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-4</div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 4</div>
@@ -775,7 +800,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.011</span>
+      <span class="footer-center">built by eligrt · v1.85.016</span>
     </div>
   </div>
 
@@ -882,7 +907,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.011</span>
+      <span class="footer-center">built by eligrt · v1.85.016</span>
     </div>
   </div>
 
@@ -1153,6 +1178,51 @@ function matchCancel() {
 // ════════════════════════════════════════════
 const DIR_NAMES = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' };
 const HANGAR_NAMES = { upper:'האנגר העליון', lower:'האנגר התחתון' };
+
+function openFindPlane() {
+  const overlay = document.getElementById('find-plane-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('find-plane-input').value = '';
+  document.getElementById('find-plane-result').innerHTML = '';
+  setTimeout(() => document.getElementById('find-plane-input').focus(), 80);
+}
+
+function closeFindPlane() {
+  document.getElementById('find-plane-overlay').style.display = 'none';
+}
+
+function onFindPlaneInput(val) {
+  const res = document.getElementById('find-plane-result');
+  if (val.length < 2) { res.innerHTML = ''; return; }
+  const match = findRowByTail(val);
+  if (!match) {
+    res.innerHTML = '<div style="font-size:13px;color:#9ca3af;text-align:center;padding:10px 0;">לא נמצא מטוס עם זנב זה</div>';
+    return;
+  }
+  if (!match.active && match.active !== undefined) {
+    res.innerHTML = '<div style="font-size:13px;color:#9ca3af;text-align:center;padding:10px 0;">השורה עדיין לא פעילה</div>';
+    return;
+  }
+  const dirLabel = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' }[match.dir] || '';
+  res.innerHTML = `
+    <div style="background:#F0F6FF;border:1px solid #185FA5;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;">
+        <div style="font-size:16px;font-weight:700;color:#0C447C;font-family:'DM Mono',monospace;letter-spacing:1px;">4X-${val.toUpperCase()}</div>
+        <div style="font-size:12px;color:#378ADD;margin-top:3px;">${HANGAR_NAMES[match.hangar]} · ${dirLabel} · ${match.rowLabel}</div>
+      </div>
+      <div onclick="goToFoundRow('${match.hangar}','${match.dir}','${match.rowId}')"
+        style="background:#185FA5;color:white;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+        עבור ←
+      </div>
+    </div>
+  `;
+}
+
+function goToFoundRow(hangar, dir, rowId) {
+  closeFindPlane();
+  selH = hangar; selDir = dir; selRowId = rowId;
+  setTimeout(finishSetup, 80);
+}
 
 function showEntrancePicker(hangar) {
   selH = hangar; selDir = null; selRowId = null;
@@ -1952,8 +2022,9 @@ function triggerReset() {
   const statusEl = document.getElementById('loader-status');
   if (statusEl) statusEl.textContent = 'מתחבר...';
   const steps = [
-    { text: 'טוען מטוסים וחניות...', delay: 2000 },
-    { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
+    { text: 'מחפש חניות...', delay: 1500 },
+    { text: 'טוען מטוסים...', delay: 3200 },
+    { text: 'מסדר שורות...', delay: 5200 },
     { text: 'מוכן להמראה ✈', delay: 7000 },
   ];
   steps.forEach(({ text, delay }) => {
@@ -1996,8 +2067,9 @@ function boot() {
     const elapsed = Date.now() - (window._appStart || Date.now());
     const remaining = Math.max(0, 8000 - elapsed);
     const steps = [
-      { text: 'טוען מטוסים וחניות...', delay: 2000 },
-      { text: 'בודק סדר מטוסים בכל שורה...', delay: 4000 },
+      { text: 'מחפש חניות...', delay: 1500 },
+      { text: 'טוען מטוסים...', delay: 3200 },
+      { text: 'מסדר שורות...', delay: 5200 },
       { text: 'מוכן להמראה ✈', delay: 7000 },
     ];
     steps.forEach(({ text, delay }) => {
