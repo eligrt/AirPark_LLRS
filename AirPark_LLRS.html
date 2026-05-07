@@ -292,18 +292,21 @@ input[type="file"] { display: none; }
 .insert-line.visible::after { opacity: 1; }
 
 /* card row */
-.card-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0 4px; }
+.card-row { display: flex; align-items: stretch; gap: 0; margin: 0; padding: 0 4px; }
 .pos-label {
-  width: 30px; height: 30px; flex-shrink: 0;
-  font-size: 13px; font-weight: 700;
+  width: 34px; flex-shrink: 0;
+  font-size: 15px; font-weight: 700;
   font-family: 'DM Mono', monospace;
   text-align: center;
-  border-radius: 50%;
+  border-radius: 0 var(--radius) var(--radius) 0;
   display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+  border-right: none;
+  margin-right: -1px;
 }
-.pos-label[data-pos="1"] { background: #D1FAE5; color: #065F46; }
-.pos-label[data-pos="2"] { background: #FEF3C7; color: #92400E; }
-.pos-label[data-pos="3"] { background: #FED7AA; color: #7C2D12; }
+.pos-label[data-pos="1"] { background: #D1FAE5; color: #065F46; border-color: rgba(6,95,70,0.2); }
+.pos-label[data-pos="2"] { background: #FEF3C7; color: #92400E; border-color: rgba(146,64,14,0.2); }
+.pos-label[data-pos="3"] { background: #FED7AA; color: #7C2D12; border-color: rgba(124,45,18,0.2); }
 
 
 
@@ -329,7 +332,7 @@ input[type="file"] { display: none; }
   flex: 1;
   background: var(--white);
   border: 1px solid rgba(0,0,0,0.18);
-  border-radius: var(--radius);
+  border-radius: var(--radius) 0 0 var(--radius);
   padding: 10px 12px;
   display: flex; align-items: center; gap: 0;
   direction: ltr; /* explicit LTR so slot order is predictable */
@@ -407,34 +410,50 @@ input[type="file"] { display: none; }
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 16px;
-  background: var(--navy);
+  height: 18px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #c8cdd6 0px, #c8cdd6 4px,
+    #e8eaee 4px, #e8eaee 8px
+  );
   border-radius: var(--radius) var(--radius) 0 0;
 }
 .hangar-frame::after {
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: 16px; bottom: 0;
-  background: var(--navy);
+  width: 18px; bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    #c8cdd6 0px, #c8cdd6 4px,
+    #e8eaee 4px, #e8eaee 8px
+  );
 }
 .hangar-frame-right-wall {
   position: absolute;
   top: 0; right: 0;
-  width: 16px; bottom: 0;
-  background: var(--navy);
+  width: 18px; bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    #c8cdd6 0px, #c8cdd6 4px,
+    #e8eaee 4px, #e8eaee 8px
+  );
   pointer-events: none;
 }
 .hangar-frame .cards-list {
-  padding: 18px 20px 4px;
+  padding: 20px 22px 4px;
 }
 .hangar-entrance {
   display: flex;
   height: 32px;
 }
 .hangar-entrance-post {
-  width: 16px;
-  background: var(--navy);
+  width: 18px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #c8cdd6 0px, #c8cdd6 4px,
+    #e8eaee 4px, #e8eaee 8px
+  );
   flex-shrink: 0;
 }
 .hangar-entrance-post.left  { border-radius: 0 0 0 8px; }
@@ -443,15 +462,10 @@ input[type="file"] { display: none; }
   flex: 1;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.hangar-entrance-arrow {
-  width: 0; height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 7px solid var(--green);
-}
 .hangar-entrance-label {
-  font-size: 17px; font-weight: 700; color: var(--green);
+  font-size: 14px; font-weight: 700; color: var(--green);
   font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 6px;
 }
 
 /* updated */
@@ -593,7 +607,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.84.065</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.009</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -658,7 +672,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.065</span>
+      <span class="footer-center">built by eligrt · v1.85.009</span>
     </div>
   </div>
 
@@ -687,108 +701,80 @@ input[type="file"] { display: none; }
         <div class="step-header">איפה אתה חונה?</div>
       </div>
 
-      <div class="field">
-        <div class="sec-label">בחר כניסה — לחץ על הכניסה שלך</div>
-        <div class="airfield-map">
-          <svg viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="hng-shadow" x="-8%" y="-8%" width="116%" height="116%">
-                <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000030"/>
-              </filter>
-            </defs>
-
-            <!-- Ground -->
-            <rect width="320" height="400" fill="#EAE0C8" rx="10"/>
-
-            <!-- ── RUNWAY ── -->
-            <rect x="272" y="0" width="48" height="400" fill="#383838"/>
-            <!-- centerline -->
-            <line x1="296" y1="56" x2="296" y2="344" stroke="white" stroke-width="2.5" stroke-dasharray="18 12" opacity="0.9"/>
-            <!-- RWY 18 (top) — number first, then aiming point, then threshold -->
-            <text x="296" y="15" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="'DM Mono',monospace" letter-spacing="2">18</text>
-            <!-- threshold bars top (4 pairs) -->
-            <rect x="274" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="281" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="291" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="298" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="308" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="315" y="20" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <!-- RWY 36 (bottom) — threshold first, then number -->
-            <rect x="274" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="281" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="291" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="298" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="308" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <rect x="315" y="366" width="5" height="14" rx="1" fill="white" opacity="0.9"/>
-            <text x="296" y="396" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="'DM Mono',monospace" letter-spacing="2">36</text>
-
-            <!-- ── UPPER HANGAR: wide & short (landscape) ── -->
-            <rect x="10" y="42" width="248" height="72" rx="8" fill="#1A5FA8" filter="url(#hng-shadow)"/>
-            <text x="134" y="84" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">האנגר העליון</text>
-
-            <!-- North entrance badge — above upper hangar -->
-            <g class="entrance-zone" id="ez-N" onclick="pickEntrance('upper','N',this)" style="cursor:pointer">
-              <rect x="62" y="12" width="134" height="26" rx="13" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="62" y="12" width="134" height="26" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <text x="129" y="29" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2">כניסה צפונית  ▲</text>
-            </g>
-
-            <!-- South entrance badge — below upper hangar -->
-            <g class="entrance-zone" id="ez-S" onclick="pickEntrance('upper','S',this)" style="cursor:pointer">
-              <rect x="62" y="118" width="134" height="26" rx="13" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="62" y="118" width="134" height="26" rx="13" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <text x="129" y="135" text-anchor="middle" font-size="11" font-weight="500" fill="#1A5FA8" font-family="'DM Sans',sans-serif" letter-spacing="0.2">▼  כניסה דרומית</text>
-            </g>
-
-            <!-- ── LOWER HANGAR: narrow & tall (portrait) ── -->
-            <rect x="82" y="172" width="100" height="210" rx="8" fill="#1A5FA8" filter="url(#hng-shadow)"/>
-            <text x="132" y="272" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">האנגר</text>
-            <text x="132" y="292" text-anchor="middle" font-size="14" font-weight="600" fill="white" font-family="'DM Sans',sans-serif">התחתון</text>
-
-            <!-- East entrance badge — right side, stacked letters, arrow > -->
-            <g class="entrance-zone" id="ez-E" onclick="pickEntrance('lower','E',this)" style="cursor:pointer">
-              <rect x="186" y="216" width="28" height="122" rx="14" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="186" y="216" width="28" height="122" rx="14" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <!-- Arrow pointing right (east) at top -->
-              <text x="200" y="232" text-anchor="middle" font-size="11" fill="#1A5FA8" font-family="'DM Mono',monospace">▶</text>
-              <!-- Stacked Hebrew letters: מ ז ר ח -->
-              <text x="200" y="249" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">מ</text>
-              <text x="200" y="263" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ז</text>
-              <text x="200" y="277" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ר</text>
-              <text x="200" y="291" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ח</text>
-              <!-- Tap hint dot -->
-              <circle cx="200" cy="326" r="3" fill="#1A5FA8" opacity="0.4"/>
-            </g>
-
-            <!-- West entrance badge — left side, stacked letters, arrow < -->
-            <g class="entrance-zone" id="ez-W" onclick="pickEntrance('lower','W',this)" style="cursor:pointer">
-              <rect x="50" y="216" width="28" height="122" rx="14" fill="#1A5FA8" opacity="0.12"/>
-              <rect x="50" y="216" width="28" height="122" rx="14" fill="none" stroke="#1A5FA8" stroke-width="0.8" opacity="0.35"/>
-              <!-- Arrow pointing left (west) at top -->
-              <text x="64" y="232" text-anchor="middle" font-size="11" fill="#1A5FA8" font-family="'DM Mono',monospace">◀</text>
-              <!-- Stacked Hebrew letters: מ ע ר ב -->
-              <text x="64" y="249" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">מ</text>
-              <text x="64" y="263" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ע</text>
-              <text x="64" y="277" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ר</text>
-              <text x="64" y="291" text-anchor="middle" font-size="11" font-weight="600" fill="#1A5FA8" font-family="'DM Sans',sans-serif">ב</text>
-              <!-- Tap hint dot -->
-              <circle cx="64" cy="326" r="3" fill="#1A5FA8" opacity="0.4"/>
-            </g>
-
-            <!-- N compass -->
-            <text x="12" y="394" font-size="10" fill="#9A8F78" font-family="'DM Mono',monospace" font-weight="500">N ↑</text>
-          </svg>
+      <!-- recent usage -->
+      <div id="hangar-recent-wrap" style="display:none;">
+        <div class="sec-label" style="margin-bottom:6px;">אחרון בשימוש</div>
+        <div id="hangar-recent-card" onclick="useRecentHangar()" style="background:#F0F6FF;border:0.5px solid #B5D4F4;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+          <div style="width:34px;height:34px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;"><path d="M10 3l1.5 5H17l-4.5 3.5 1.5 5L10 14l-4.5 3.5 1.5-5L2.5 8.5H8.5z" fill="white" opacity="0.9"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div id="hangar-recent-main" style="font-size:14px;font-weight:600;color:#0C447C;line-height:1.3;"></div>
+            <div style="font-size:12px;color:#378ADD;margin-top:1px;">המשך לאן שחנית בפעם האחרונה</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+            <div id="hangar-recent-time" style="font-size:11px;color:#185FA5;font-family:'DM Mono',monospace;opacity:0.7;white-space:nowrap;"></div>
+            <div style="color:#378ADD;font-size:18px;line-height:1;">‹</div>
+          </div>
         </div>
-        <!-- Entrance confirmation strip — appears after tap -->
-        <div class="entrance-confirm-strip" id="entrance-confirm-strip">
-          <span id="entrance-confirm-text">✈ כניסה נבחרה</span>
+      </div>
+
+      <!-- hangar list + runway -->
+      <div class="sec-label" style="margin-bottom:6px;">בחר הנגר</div>
+      <div style="display:flex;gap:10px;align-items:stretch;">
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+
+          <div onclick="showEntrancePicker('upper')" style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <div style="width:36px;height:36px;border-radius:8px;background:#1a2b4a;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;letter-spacing:0.5px;flex-shrink:0;">H-U</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:#111827;">האנגר העליון</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 7 שורות</div>
+            </div>
+            <div style="color:#9ca3af;font-size:16px;">‹</div>
+          </div>
+
+          <div onclick="showEntrancePicker('lower')" style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <div style="width:36px;height:36px;border-radius:8px;background:#185FA5;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;letter-spacing:0.5px;flex-shrink:0;">H-L</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:#111827;">האנגר התחתון</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 9 שורות</div>
+            </div>
+            <div style="color:#9ca3af;font-size:16px;">‹</div>
+          </div>
+
+          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.58;">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-3</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 3</div>
+              <div style="font-size:12px;color:#9ca3af;margin-top:1px;font-style:italic;">בקרוב</div>
+            </div>
+          </div>
+
+          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.58;">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-4</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 4</div>
+              <div style="font-size:12px;color:#9ca3af;margin-top:1px;font-style:italic;">בקרוב</div>
+            </div>
+          </div>
+
         </div>
+
+        <!-- runway strip -->
+        <div style="width:38px;flex-shrink:0;background:#2d2d2d;border-radius:8px;display:flex;flex-direction:column;align-items:center;padding:6px 0;">
+          <div style="display:flex;gap:2px;margin:3px 0;"><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div></div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:white;letter-spacing:1px;margin:2px 0;">18</div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;"><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div></div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:white;letter-spacing:1px;margin:2px 0;">36</div><div style="display:flex;gap:2px;margin:3px 0;"><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div></div>
+        </div>
+      </div>
+
+      <!-- Entrance confirmation strip — appears after selection -->
+      <div class="entrance-confirm-strip" id="entrance-confirm-strip" style="margin-top:10px;">
+        <span id="entrance-confirm-text">✈ כניסה נבחרה</span>
       </div>
 
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.065</span>
+      <span class="footer-center">built by eligrt · v1.85.009</span>
     </div>
   </div>
 
@@ -874,12 +860,14 @@ input[type="file"] { display: none; }
       <div class="hangar-entrance">
         <div class="hangar-entrance-post left"></div>
         <div class="hangar-entrance-gap">
-          <div class="hangar-entrance-arrow"></div>
-          <div class="hangar-entrance-label" id="entrance-caption">כניסה</div>
+          <div class="hangar-entrance-label" id="entrance-caption">
+            <svg width="14" height="12" viewBox="0 0 14 12"><polygon points="7,12 0,0 14,0" fill="var(--green)"/></svg>
+            כניסה / יציאה
+          </div>
         </div>
         <div class="hangar-entrance-post right"></div>
       </div>
-      <div style="margin-top: 14px;"></div>
+
 
       <div class="updated-line">
         <div class="green-dot"></div>
@@ -893,7 +881,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.84.065</span>
+      <span class="footer-center">built by eligrt · v1.85.009</span>
     </div>
   </div>
 
@@ -1000,10 +988,10 @@ function goTo(id) {
   if (nameSteps)   nameSteps.style.display   = (id === 's-name'   && isOnboarding) ? 'flex' : 'none';
   if (hangarSteps) hangarSteps.style.display = (id === 's-hangar' && isOnboarding) ? 'flex' : 'none';
   if (id === 's-hangar') {
-    document.querySelectorAll('.entrance-zone').forEach(z => z.classList.remove('selected-entrance'));
     const strip = document.getElementById('entrance-confirm-strip');
     if (strip) strip.classList.remove('visible');
     selH = null; selDir = null; selRowId = null;
+    populateRecentHangar();
   }
 }
 
@@ -1177,17 +1165,56 @@ function matchCancel() {
 const DIR_NAMES = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' };
 const HANGAR_NAMES = { upper:'האנגר העליון', lower:'האנגר התחתון' };
 
+function showEntrancePicker(hangar) {
+  selH = hangar; selDir = null; selRowId = null;
+  document.getElementById('btn-done-sheet').disabled = true;
+  const entrances = hangar === 'upper'
+    ? [{ dir:'N', label:'כניסה צפונית' }, { dir:'S', label:'כניסה דרומית' }]
+    : [{ dir:'E', label:'כניסה מזרחית' }, { dir:'W', label:'כניסה מערבית' }];
+  document.getElementById('row-modal-title').textContent = HANGAR_NAMES[hangar] + ' — בחר כניסה';
+  const list = document.getElementById('row-modal-list');
+  list.innerHTML = '';
+  entrances.forEach(({ dir, label }) => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `<div><div class="list-item-label">${label}</div></div><div class="list-arrow">›</div>`;
+    div.onclick = () => pickEntrance(hangar, dir, null);
+    list.appendChild(div);
+  });
+  openRowSheet();
+}
+
+function useRecentHangar() {
+  const loc = LS.get('location');
+  if (!loc) return;
+  selH = loc.hangar; selDir = loc.dir; selRowId = loc.rowId;
+  loadMainScreen();
+  goTo('s-main');
+}
+
+function populateRecentHangar() {
+  const loc = LS.get('location');
+  const wrap = document.getElementById('hangar-recent-wrap');
+  if (!loc || !loc.rowId) { if (wrap) wrap.style.display = 'none'; return; }
+  const dirLabel = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' }[loc.dir] || '';
+  const rows = DEMO_ROWS[loc.hangar + '-' + loc.dir] || [];
+  const row = rows.find(r => r.rowId === loc.rowId);
+  if (row) document.getElementById('hangar-recent-main').textContent = HANGAR_NAMES[loc.hangar] + ' · ' + dirLabel + ' · ' + row.label;
+  const ts = LS.get('lastSaved');
+  document.getElementById('hangar-recent-time').textContent = ts || '';
+  if (wrap) wrap.style.display = 'block';
+}
+
 function pickEntrance(hangar, dir, el) {
   selH = hangar; selDir = dir; selRowId = null;
-
-  document.querySelectorAll('.entrance-zone').forEach(z => z.classList.remove('selected-entrance'));
-  el.classList.add('selected-entrance');
 
   // Show confirmation strip
   const strip = document.getElementById('entrance-confirm-strip');
   const stripText = document.getElementById('entrance-confirm-text');
-  strip.classList.add('visible');
-  stripText.textContent = '✈ ' + HANGAR_NAMES[hangar] + ' · ' + DIR_NAMES[dir] + ' — בחר שורה למטה';
+  if (strip && stripText) {
+    strip.classList.add('visible');
+    stripText.textContent = '✈ ' + HANGAR_NAMES[hangar] + ' · ' + DIR_NAMES[dir] + ' — בחר שורה';
+  }
 
   const key = hangar + '-' + dir;
   const rows = DEMO_ROWS[key] || [];
@@ -1336,7 +1363,7 @@ function loadMainScreen() {
   document.getElementById('main-title').textContent = `${hangarLabel} · ${dirLabel} · ${rowLabel}`;
   document.getElementById('main-sub').textContent   = `${user.name} · ${user.tail}`;
   const dirShort = { N:'צפונית', S:'דרומית', E:'מזרחית', W:'מערבית' }[loc.dir] || dirLabel;
-  document.getElementById('entrance-caption').textContent = `דלת כניסה (${dirShort})`;
+  document.getElementById('entrance-caption').innerHTML = `<svg width='14' height='12' viewBox='0 0 14 12'><polygon points='7,12 0,0 14,0' fill='var(--green)'/></svg> כניסה / יציאה (${dirShort})`;
 
   subscribeToRow(loc.rowId, user, row);
 }
@@ -1446,6 +1473,7 @@ async function saveRowOrder(rowId, order, byName, byTail) {
     updatedTail: byTail,
     updatedAt: ts,
   }, { merge: true });
+  LS.set('lastSaved', ts);
   notifyEmail(rowId, order, byName, byTail, ts);
 }
 
