@@ -609,7 +609,7 @@ input[type="file"] { display: none; }
     <div class="loader-status" id="loader-status">מתחבר...</div>
     <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.016</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.017</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -674,7 +674,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.016</span>
+      <span class="footer-center">built by eligrt · v1.85.017</span>
     </div>
   </div>
 
@@ -800,7 +800,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.016</span>
+      <span class="footer-center">built by eligrt · v1.85.017</span>
     </div>
   </div>
 
@@ -856,6 +856,19 @@ input[type="file"] { display: none; }
     </div>
   </div>
 
+  <!-- ══ SAVE CONFIRMATION MODAL ══ -->
+  <div id="save-confirm-overlay" onclick="closeSaveConfirm()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;transition:opacity 0.2s;opacity:0;"></div>
+  <div id="save-confirm-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.92);width:calc(100% - 40px);max-width:340px;background:white;border-radius:18px;z-index:201;transition:opacity 0.2s,transform 0.2s;opacity:0;direction:rtl;overflow:hidden;">
+    <div style="padding:28px 20px 16px;text-align:center;">
+      <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:56px;height:56px;border-radius:14px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;" />
+      <div style="font-size:22px;margin-bottom:8px;">✅</div>
+      <div style="font-size:17px;font-weight:700;color:#111827;font-family:'DM Sans',sans-serif;">סדר החנייה עודכן בהצלחה</div>
+    </div>
+    <div style="padding:0 16px 22px;">
+      <button onclick="closeSaveConfirm()" style="width:100%;padding:14px;border-radius:9px;background:#0F3F6E;color:white;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">אישור</button>
+    </div>
+  </div>
+
   <!-- ══ SCREEN 3: MAIN ROW VIEW ══ -->
   <div class="screen" id="s-main">
     <div class="topbar">
@@ -907,7 +920,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.016</span>
+      <span class="footer-center">built by eligrt · v1.85.017</span>
     </div>
   </div>
 
@@ -1967,16 +1980,27 @@ function confirmOrder() {
   const pad = n => String(n).padStart(2,'0');
   const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   document.getElementById('updated-text').textContent = `עודכן ע"י ${user.name} (${user.tail}) · ${ts}`;
-  const wasChanged = orderChanged;
   orderChanged = false;
-  if (wasChanged) {
-    const btn = document.getElementById('confirm-btn');
-    btn.classList.remove('changed');
-    btn.classList.add('saved');
-    btn.innerHTML = '✓ סדר החנייה נשמר בהצלחה';
-  } else {
-    updateConfirmBtn();
-  }
+  updateConfirmBtn();
+  // Show save confirmation popup
+  const overlay = document.getElementById('save-confirm-overlay');
+  const modal   = document.getElementById('save-confirm-modal');
+  overlay.style.display = 'block';
+  modal.style.display   = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    modal.style.opacity   = '1';
+    modal.style.transform = 'translate(-50%,-50%) scale(1)';
+  }));
+}
+
+function closeSaveConfirm() {
+  const overlay = document.getElementById('save-confirm-overlay');
+  const modal   = document.getElementById('save-confirm-modal');
+  overlay.style.opacity = '0';
+  modal.style.opacity   = '0';
+  modal.style.transform = 'translate(-50%,-50%) scale(0.92)';
+  setTimeout(() => { overlay.style.display = 'none'; modal.style.display = 'none'; }, 200);
 }
 
 function confirmReset() {
