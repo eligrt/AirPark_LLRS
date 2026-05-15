@@ -612,7 +612,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.045</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.046</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -668,11 +668,11 @@ input[type="file"] { display: none; }
         <input type="file" id="fileInput" accept="image/*" onchange="handlePhoto(event)" />
       </div>
 
-      <button class="btn-primary" onclick="step1Next()">המשך <span class="plane-flip">✈</span></button>
+      <button class="btn-primary" id="step1-btn" onclick="step1Next()">המשך <span class="plane-flip">✈</span></button>
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.045</span>
+      <span class="footer-center">built by eligrt · v1.85.046</span>
     </div>
   </div>
 
@@ -704,7 +704,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.045</span>
+      <span class="footer-center">built by eligrt · v1.85.046</span>
     </div>
   </div>
 
@@ -802,7 +802,9 @@ input[type="file"] { display: none; }
           <div class="topbar-sub" id="main-sub">טוען...</div>
         </div>
       </div>
-
+      <div class="topbar-links">
+        <span class="settings-link" onclick="openPhotoEdit()">📷 עדכן תמונה</span>
+      </div>
     </div>
 
     <div class="main-body">
@@ -837,7 +839,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.045</span>
+      <span class="footer-center">built by eligrt · v1.85.046</span>
     </div>
   </div>
 
@@ -912,9 +914,24 @@ function goTo(id) {
     document.getElementById('photoPlaceholder').style.display = 'flex';
     document.getElementById('photo-meta').textContent = '';
 
+    // Photo-edit mode: disable name+tail fields
+    const photoEditMode = !!window._photoEditMode;
+    window._photoEditMode = false;
+    window._photoEditModeActive = photoEditMode;
+    const nameEl = document.getElementById('inp-name');
+    const tailEl = document.getElementById('inp-tail');
+    nameEl.disabled = photoEditMode;
+    nameEl.style.opacity = photoEditMode ? '0.5' : '1';
+    tailEl.disabled = photoEditMode;
+    tailEl.style.opacity = photoEditMode ? '0.5' : '1';
+    const btn = document.getElementById('step1-btn');
+    if (btn) btn.innerHTML = photoEditMode
+      ? 'שמור תמונה <span class="plane-flip">✈</span>'
+      : 'המשך <span class="plane-flip">✈</span>';
+
     if (user) {
-      document.getElementById('inp-name').value = user.name || '';
-      document.getElementById('inp-tail').value = (user.tail || '').replace('4X-', '');
+      nameEl.value = user.name || '';
+      tailEl.value = (user.tail || '').replace('4X-', '');
       // Fetch photo from Firestore directly — don't rely on localStorage or typing
       if (user.tail) {
         document.getElementById('photo-meta').textContent = 'טוען...';
@@ -1011,6 +1028,21 @@ async function fetchPhotoPreview(tail) {
 }
 
 function step1Next() {
+  // Photo-edit mode: only save photo, don't change name/tail
+  if (window._photoEditModeActive) {
+    const user = LS.get('user');
+    if (!user) { goTo('s-main'); return; }
+    if (photoDataURL) {
+      user.photoURL = photoDataURL;
+      LS.set('user', user);
+      savePilotToFirestore(user.tail, user.name, photoDataURL);
+    }
+    window._photoEditModeActive = false;
+    loadMainScreen();
+    goTo('s-main');
+    showToast('תמונה עודכנה ✓', 'green');
+    return;
+  }
   const name = document.getElementById('inp-name').value.trim();
   const tail = document.getElementById('inp-tail').value.trim();
   if (!name || !tail) { showToast('נא למלא שם ומספר זנב'); return; }
@@ -1092,6 +1124,14 @@ function matchConfirm() {
   closeMatchModal();
   loadMainScreen();
   goTo('s-main');
+}
+
+function openPhotoEdit() {
+  const user = LS.get('user');
+  if (!user) return;
+  // Set photo-edit mode flag
+  window._photoEditMode = true;
+  goTo('s-name');
 }
 
 function openWhatsApp() {
