@@ -372,10 +372,38 @@
     // ── Plane edit modal ──
     let _editKey, _editRowId, _editOldTail;
 
-    window.editPlane = function(key, rowId, tail) {
+    let _planeModalNewPhoto = null;  // base64 of new photo
+    let _planeModalDeletePhoto = false; // mark photo for deletion
+
+    window.editPlane = async function(key, rowId, tail) {
       _editKey = key; _editRowId = rowId; _editOldTail = tail;
+      _planeModalNewPhoto = null;
+      _planeModalDeletePhoto = false;
       document.getElementById('plane-modal-input').value = tail;
-      document.getElementById('plane-modal-title').textContent = 'עריכת מטוס';
+      document.getElementById('plane-modal-title').textContent = 'עריכת מטוס — 4X-' + tail;
+      // Reset photo circle
+      const circle = document.getElementById('plane-modal-photo-circle');
+      circle.innerHTML = '✈';
+      circle.style.fontSize = '28px';
+      // Load existing photo
+      try {
+        const q = query(collection(db, 'pilots'), where('updatedByTail', '==', '4X-' + tail));
+        const snap = await getDocs(q);
+        const withPhoto = snap.docs.filter(d => d.data().photoURL);
+        if (withPhoto.length > 0) {
+          withPhoto.sort((a,b) => (b.data().updatedAt||'').localeCompare(a.data().updatedAt||''));
+          circle.innerHTML = `<img src="${withPhoto[0].data().photoURL}" style="width:100%;height:100%;object-fit:cover;"/>`;
+          circle.style.fontSize = '';
+          document.getElementById('plane-modal-del-photo-btn').style.display = 'block';
+          window._editPhotoDocId = withPhoto[0].id;
+        } else {
+          document.getElementById('plane-modal-del-photo-btn').style.display = 'none';
+          window._editPhotoDocId = null;
+        }
+      } catch(e) {
+        document.getElementById('plane-modal-del-photo-btn').style.display = 'none';
+        window._editPhotoDocId = null;
+      }
       document.getElementById('plane-modal-overlay').style.display = 'flex';
       setTimeout(() => document.getElementById('plane-modal-input').focus(), 80);
     };
@@ -386,6 +414,44 @@
       document.getElementById('plane-modal-title').textContent = 'הוסף מטוס';
       document.getElementById('plane-modal-overlay').style.display = 'flex';
       setTimeout(() => document.getElementById('plane-modal-input').focus(), 80);
+    };
+
+    window.handlePlaneModalPhoto = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        // Resize to max 400px to stay under Firestore 1MB limit
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 400;
+          let w = img.width, h = img.height;
+          if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
+          else if (h > MAX) { w = w * MAX / h; h = MAX; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const resized = canvas.toDataURL('image/jpeg', 0.8);
+          _planeModalNewPhoto = resized;
+          _planeModalDeletePhoto = false;
+          const circle = document.getElementById('plane-modal-photo-circle');
+          circle.innerHTML = `<img src="${resized}" style="width:100%;height:100%;object-fit:cover;"/>`;
+          circle.style.fontSize = '';
+          document.getElementById('plane-modal-del-photo-btn').style.display = 'block';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    };
+
+    window.markDeletePlanePhoto = function() {
+      _planeModalDeletePhoto = true;
+      _planeModalNewPhoto = null;
+      const circle = document.getElementById('plane-modal-photo-circle');
+      circle.innerHTML = '✈';
+      circle.style.fontSize = '28px';
+      document.getElementById('plane-modal-del-photo-btn').style.display = 'none';
     };
 
     window.closePlaneModal = function() {
@@ -400,18 +466,40 @@
       const row = CONFIG[_editKey].rows.find(r => r.rowId === _editRowId);
       if (!row) return;
       if (_editOldTail) {
-        // Update existing
         const idx = row.planes.indexOf(_editOldTail);
         if (idx !== -1) row.planes[idx] = newTail;
       } else {
-        // Add new
         if (row.planes.includes(newTail)) { showAdminToast('מטוס זה כבר בשורה'); return; }
         if (row.planes.length >= 3) { showAdminToast('שורה מלאה'); return; }
         row.planes.push(newTail);
       }
       await saveConfig(_editKey);
+
+      // Handle photo changes
+      if (_planeModalDeletePhoto && window._editPhotoDocId) {
+        // Remove photoURL field from the pilot doc
+        try {
+          await setDoc(doc(db, 'pilots', window._editPhotoDocId), { photoURL: null }, { merge: true });
+        } catch(e) { console.warn('photo delete failed', e); }
+      } else if (_planeModalNewPhoto) {
+        // Save new photo — find or create pilot doc for this tail
+        const now = new Date();
+        const pad = n => String(n).padStart(2,'0');
+        const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        const docId = window._editPhotoDocId || ('4X-' + newTail + '_admin');
+        try {
+          await setDoc(doc(db, 'pilots', docId), {
+            photoURL: _planeModalNewPhoto,
+            updatedBy: 'admin',
+            updatedByTail: '4X-' + newTail,
+            updatedAt: ts,
+          }, { merge: true });
+        } catch(e) { console.warn('photo save failed', e); }
+      }
+
       closePlaneModal();
       renderConfigSection();
+      showAdminToast('מטוס עודכן ✓');
     };
 
     window.deletePlaneModal = function() {
@@ -951,24 +1039,30 @@
     </div>
 
     <!-- ══ PLANE EDIT MODAL ══ -->
+    <input type="file" id="plane-modal-file" accept="image/*" style="display:none;" onchange="handlePlaneModalPhoto(event)"/>
     <div id="plane-modal-overlay" onclick="closePlaneModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:rtl;">
-        <!-- Main state -->
         <div id="plane-modal-main">
           <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:14px;" id="plane-modal-title">עריכת מטוס</div>
-          <div class="tail-wrap">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <div id="plane-modal-photo-circle" style="width:72px;height:72px;border-radius:50%;background:#f3f4f6;border:0.5px solid #e5e7eb;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;">✈</div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <button onclick="document.getElementById('plane-modal-file').click()" style="padding:7px 12px;background:#f3f4f6;border:0.5px solid #e5e7eb;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:right;">📷 החלף תמונה</button>
+              <button id="plane-modal-del-photo-btn" onclick="markDeletePlanePhoto()" style="padding:7px 12px;background:#FEE2E2;border:none;border-radius:7px;font-size:12px;font-weight:600;color:#DC2626;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:right;display:none;">🗑 מחק תמונה</button>
+            </div>
+          </div>
+          <div class="tail-wrap" style="margin-bottom:16px;">
             <span class="tail-prefix">4X-</span>
             <input class="tail-input-modal" id="plane-modal-input" type="text" maxlength="4" placeholder="HHH"
               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
               onkeydown="if(event.key==='Enter') savePlaneModal()"/>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">שמור</button>
+            <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">עדכן</button>
             <button id="plane-modal-delete" onclick="deletePlaneModal()" style="width:100%;padding:12px;background:#FEE2E2;color:#DC2626;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">מחק מטוס</button>
             <button onclick="closePlaneModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
           </div>
         </div>
-        <!-- Confirm delete state -->
         <div id="plane-modal-confirm" style="display:none;">
           <div style="text-align:center;padding:8px 0 16px;">
             <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
@@ -983,7 +1077,7 @@
       </div>
     </div>
 
-    <div class="config-section" style="margin-top:20px;">
+        <div class="config-section" style="margin-top:20px;">
       <div class="collapsible-header" onclick="toggleSection('pilots-section-body','pilots-section-chevron')">
         <span style="font-size:13px;font-weight:600;color:var(--text);">ניהול טייסים ומטוסים <span id="pilots-count" style="font-weight:400;color:var(--text2);"></span></span>
         <span id="pilots-section-chevron" class="chevron" style="font-size:11px;">▼</span>
@@ -1013,7 +1107,7 @@
 
     <div id="admin-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#111827;color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.53</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.55</span></div>
   </div>
 </body>
 </html>
