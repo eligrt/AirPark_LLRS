@@ -25,7 +25,7 @@
 <script type="module">
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const { getStorage, ref, uploadString, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
 
     // ─── REPLACE WITH YOUR FIREBASE CONFIG ───
@@ -44,7 +44,7 @@
 
     window._db = db;
     window._storage = storage;
-    window._dbOps = { doc, getDoc, setDoc, onSnapshot, collection, ref, uploadString, getDownloadURL };
+    window._dbOps = { doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs, ref, uploadString, getDownloadURL };
     window._firebaseReady = true;
     document.dispatchEvent(new Event('firebase-ready'));
   } catch(e) {
@@ -612,7 +612,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.041</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.045</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -672,7 +672,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.041</span>
+      <span class="footer-center">built by eligrt · v1.85.045</span>
     </div>
   </div>
 
@@ -704,7 +704,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.041</span>
+      <span class="footer-center">built by eligrt · v1.85.045</span>
     </div>
   </div>
 
@@ -837,7 +837,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.041</span>
+      <span class="footer-center">built by eligrt · v1.85.045</span>
     </div>
   </div>
 
@@ -995,11 +995,15 @@ async function fetchPhotoPreview(tail) {
   if (!window._firebaseReady) return;
   if (photoDataURL) return; // pilot already took a new photo — don't overwrite
   try {
-    const { doc, getDoc } = window._dbOps;
-    const snap = await getDoc(doc(window._db, 'pilots', tail));
-    if (snap.exists() && snap.data().photoURL) {
+    const { collection, query, where, getDocs } = window._dbOps;
+    const q = query(collection(window._db, 'pilots'), where('updatedByTail', '==', tail));
+    const snap = await getDocs(q);
+    // Find most recently updated doc with a photo
+    const withPhoto = snap.docs.filter(d => d.data().photoURL);
+    if (withPhoto.length > 0) {
+      withPhoto.sort((a,b) => (b.data().updatedAt||'').localeCompare(a.data().updatedAt||''));
       const prev = document.getElementById('photoPreview');
-      prev.src = snap.data().photoURL;
+      prev.src = withPhoto[0].data().photoURL;
       prev.style.display = 'block';
       document.getElementById('photoPlaceholder').style.display = 'none';
     }
@@ -1015,8 +1019,8 @@ function step1Next() {
   const photoURL = photoDataURL || existingUser?.photoURL || null;
   LS.set('user', { name, tail: '4X-' + tail, photoURL });
 
-  // Save photo in background — never blocks navigation
-  if (photoDataURL) savePhotoToFirestore('4X-' + tail, photoDataURL);
+  // Save pilot to Firestore (name + tail always, photo if available)
+  savePilotToFirestore('4X-' + tail, name, photoDataURL);
 
   // If already has a saved location (editing name/photo only) → go straight to main
   if (LS.get('location')) {
@@ -1282,6 +1286,25 @@ function finishSetup() {
 }
 
 // ─── Save this pilot's photo to Firestore under pilots/{tail} ───
+// Build pilot document ID: tail_name (e.g. "4X-HYD_אלי-גרין")
+function pilotDocId(tail, name) {
+  return tail + '_' + name.replace(/\s+/g, '-');
+}
+
+async function savePilotToFirestore(tail, name, base64) {
+  if (!window._firebaseReady) return;
+  try {
+    const { doc, setDoc } = window._dbOps;
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const docId = pilotDocId(tail, name);
+    const data = { updatedBy: name, updatedByTail: tail, updatedAt: ts };
+    if (base64) data.photoURL = base64;
+    await setDoc(doc(window._db, 'pilots', docId), data, { merge: true });
+  } catch(e) { console.warn('Pilot save failed:', e); }
+}
+
 async function savePhotoToFirestore(tail, base64) {
   if (!window._firebaseReady) return;
   try {
@@ -1290,7 +1313,8 @@ async function savePhotoToFirestore(tail, base64) {
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
     const ts = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    await setDoc(doc(window._db, 'pilots', tail), {
+    const docId = pilotDocId(tail, user?.name || tail);
+    await setDoc(doc(window._db, 'pilots', docId), {
       photoURL:      base64,
       updatedBy:     user?.name || '',
       updatedByTail: user?.tail || tail,
@@ -1305,12 +1329,14 @@ async function fetchPhotoMeta(tail) {
   if (!el || !tail) { if (el) el.textContent = ''; return; }
   const doFetch = async () => {
     try {
-      const { doc, getDoc } = window._dbOps;
-      // tail is stored with 4X- prefix in Firestore
-      const snap = await getDoc(doc(window._db, 'pilots', tail));
-      console.log('fetchPhotoMeta:', tail, 'exists:', snap.exists(), snap.exists() ? snap.data() : 'no doc');
-      if (snap.exists() && snap.data().updatedAt) {
-        const d = snap.data();
+      const { collection, query, where, getDocs } = window._dbOps;
+      const q = query(collection(window._db, 'pilots'), where('updatedByTail', '==', tail));
+      const snap = await getDocs(q);
+      const user = LS.get('user');
+      // Find this user's own doc
+      const myDoc = snap.docs.find(d => d.data().updatedBy === user?.name);
+      const d = myDoc ? myDoc.data() : (snap.docs[0] ? snap.docs[0].data() : null);
+      if (d && d.updatedAt) {
         el.textContent = `עודכן ע"י ${d.updatedBy} · ${d.updatedAt}`;
       } else {
         el.textContent = '';
@@ -1326,14 +1352,23 @@ async function fetchPhotosForRow(tails) {
   for (const tail of tails) {
     try {
       const { doc, getDoc } = window._dbOps;
-      const snap = await getDoc(doc(window._db, 'pilots', tail));
+      const { collection: col2, query: q2, where: w2, getDocs: gd2 } = window._dbOps;
+      const qSnap = await gd2(q2(col2(window._db, 'pilots'), w2('updatedByTail', '==', tail)));
       const thumb = [...document.querySelectorAll('#cardsList .card-tail')]
         .find(el => el.textContent === tail)
         ?.closest('.plane-card')
         ?.querySelector('.plane-thumb');
       if (!thumb) continue;
-      if (snap.exists() && snap.data().photoURL) {
-        thumb.innerHTML = `<img src="${snap.data().photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;" />`;
+      // Show photo from any owner — prefer one with a photo
+      // Use most recently updated photo for this plane
+      const docsWithPhoto = qSnap.docs.filter(d => d.data().photoURL);
+      if (docsWithPhoto.length > 0) {
+        docsWithPhoto.sort((a,b) => {
+          const ta = a.data().updatedAt || '';
+          const tb = b.data().updatedAt || '';
+          return tb.localeCompare(ta);
+        });
+        thumb.innerHTML = `<img src="${docsWithPhoto[0].data().photoURL}" alt="" style="width:100%;height:100%;object-fit:cover;" />`;
       }
       // If no photo exists — leave the default ✈ icon, no error shown
     } catch(e) {
@@ -1999,7 +2034,15 @@ function boot() {
     if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
     if (statusEl) statusEl.innerHTML = 'מתחבר...';
     setTimeout(() => { if (statusEl) statusEl.innerHTML = 'בודק את מיקום המטוס שלך בחניה...'; }, 1800);
-    setTimeout(navigateAfterSplash, 4500);
+    setTimeout(async () => {
+      // Re-fetch photos silently before navigating
+      const loc = LS.get('location');
+      const key = loc ? loc.hangar + '-' + loc.dir : null;
+      const rows = key ? (ROW_CONFIG[key] || []) : [];
+      const row = rows.find(r => r.rowId === loc?.rowId);
+      if (row) await fetchPhotosForRow(row.planes.map(t => '4X-' + t));
+      navigateAfterSplash();
+    }, 4500);
   }
 }
 
