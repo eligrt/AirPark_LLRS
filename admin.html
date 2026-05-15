@@ -81,16 +81,20 @@
         const rowTs = parseTs(row.updatedAt);
         if (rowTs) { totalActive++; if (rowTs > lastUpdated) lastUpdated = rowTs; }
       }
-      for (const [, pilots] of Object.entries(pilotsMap)) {
+      for (const [tail, pilots] of Object.entries(pilotsMap)) {
         totalPilots += pilots.length;
-        totalPhotos += pilots.filter(p => p.hasPhoto).length;
+        if (pilots.some(p => p.hasPhoto) || rowPhotos[tail]) totalPhotos++;
+      }
+      // Count planes with photos only in rowPhotos (not already in pilotsMap)
+      for (const tail of Object.keys(rowPhotos)) {
+        if (!pilotsMap[tail]) totalPhotos++;
       }
       document.getElementById('stat-active').textContent = totalActive;
       document.getElementById('stat-pilots').textContent = totalPilots;
       document.getElementById('stat-photos').textContent = totalPhotos;
       document.getElementById('stat-last').textContent   = lastUpdated ? formatAge(lastUpdated) : '—';
 
-      renderConfigSection(rowsMap, pilotsMap);
+      renderConfigSection(rowsMap, pilotsMap, rowPhotos);
       updateHighlights();
     };
 
@@ -137,11 +141,12 @@
 
     };
 
-    let _rowsMap = {}, _pilotsMap = {};
+    let _rowsMap = {}, _pilotsMap = {}, _rowPhotos = {};
 
-    function renderConfigSection(rowsMap, pilotsMap) {
+    function renderConfigSection(rowsMap, pilotsMap, rowPhotos) {
       if (rowsMap)   _rowsMap   = rowsMap;
       if (pilotsMap) _pilotsMap = pilotsMap;
+      if (rowPhotos) _rowPhotos = rowPhotos;
       const container = document.getElementById('config-body');
       if (!container) return;
       let html = `<div class="cfg-grid-header">
@@ -166,7 +171,7 @@
           const rowData = _rowsMap[row.rowId] || {};
           const bucket  = ageBucket(rowData.updatedAt);
           const age     = formatAge(rowData.updatedAt);
-          const rowHasPhoto = row.planes.some(t => (_pilotsMap[t]||[]).some(p => p.hasPhoto)) ? 'yes' : 'no';
+          const rowHasPhoto = row.planes.some(t => (_pilotsMap[t]||[]).some(p => p.hasPhoto) || !!_rowPhotos[t]) ? 'yes' : 'no';
           let planesHtml = '';
           row.planes.forEach(tail => {
             planesHtml += `<div class="cfg-plane">
@@ -195,7 +200,11 @@
           })() : '—';
           const planeCols = [0,1,2].map(i => {
             const t = row.planes[i];
-            if (t) return `<span class="cfg-plane-pill" onclick="editPlane('${key}','${row.rowId}','${t}')">4X-${t}</span>`;
+            if (t) {
+              const hasPhoto = (_pilotsMap[t]||[]).some(p => p.hasPhoto) || !!_rowPhotos[t];
+              const cam = hasPhoto ? ' 📷' : '';
+              return `<span class="cfg-plane-pill" onclick="editPlane('${key}','${row.rowId}','${t}')">4X-${t}${cam}</span>`;
+            }
             if (row.planes.length === i) return `<span class="cfg-plane-pill cfg-plane-add" onclick="showAddPlane('${key}','${row.rowId}')">+ Add</span>`;
             return `<span class="cfg-plane-empty-slot">—</span>`;
           }).join('');
@@ -269,13 +278,30 @@
         rowsMap[doc.id] = { updatedAt: d.updatedAt || null, updatedBy: d.updatedBy || '' };
       });
 
+      // Also collect photos from rows collection (old format)
+      const rowPhotos = {}; // tail → true
+      rowsSnap.forEach(doc => {
+        const d = doc.data();
+        if (d.order && Array.isArray(d.order)) {
+          d.order.forEach(entry => {
+            if (entry.tail && entry.photoURL) {
+              const t = entry.tail.replace('4X-','');
+              rowPhotos[t] = true;
+            }
+          });
+        }
+      });
+
       const pilotsMap = {};
       pilotsSnap.forEach(doc => {
         const d = doc.data();
         // doc.id format: "4X-HYD_אלי-גרין" — extract tail part before "_"
-        const tail = doc.id.includes('_') ? doc.id.split('_')[0].replace('4X-','') : doc.id.replace('4X-','');
+        // Use updatedByTail field if available (most reliable), fallback to doc.id parsing
+        const rawTail = d.updatedByTail || (doc.id.includes('_') ? doc.id.split('_')[0] : doc.id);
+        const tail = rawTail.replace('4X-','');
         if (!pilotsMap[tail]) pilotsMap[tail] = [];
-        pilotsMap[tail].push({ name: d.updatedBy || '', hasPhoto: !!d.photoURL, docId: doc.id });
+        pilotsMap[tail].push({ name: d.updatedBy || '', hasPhoto: !!(d.photoURL), docId: doc.id });
+        if (d.photoURL) rowPhotos[tail] = true;
       });
 
       let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0;
@@ -283,9 +309,13 @@
         const rowTs = parseTs(row.updatedAt);
         if (rowTs) { totalActive++; if (rowTs > lastUpdated) lastUpdated = rowTs; }
       }
-      for (const [, pilots] of Object.entries(pilotsMap)) {
+      for (const [tail, pilots] of Object.entries(pilotsMap)) {
         totalPilots += pilots.length;
-        totalPhotos += pilots.filter(p => p.hasPhoto).length;
+        if (pilots.some(p => p.hasPhoto) || rowPhotos[tail]) totalPhotos++;
+      }
+      // Count planes with photos only in rowPhotos (not already in pilotsMap)
+      for (const tail of Object.keys(rowPhotos)) {
+        if (!pilotsMap[tail]) totalPhotos++;
       }
 
       document.getElementById('stat-active').textContent = totalActive;
@@ -293,7 +323,7 @@
       document.getElementById('stat-photos').textContent = totalPhotos;
       document.getElementById('stat-last').textContent   = lastUpdated ? formatAge(lastUpdated) : '—';
 
-      renderConfigSection(rowsMap, pilotsMap);
+      renderConfigSection(rowsMap, pilotsMap, rowPhotos);
 
 
       const tailLocMap = {};
@@ -983,7 +1013,7 @@
 
     <div id="admin-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#111827;color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.50</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.53</span></div>
   </div>
 </body>
 </html>
