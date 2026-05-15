@@ -808,6 +808,7 @@
     /* filters */
     .filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
     .filter-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filter-label { width: 100%; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: -2px; }
     .filter-label { font-size: 11px; color: var(--text2); min-width: 52px; }
     .pill { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid var(--border-med); cursor: pointer; color: var(--text2); background: var(--white); transition: all 0.15s; user-select: none; }
     .pill.active { color: var(--blue); border-color: var(--blue-m); background: var(--blue-l); font-weight: 600; }
@@ -914,7 +915,7 @@
     .cfg-col-plane { font-size: 10px; font-weight: 600; color: var(--text2); }
     .cfg-col-age { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; }
     .cfg-col-del { font-size: 10px; font-weight: 600; color: var(--text2); }
-    .cfg-plane-pill { display: inline-flex; justify-content: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 7px; padding: 5px 8px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; box-sizing: border-box; }
+    .cfg-plane-pill { display: inline-flex; justify-content: center; align-items: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 7px; padding: 0 8px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; box-sizing: border-box; height: 32px; }
     .cfg-plane-pill:hover { background: var(--blue-l); border-color: var(--blue-m); }
     .cfg-plane-add { background: transparent; border-style: dashed; color: var(--blue); font-weight: 500; }
     .cfg-plane-empty-slot { display: inline-flex; justify-content: center; color: var(--border-med); font-size: 12px; width: 100%; }
@@ -1168,7 +1169,7 @@
       </div>
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.61</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.62</span></div>
   </div>
 </body>
 </html>
