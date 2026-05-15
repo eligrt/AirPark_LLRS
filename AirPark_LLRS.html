@@ -625,7 +625,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.056</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.057</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.056</span>
+      <span class="footer-center">built by eligrt · v1.85.057</span>
     </div>
   </div>
 
@@ -722,7 +722,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.056</span>
+      <span class="footer-center">built by eligrt · v1.85.057</span>
     </div>
   </div>
 
@@ -862,7 +862,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.056</span>
+      <span class="footer-center">built by eligrt · v1.85.057</span>
       <span class="footer-reset" onclick="window.open(location.pathname+'?demo','_blank')" style="opacity:0.25;">demo</span>
     </div>
   </div>
@@ -1190,7 +1190,7 @@ function openWhatsApp() {
   const isDemo = window.location.search.includes('demo');
   let msg;
   if (isDemo) {
-    msg = encodeURIComponent('היי אלי, ראיתי את AirPark ואני מעוניין להצטרף למנחת ריאל 🛫');
+    msg = encodeURIComponent('היי אלי, ראיתי את AirPark ואשמח להצטרף 🛫');
   } else {
     const user = LS.get('user') || {};
     const name = user.name || '';
@@ -2096,8 +2096,8 @@ function triggerReset() {
   localStorage.removeItem('user');
   localStorage.removeItem('location');
   localStorage.removeItem('launched');
-  // Reload page so boot() runs fresh with isFirstLaunch = true
-  window.location.reload();
+  // Reload without any URL params (strips ?demo etc)
+  window.location.href = window.location.pathname;
 }
 
 // Splash starts immediately on DOMContentLoaded.
