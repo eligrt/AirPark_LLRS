@@ -625,7 +625,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.051</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.052</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.051</span>
+      <span class="footer-center">built by eligrt · v1.85.052</span>
     </div>
   </div>
 
@@ -722,7 +722,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.051</span>
+      <span class="footer-center">built by eligrt · v1.85.052</span>
     </div>
   </div>
 
@@ -857,7 +857,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.051</span>
+      <span class="footer-center">built by eligrt · v1.85.052</span>
     </div>
   </div>
 
@@ -1063,9 +1063,8 @@ function step1Next() {
       savePilotToFirestore(user.tail, user.name, photoDataURL);
     }
     window._photoEditModeActive = false;
-    loadMainScreen();
-    goTo('s-main');
-    // Show photo saved modal
+    window._photoSaveNeedsNav = true;
+    // Show photo saved modal — navigation happens on OK
     showPhotoSavedModal();
     return;
   }
@@ -2045,6 +2044,11 @@ function closeSaveConfirm() {
     modal.style.display = 'none';
     const t = document.getElementById('save-confirm-title');
     if (t) t.textContent = 'סדר החנייה עודכן בהצלחה';
+    if (window._photoSaveNeedsNav) {
+      window._photoSaveNeedsNav = false;
+      loadMainScreen();
+      goTo('s-main');
+    }
   }, 200);
 }
 
