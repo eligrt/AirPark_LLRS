@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script type="module">
     import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getFirestore, collection, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, getDocs, deleteDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey:            "AIzaSyDlZmmx94yjGiaDBm6g2qtMyguqcl1QJjc",
@@ -25,67 +25,132 @@
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    const HANGARS = [
-      { id: 'upper-N', label: 'האנגר העליון · כניסה צפונית', rows: [
-        { rowId: 'upper-N-1',  num: 1,  planes: ['NA1','NA2','NA3'] },
-        { rowId: 'upper-N-2',  num: 2,  planes: ['NB1','NB2','NB3'] },
-        { rowId: 'upper-N-3',  num: 3,  planes: ['NC1','NC2','NC3'] },
-        { rowId: 'upper-N-4',  num: 4,  planes: ['ND1','ND2','ND3'] },
-        { rowId: 'upper-N-5',  num: 5,  planes: ['HYD','HRS','HRC'] },
-        { rowId: 'upper-N-6',  num: 6,  planes: ['NF1','NF2','NF3'] },
-        { rowId: 'upper-N-7',  num: 7,  planes: ['NG1','NG2','NG3'] },
-        { rowId: 'upper-N-8',  num: 8,  planes: ['NH1','NH2','NH3'] },
-        { rowId: 'upper-N-9',  num: 9,  planes: ['NI1','NI2','NI3'] },
-        { rowId: 'upper-N-10', num: 10, planes: ['NJ1','NJ2','NJ3'] },
-        { rowId: 'upper-N-11', num: 11, planes: ['NK1','NK2','NK3'] },
-        { rowId: 'upper-N-12', num: 12, planes: ['NL1','NL2','NL3'] },
-      ]},
-      { id: 'upper-S', label: 'האנגר העליון · כניסה דרומית', rows: [
-        { rowId: 'upper-S-1',  num: 1,  planes: ['SA1','SA2','SA3'] },
-        { rowId: 'upper-S-2',  num: 2,  planes: ['SB1','SB2','SB3'] },
-        { rowId: 'upper-S-3',  num: 3,  planes: ['SC1','SC2','SC3'] },
-        { rowId: 'upper-S-4',  num: 4,  planes: ['SD1','SD2','SD3'] },
-        { rowId: 'upper-S-5',  num: 5,  planes: ['SE1','SE2','SE3'] },
-        { rowId: 'upper-S-6',  num: 6,  planes: ['SF1','SF2','SF3'] },
-        { rowId: 'upper-S-7',  num: 7,  planes: ['SG1','SG2','SG3'] },
-        { rowId: 'upper-S-8',  num: 8,  planes: ['SH1','SH2','SH3'] },
-        { rowId: 'upper-S-9',  num: 9,  planes: ['SI1','SI2','SI3'] },
-        { rowId: 'upper-S-10', num: 10, planes: ['SJ1','SJ2','SJ3'] },
-        { rowId: 'upper-S-11', num: 11, planes: ['SK1','SK2','SK3'] },
-        { rowId: 'upper-S-12', num: 12, planes: ['SL1','SL2','SL3'] },
-      ]},
-      { id: 'lower-E', label: 'האנגר התחתון · כניסה מזרחית', rows: [
-        { rowId: 'lower-E-1',  num: 1,  planes: ['EA1','EA2','EA3'] },
-        { rowId: 'lower-E-2',  num: 2,  planes: ['EB1','EB2','EB3'] },
-        { rowId: 'lower-E-3',  num: 3,  planes: ['EC1','EC2','EC3'] },
-        { rowId: 'lower-E-4',  num: 4,  planes: ['ED1','ED2','ED3'] },
-        { rowId: 'lower-E-5',  num: 5,  planes: ['EE1','EE2','EE3'] },
-        { rowId: 'lower-E-6',  num: 6,  planes: ['EF1','EF2','EF3'] },
-        { rowId: 'lower-E-7',  num: 7,  planes: ['EG1','EG2','EG3'] },
-        { rowId: 'lower-E-8',  num: 8,  planes: ['EH1','EH2','EH3'] },
-        { rowId: 'lower-E-9',  num: 9,  planes: ['EI1','EI2','EI3'] },
-        { rowId: 'lower-E-10', num: 10, planes: ['EJ1','EJ2','EJ3'] },
-        { rowId: 'lower-E-11', num: 11, planes: ['EK1','EK2','EK3'] },
-        { rowId: 'lower-E-12', num: 12, planes: ['EL1','EL2','EL3'] },
-      ]},
-      { id: 'lower-W', label: 'האנגר התחתון · כניסה מערבית', rows: [
-        { rowId: 'lower-W-1',  num: 1,  planes: ['WA1','WA2','WA3'] },
-        { rowId: 'lower-W-2',  num: 2,  planes: ['WB1','WB2','WB3'] },
-        { rowId: 'lower-W-3',  num: 3,  planes: ['HYH','HLR','HMZ'] },
-        { rowId: 'lower-W-4',  num: 4,  planes: ['WD1','WD2','WD3'] },
-        { rowId: 'lower-W-5',  num: 5,  planes: ['WE1','WE2','WE3'] },
-        { rowId: 'lower-W-6',  num: 6,  planes: ['WF1','WF2','WF3'] },
-        { rowId: 'lower-W-7',  num: 7,  planes: ['WG1','WG2','WG3'] },
-        { rowId: 'lower-W-8',  num: 8,  planes: ['WH1','WH2','WH3'] },
-        { rowId: 'lower-W-9',  num: 9,  planes: ['WI1','WI2','WI3'] },
-        { rowId: 'lower-W-10', num: 10, planes: ['WJ1','WJ2','WJ3'] },
-        { rowId: 'lower-W-11', num: 11, planes: ['WK1','WK2','WK3'] },
-        { rowId: 'lower-W-12', num: 12, planes: ['WL1','WL2','WL3'] },
-      ]},
-    ];
+    const CONFIG_KEYS = ['upper-N','upper-S','lower-E','lower-W'];
+    const HANGAR_LABELS = {
+      'upper-N': 'האנגר העליון · כניסה צפונית',
+      'upper-S': 'האנגר העליון · כניסה דרומית',
+      'lower-E': 'האנגר התחתון · כניסה מזרחית',
+      'lower-W': 'האנגר התחתון · כניסה מערבית',
+    };
+
+    // Loaded from Firestore config collection
+    let CONFIG = {}; // key → { rows: [{rowId, label, planes}] }
+
+    async function loadConfig() {
+      for (const key of CONFIG_KEYS) {
+        try {
+          const snap = await getDoc(doc(db, 'config', key));
+          if (snap.exists()) {
+            const rows = snap.data().rows || [];
+            rows.sort((a, b) => parseInt(a.rowId.split('-').pop()) - parseInt(b.rowId.split('-').pop()));
+            CONFIG[key] = { rows };
+          } else {
+            CONFIG[key] = { rows: [] };
+          }
+        } catch(e) {
+          CONFIG[key] = { rows: [] };
+        }
+      }
+    }
+
+    async function saveConfig(key) {
+      await setDoc(doc(db, 'config', key), { rows: CONFIG[key].rows });
+    }
+
+    window.addRow = async function(key) {
+      const input = document.getElementById('new-row-num-' + key);
+      const num = parseInt(input.value.trim());
+      if (!num || num < 1 || num > 50) { alert('מספר שורה לא תקין'); return; }
+      const rowId = key + '-' + num;
+      if (CONFIG[key].rows.find(r => r.rowId === rowId)) { alert('שורה זו כבר קיימת'); return; }
+      CONFIG[key].rows.push({ rowId, label: 'שורה ' + num, planes: [] });
+      CONFIG[key].rows.sort((a, b) => parseInt(a.rowId.split('-').pop()) - parseInt(b.rowId.split('-').pop()));
+      await saveConfig(key);
+      input.value = '';
+      renderConfigSection();
+    };
+
+    window.removeRow = async function(key, rowId) {
+      if (!confirm('למחוק את השורה ' + rowId + '?')) return;
+      CONFIG[key].rows = CONFIG[key].rows.filter(r => r.rowId !== rowId);
+      await saveConfig(key);
+      renderConfigSection();
+    };
+
+    window.addPlane = async function(key, rowId) {
+      const input = document.getElementById('new-tail-' + rowId);
+      const tail = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if (tail.length < 2 || tail.length > 4) { alert('זנב לא תקין (2-4 תווים)'); return; }
+      const row = CONFIG[key].rows.find(r => r.rowId === rowId);
+      if (!row) return;
+      if (row.planes.includes(tail)) { alert('מטוס זה כבר בשורה'); return; }
+      if (row.planes.length >= 3) { alert('שורה מלאה (מקסימום 3 מטוסים)'); return; }
+      row.planes.push(tail);
+      await saveConfig(key);
+      input.value = '';
+      renderConfigSection();
+    };
+
+    window.removePlane = async function(key, rowId, tail) {
+      const row = CONFIG[key].rows.find(r => r.rowId === rowId);
+      if (!row) return;
+      row.planes = row.planes.filter(t => t !== tail);
+      await saveConfig(key);
+      renderConfigSection();
+    };
+
+    function renderConfigSection() {
+      const container = document.getElementById('config-body');
+      if (!container) return;
+      let html = '';
+      for (const key of CONFIG_KEYS) {
+        const rows = CONFIG[key].rows;
+        html += `<div class="cfg-hangar">
+          <div class="cfg-hangar-title">${HANGAR_LABELS[key]}</div>
+          <div class="cfg-rows">`;
+        rows.forEach(row => {
+          const num = row.rowId.split('-').pop();
+          html += `<div class="cfg-row">
+            <div class="cfg-row-header">
+              <span class="cfg-row-label">שורה ${num}</span>
+              <button class="cfg-remove-row" onclick="removeRow('${key}','${row.rowId}')">✕ מחק שורה</button>
+            </div>
+            <div class="cfg-planes">`;
+          row.planes.forEach(tail => {
+            html += `<div class="cfg-plane">
+              <span>4X-${tail}</span>
+              <button onclick="removePlane('${key}','${row.rowId}','${tail}')" title="הסר">✕</button>
+            </div>`;
+          });
+          if (row.planes.length < 3) {
+            html += `<div class="cfg-add-plane">
+              <span class="cfg-prefix">4X-</span>
+              <input id="new-tail-${row.rowId}" type="text" placeholder="HHH" maxlength="4"
+                oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+                onkeydown="if(event.key==='Enter') addPlane('${key}','${row.rowId}')"/>
+              <button onclick="addPlane('${key}','${row.rowId}')">+ הוסף</button>
+            </div>`;
+          }
+          html += `</div></div>`;
+        });
+        html += `<div class="cfg-add-row">
+          <input id="new-row-num-${key}" type="number" placeholder="מספר שורה" min="1" max="50" style="width:110px;"/>
+          <button onclick="addRow('${key}')">+ הוסף שורה</button>
+        </div>`;
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    window.toggleConfig = function() {
+      const body = document.getElementById('config-body');
+      const chevron = document.getElementById('config-chevron');
+      const isHidden = body.style.display === 'none';
+      body.style.display = isHidden ? 'block' : 'none';
+      chevron.textContent = isHidden ? '▼' : '▶';
+    };
 
     function parseTs(raw) {
-      // stored as "DD/MM/YYYY HH:MM" string
       if (!raw) return null;
       if (typeof raw === 'number') return raw;
       if (raw.toMillis) return raw.toMillis();
@@ -116,6 +181,8 @@
     }
 
     async function load() {
+      await loadConfig();
+
       // Fetch rows and pilots in parallel
       const [rowsSnap, pilotsSnap] = await Promise.all([
         getDocs(collection(db, 'rows')),
@@ -126,13 +193,10 @@
       const rowsMap = {};
       rowsSnap.forEach(doc => {
         const d = doc.data();
-        rowsMap[doc.id] = {
-          updatedAt: d.updatedAt || null,
-          updatedBy: d.updatedBy || '',
-        };
+        rowsMap[doc.id] = { updatedAt: d.updatedAt || null, updatedBy: d.updatedBy || '' };
       });
 
-      // Build pilots map: tail → { name, hasPhoto }
+      // Build pilots map: tail → [{ name, hasPhoto }]
       const pilotsMap = {};
       pilotsSnap.forEach(doc => {
         const d = doc.data();
@@ -152,28 +216,28 @@
         totalPhotos += pilots.filter(p => p.hasPhoto).length;
       }
 
-      document.getElementById('stat-active').textContent   = totalActive;
-      document.getElementById('stat-pilots').textContent   = totalPilots;
-      document.getElementById('stat-photos').textContent   = totalPhotos;
-      document.getElementById('stat-last').textContent     = lastUpdated ? formatAge(lastUpdated) : '—';
+      document.getElementById('stat-active').textContent  = totalActive;
+      document.getElementById('stat-pilots').textContent  = totalPilots;
+      document.getElementById('stat-photos').textContent  = totalPhotos;
+      document.getElementById('stat-last').textContent    = lastUpdated ? formatAge(lastUpdated) : '—';
 
-      // Render hangars
+      // Render hangars from CONFIG
       const container = document.getElementById('hangars');
       container.innerHTML = '';
-
-      HANGARS.forEach(hangar => {
+      for (const key of CONFIG_KEYS) {
+        const hangar = CONFIG[key];
+        const label = HANGAR_LABELS[key];
         let activeCount = 0;
         const rowsHtml = hangar.rows.map(row => {
-          const rowData  = rowsMap[row.rowId] || {};
-          const bucket   = ageBucket(rowData.updatedAt);
-          const age      = formatAge(rowData.updatedAt);
+          const num = row.rowId.split('-').pop();
+          const rowData = rowsMap[row.rowId] || {};
+          const bucket  = ageBucket(rowData.updatedAt);
+          const age     = formatAge(rowData.updatedAt);
           if (bucket !== 'inactive') activeCount++;
-
           const planesHtml = row.planes.map(tail => {
             const pilots   = pilotsMap[tail] || [];
             const pilotCnt = pilots.length;
             const photoCnt = pilots.filter(p => p.hasPhoto).length;
-            const hasPhoto = photoCnt > 0 ? 'yes' : 'no';
             return `<div class="plane-cell">
               <div class="plane-tail">4X-${tail}</div>
               <div class="plane-badges">
@@ -182,22 +246,17 @@
               </div>
             </div>`;
           }).join('');
-
-          // photo status for the row = any pilot in the row has a photo
           const rowHasPhoto = row.planes.some(t => (pilotsMap[t]||[]).some(p => p.hasPhoto)) ? 'yes' : 'no';
-
           return `<div class="row-item" data-days="${bucket}" data-photo="${rowHasPhoto}">
-            <div class="row-num">${row.num}</div>
+            <div class="row-num">${num}</div>
             <div class="planes-wrap">${planesHtml}</div>
             <div class="row-updated">${age}</div>
           </div>`;
         }).join('');
-
-        const collapsed = ' collapsed';
         container.innerHTML += `
-          <div class="hangar${collapsed}" id="h-${hangar.id}">
-            <div class="hangar-header" onclick="toggleHangar('h-${hangar.id}')">
-              <div class="hangar-title">${hangar.label}</div>
+          <div class="hangar collapsed" id="h-${key}">
+            <div class="hangar-header" onclick="toggleHangar('h-${key}')">
+              <div class="hangar-title">${label}</div>
               <div style="display:flex;align-items:center;">
                 <div class="hangar-meta">${activeCount} / ${hangar.rows.length} פעילות</div>
                 <div class="chevron">▼</div>
@@ -205,24 +264,24 @@
             </div>
             <div class="hangar-body">${rowsHtml}</div>
           </div>`;
-      });
+      }
 
-      // Build pilots list data
-      window._pilotsData = [];
-      // Build tail→location map from HANGARS
+      // Render config section
+      renderConfigSection();
+
+      // Build pilots list
       const tailLocMap = {};
-      HANGARS.forEach(h => {
-        h.rows.forEach(r => {
-          r.planes.forEach(tail => {
-            const hLabel = h.label.replace(' · ', ' ');
-            tailLocMap[tail] = `${hLabel} · שורה ${r.num}`;
-          });
+      for (const key of CONFIG_KEYS) {
+        CONFIG[key].rows.forEach(r => {
+          const num = r.rowId.split('-').pop();
+          r.planes.forEach(tail => { tailLocMap[tail] = `${HANGAR_LABELS[key]} · שורה ${num}`; });
         });
-      });
+      }
 
+      window._pilotsData = [];
       pilotsSnap.forEach(doc => {
         const d = doc.data();
-        const fullTail = doc.id; // e.g. "4X-HYD"
+        const fullTail  = doc.id;
         const shortTail = fullTail.replace('4X-', '');
         window._pilotsData.push({
           name:      d.updatedBy || '—',
@@ -243,10 +302,12 @@
 
       document.getElementById('loader').style.display = 'none';
       document.getElementById('main').style.display   = 'block';
-
-      // Apply default filter: 30 days
       updateHighlights();
     }
+
+    load().catch(err => {
+      document.getElementById('loader').textContent = 'שגיאה בטעינה: ' + err.message;
+    });
 
     window.toggleHangar = id => document.getElementById(id).classList.toggle('collapsed');
 
@@ -285,21 +346,18 @@
       const data = [...(window._pilotsData || [])].sort((a, b) => {
         let va = a[col], vb = b[col];
         if (col === 'updated') { va = a.updatedTs; vb = b.updatedTs; }
-        if (col === 'photo')   { va = a.photoTs; vb = b.photoTs; }
+        if (col === 'photo')   { va = a.photoTs;   vb = b.photoTs; }
         if (typeof va === 'string') va = va.toLowerCase();
         if (typeof vb === 'string') vb = vb.toLowerCase();
         if (va < vb) return dir === 'asc' ? -1 : 1;
         if (va > vb) return dir === 'asc' ?  1 : -1;
         return 0;
       });
-
-      // Update header indicators
       ['name','tail','location','photo','updated'].forEach(c => {
         const th = document.getElementById('th-' + c);
         if (!th) return;
         th.className = c === col ? (dir === 'asc' ? 'sort-asc' : 'sort-desc') : '';
       });
-
       const tbody = document.getElementById('pilots-body');
       tbody.innerHTML = data.map(p => `
         <tr>
@@ -313,11 +371,11 @@
     };
 
     window.deletePilot = async function(tail) {
-      if (!confirm(`מחוק את הטייס ${tail}?`)) return;
+      if (!confirm('מחוק את הטייס ' + tail + '?')) return;
       try {
         await deleteDoc(doc(db, 'pilots', tail));
         window._pilotsData = window._pilotsData.filter(p => p.tail !== tail);
-        document.getElementById('pilots-title').textContent = `טייסים רשומים — ${window._pilotsData.length}`;
+        document.getElementById('pilots-title').textContent = 'טייסים רשומים — ' + window._pilotsData.length;
         renderPilots();
       } catch(e) {
         alert('שגיאה במחיקה: ' + e.message);
@@ -333,10 +391,6 @@
       }
       renderPilots();
     };
-
-    load().catch(err => {
-      document.getElementById('loader').textContent = 'שגיאה בטעינה: ' + err.message;
-    });
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -435,6 +489,26 @@
     }
     .footer-center { flex: 1; text-align: center; opacity: 0.55; }
 
+    /* config management */
+    .cfg-hangar { margin-bottom: 16px; }
+    .cfg-hangar-title { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 8px; padding: 6px 10px; background: var(--blue-l); border-radius: 8px; }
+    .cfg-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .cfg-row { background: var(--white); border: 0.5px solid var(--border-med); border-radius: 8px; padding: 10px 12px; }
+    .cfg-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cfg-row-label { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+    .cfg-remove-row { font-size: 10px; color: #DC2626; background: #FEE2E2; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+    .cfg-planes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .cfg-plane { display: flex; align-items: center; gap: 4px; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; }
+    .cfg-plane button { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 11px; padding: 0 2px; line-height: 1; }
+    .cfg-plane button:hover { color: #DC2626; }
+    .cfg-add-plane { display: flex; align-items: center; gap: 4px; }
+    .cfg-prefix { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); }
+    .cfg-add-plane input { width: 60px; padding: 4px 6px; border: 0.5px solid var(--border-med); border-radius: 6px; font-size: 12px; font-family: 'DM Mono', monospace; text-align: center; }
+    .cfg-add-plane button, .cfg-add-row button { font-size: 11px; padding: 4px 10px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+    .cfg-add-plane button:hover, .cfg-add-row button:hover { background: var(--navy); }
+    .cfg-add-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .cfg-add-row input { padding: 5px 8px; border: 0.5px solid var(--border-med); border-radius: 6px; font-size: 12px; }
+
     @media (max-width: 480px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
       .stat-val { font-size: 18px; }
@@ -487,6 +561,15 @@
 
     <div id="hangars"></div>
 
+    <!-- ══ ROW CONFIG MANAGEMENT ══ -->
+    <div class="config-section" style="margin-top:24px;">
+      <div class="config-header" onclick="toggleConfig()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding-bottom:10px;border-bottom:0.5px solid var(--border);">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">ניהול שורות וחניות</div>
+        <span id="config-chevron" style="font-size:11px;color:var(--text2);">▶</span>
+      </div>
+      <div id="config-body" style="display:none;margin-top:12px;"></div>
+    </div>
+
     <div class="pilots-section">
       <div class="pilots-title" id="pilots-title">טייסים רשומים</div>
       <div class="pilots-wrap">
@@ -506,7 +589,7 @@
       </div>
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.21</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.25</span></div>
   </div>
 </body>
 </html>
