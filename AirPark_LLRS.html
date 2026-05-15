@@ -577,7 +577,7 @@ input[type="file"] { display: none; }
   width: 0%;
   background: var(--blue);
   border-radius: 99px;
-  animation: progress 7.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: progress 11.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 @keyframes progress {
   0%   { width: 0%; }
@@ -586,9 +586,14 @@ input[type="file"] { display: none; }
   100% { width: 100%; }
 }
 .loader-status {
-  font-size: 11px; color: var(--text2);
+  font-size: 17px; color: #0F3F6E;
   font-family: 'DM Sans', sans-serif;
-  margin-top: 4px;
+  font-weight: 600;
+  margin-top: 10px;
+  text-align: center;
+  padding: 0 32px;
+  line-height: 1.5;
+  min-height: 54px;
 }
 /* hide full splash elements in lean mode */
 #loader.lean .loader-full { display: none; }
@@ -601,15 +606,13 @@ input[type="file"] { display: none; }
   <img class="loader-icon" src="https://eligrt.github.io/AirPark_LLRS/icon.png" alt="AirPark" />
   <div class="loader-full">
     <div style="font-size:22px;font-weight:700;color:#0F3F6E;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;text-align:center;">AirPark · LLRS</div>
-    <div style="font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;margin-top:2px;text-align:center;">Rishon LeZion Airfield</div>
-    <div style="font-size:13px;color:#185FA5;font-family:'DM Sans',sans-serif;margin-top:10px;text-align:center;padding:0 32px;line-height:1.5;">לדעת איפה המטוס עומד עוד לפני שהגעת למנחת</div>
-    <div class="loader-progress-wrap">
+    <div style="font-size:11px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:2px;text-align:center;">לדעת איפה המטוס עומד עוד לפני שהגעת למנחת</div>
+    <div class="loader-progress-wrap" style="margin-top:20px;">
       <div class="loader-progress-bar" id="loader-bar"></div>
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
-    <div style="font-size:10px;color:#9CA3AF;font-family:'DM Sans',sans-serif;margin-top:14px;text-align:center;padding:0 40px;line-height:1.7;">מסך זה מוצג פעם אחת בלבד<br/>בפעמים הבאות תגיע ישירות לחניה שלך ✈</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.017</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.041</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -632,11 +635,6 @@ input[type="file"] { display: none; }
     </div>
     <div class="content">
       <div class="step-wrap" id="step-wrap-name">
-        <div class="step-dots">
-          <div class="step-dot active" id="d1a"></div>
-          <div class="step-dot" id="d1b"></div>
-        </div>
-        <div class="step-label">שלב 1 מתוך 2</div>
         <div class="step-header">פרטי טייס ומטוס</div>
       </div>
 
@@ -674,12 +672,13 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.017</span>
+      <span class="footer-center">built by eligrt · v1.85.041</span>
     </div>
   </div>
 
   <!-- ══ SCREEN 2: WHERE DO YOU PARK ══ -->
-  <div class="screen" id="s-hangar">
+  <!-- ══ SCREEN: NOT FOUND ══ -->
+  <div class="screen" id="s-notfound">
     <div class="topbar">
       <div class="topbar-brand">
         <svg class="topbar-logo" viewBox="0 0 28 28" fill="none">
@@ -688,119 +687,40 @@ input[type="file"] { display: none; }
         </svg>
         <div class="topbar-titles">
           <div class="topbar-title">AirPark · LLRS</div>
-          <div class="topbar-sub">הגדרה ראשונית</div>
         </div>
       </div>
-      <span class="back-btn" onclick="goTo('s-name')">חזור</span>
     </div>
-    <div class="content">
-      <div class="step-wrap" id="step-wrap-hangar">
-        <div class="step-dots">
-          <div class="step-dot done"></div>
-          <div class="step-dot active"></div>
-        </div>
-        <div class="step-label">שלב 2 מתוך 2</div>
-        <div class="step-header">איפה אתה חונה?</div>
-      </div>
-
-      <!-- recent usage -->
-      <div id="hangar-recent-wrap" style="display:none;">
-        <div class="sec-label" style="margin-bottom:6px;">אחרון בשימוש</div>
-        <div id="hangar-recent-card" onclick="useRecentHangar()" style="background:#F0F6FF;border:0.5px solid #B5D4F4;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
-          <div style="width:34px;height:34px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;"><path d="M10 3l1.5 5H17l-4.5 3.5 1.5 5L10 14l-4.5 3.5 1.5-5L2.5 8.5H8.5z" fill="white" opacity="0.9"/></svg>
-          </div>
-          <div style="flex:1;">
-            <div id="hangar-recent-main" style="font-size:14px;font-weight:600;color:#0C447C;line-height:1.3;"></div>
-            <div style="font-size:12px;color:#378ADD;margin-top:1px;">המשך לאן שחנית בפעם האחרונה</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-            <div id="hangar-recent-time" style="font-size:11px;color:#185FA5;font-family:'DM Mono',monospace;opacity:0.7;white-space:nowrap;"></div>
-            <div style="color:#378ADD;font-size:18px;line-height:1;">‹</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- hangar list + runway -->
-      <!-- find-plane button -->
-      <div style="margin-bottom:14px;display:flex;justify-content:center;">
-        <div onclick="openFindPlane()" style="display:inline-flex;align-items:center;gap:8px;background:#1a2b4a;color:white;border-radius:99px;padding:11px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.2px;">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="white" stroke-width="1.6"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
-          חפש מטוס לפי זנב
-        </div>
-      </div>
-
-      <!-- find-plane modal overlay — centered like hangar picker -->
-      <div id="find-plane-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;" onclick="closeFindPlane()">
-        <div style="background:white;border-radius:18px;padding:20px 16px 24px;width:calc(100% - 40px);max-width:420px;direction:rtl;" onclick="event.stopPropagation()">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <div style="font-size:16px;font-weight:700;color:#111827;">חפש מטוס לפי זנב</div>
-            <div onclick="closeFindPlane()" style="width:30px;height:30px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:#6b7280;">✕</div>
-          </div>
-          <div class="tail-wrap" style="margin-bottom:14px;">
-            <span class="tail-prefix">4X-</span>
-            <input class="tail-input" id="find-plane-input" type="text" placeholder="HHH" maxlength="3"
-              oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); onFindPlaneInput(this.value)" />
-          </div>
-          <div id="find-plane-result"></div>
-        </div>
-      </div>
-
-      <div class="sec-label" style="margin-bottom:6px;">בחר הנגר</div>
-      <div style="display:flex;gap:10px;align-items:stretch;">
-        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-
-          <div onclick="showEntrancePicker('upper')" style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
-            <div style="width:36px;height:36px;border-radius:8px;background:#1a2b4a;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;letter-spacing:0.5px;flex-shrink:0;">H-U</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:600;color:#111827;">האנגר העליון</div>
-              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 7 שורות</div>
-            </div>
-            <div style="color:#9ca3af;font-size:16px;">‹</div>
-          </div>
-
-          <div onclick="showEntrancePicker('lower')" style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
-            <div style="width:36px;height:36px;border-radius:8px;background:#185FA5;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;letter-spacing:0.5px;flex-shrink:0;">H-L</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:600;color:#111827;">האנגר התחתון</div>
-              <div style="font-size:12px;color:#6b7280;margin-top:1px;">2 כניסות · 6 שורות</div>
-            </div>
-            <div style="color:#9ca3af;font-size:16px;">‹</div>
-          </div>
-
-          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.45;">
-            <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-3</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 3</div>
-              <div style="font-size:12px;color:#9ca3af;margin-top:1px;font-style:italic;">בקרוב</div>
-            </div>
-          </div>
-
-          <div style="background:white;border:0.5px solid #e0e4ec;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:0.45;">
-            <div style="width:36px;height:36px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#9ca3af;letter-spacing:0.5px;flex-shrink:0;">H-4</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:600;color:#6b7280;">הנגר 4</div>
-              <div style="font-size:12px;color:#9ca3af;margin-top:1px;font-style:italic;">בקרוב</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- runway strip -->
-        <div style="width:38px;flex-shrink:0;background:#2d2d2d;border-radius:8px;display:flex;flex-direction:column;align-items:center;padding:6px 0;">
-          <div style="display:flex;gap:2px;margin:3px 0;"><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div></div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:white;letter-spacing:1px;margin:2px 0;">18</div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;"><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div><div style="width:4px;height:10px;background:white;border-radius:1px;"></div></div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:white;letter-spacing:1px;margin:2px 0;">36</div><div style="display:flex;gap:2px;margin:3px 0;"><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div><div style="width:5px;height:8px;background:white;border-radius:0;"></div></div>
-        </div>
-      </div>
-
-      <!-- Entrance confirmation strip — appears after selection -->
-      <div class="entrance-confirm-strip" id="entrance-confirm-strip" style="margin-top:10px;">
-        <span id="entrance-confirm-text">✈ כניסה נבחרה</span>
-      </div>
-
+    <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 24px;text-align:center;gap:20px;">
+      <div style="font-size:52px;line-height:1;">✈️</div>
+      <div style="font-size:20px;font-weight:700;color:#0F3F6E;font-family:'DM Sans',sans-serif;line-height:1.4;">המטוס שלך עדיין לא במערכת</div>
+      <div style="font-size:15px;color:#6B7280;font-family:'DM Sans',sans-serif;line-height:1.6;">שלח לי הודעה ואוסיף אותו</div>
+      <button onclick="openWhatsApp()" style="width:100%;max-width:300px;padding:15px;border-radius:12px;background:#25D366;color:white;font-size:16px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;">
+        <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        שלח הודעה לאלי
+      </button>
+      <button onclick="goTo('s-name')" style="width:100%;max-width:300px;padding:13px;border-radius:12px;background:transparent;border:0.5px solid rgba(0,0,0,0.14);font-size:15px;font-weight:500;color:#6B7280;font-family:'DM Sans',sans-serif;cursor:pointer;">
+        חזור ובדוק את הפרטים
+      </button>
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.017</span>
+      <span class="footer-center">built by eligrt · v1.85.041</span>
+    </div>
+  </div>
+
+    <!-- ══ FIND PLANE MODAL ══ -->
+  <div id="find-plane-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;" onclick="closeFindPlane()">
+    <div style="background:white;border-radius:18px;padding:20px 16px 24px;width:calc(100% - 40px);max-width:420px;direction:rtl;" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;color:#111827;">חפש מטוס לפי זנב</div>
+        <div onclick="closeFindPlane()" style="width:30px;height:30px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:#6b7280;">✕</div>
+      </div>
+      <div class="tail-wrap" style="margin-bottom:14px;">
+        <span class="tail-prefix">4X-</span>
+        <input class="tail-input" id="find-plane-input" type="text" placeholder="HHH" maxlength="3"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); onFindPlaneInput(this.value)" />
+      </div>
+      <div id="find-plane-result"></div>
     </div>
   </div>
 
@@ -836,7 +756,7 @@ input[type="file"] { display: none; }
     <!-- Buttons -->
     <div style="padding:0 16px 22px;display:flex;flex-direction:column;gap:8px;">
       <button class="btn-primary" onclick="matchConfirm()">כן, קח אותי לשם <span class="plane-flip">✈</span></button>
-      <button onclick="matchCancel()" style="width:100%;padding:12px;border-radius:9px;background:transparent;border:0.5px solid rgba(0,0,0,0.14);font-size:14px;font-weight:500;color:#6B7280;font-family:'DM Sans',sans-serif;cursor:pointer;">לא, אבחר ידנית</button>
+
     </div>
   </div>
 
@@ -882,10 +802,7 @@ input[type="file"] { display: none; }
           <div class="topbar-sub" id="main-sub">טוען...</div>
         </div>
       </div>
-      <div class="topbar-links">
-        <span class="settings-link" onclick="goTo('s-hangar')">✎ החלף חניה</span>
-        <span class="settings-link" onclick="goTo('s-name')">✎ פרטי המטוס שלי</span>
-      </div>
+
     </div>
 
     <div class="main-body">
@@ -920,7 +837,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.017</span>
+      <span class="footer-center">built by eligrt · v1.85.041</span>
     </div>
   </div>
 
@@ -939,40 +856,39 @@ const HANGAR_DIRS = { upper: ['N','S'], lower: ['E','W'] };
 const DIR_LABELS  = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' };
 const HANGAR_LABELS = { upper:'האנגר העליון', lower:'האנגר התחתון' };
 
-const DEMO_ROWS = {
-  // ✓ REAL DATA
-  'upper-N': [
-    { rowId: 'upper-N-1',  label: 'שורה 1',  planes: ['HIL','HIC','TBD'] }, // ✓ real (TBD = placeholder)
-    { rowId: 'upper-N-2',  label: 'שורה 2',  planes: ['HYA','HZP','HYF'] }, // ✓ real
-    { rowId: 'upper-N-3',  label: 'שורה 3',  planes: ['HYD','HRC','HRS'] }, // ✓ real
-    { rowId: 'upper-N-4',  label: 'שורה 4',  planes: ['OED','HGM','ONZ'] }, // ✓ real
-  ],
-  // ✓ REAL DATA
-  'upper-S': [
-    { rowId: 'upper-S-1',  label: 'שורה 1',  planes: ['HTX','HMN','HPB'] }, // ✓ real
-    { rowId: 'upper-S-2',  label: 'שורה 2',  planes: ['HLE','HMD','HZZ'] }, // ✓ real
-    { rowId: 'upper-S-3',  label: 'שורה 3',  planes: ['HLY','HMC','HZR'] }, // ✓ real
-    { rowId: 'upper-S-4',  label: 'שורה 4',  planes: ['OZZ','HKH','HID'] }, // ✓ real
-  ],
-  // ⚠ DUMMY DATA — replace with real tails
-  'lower-E': [
-    { rowId: 'lower-E-1', label: 'שורה 1', planes: ['EA1','EA2','EA3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-E-2', label: 'שורה 2', planes: ['EB1','EB2','EB3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-E-3', label: 'שורה 3', planes: ['EC1','EC2','EC3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-E-4', label: 'שורה 4', planes: ['ED1','ED2','ED3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-E-5', label: 'שורה 5', planes: ['EE1','EE2','EE3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-E-6', label: 'שורה 6', planes: ['EF1','EF2','EF3'], active: false }, // ⚠ dummy
-  ],
-  // ⚠ PARTIAL — row 3 real, rest dummy
-  'lower-W': [
-    { rowId: 'lower-W-1', label: 'שורה 1', planes: ['WA1','WA2','WA3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-W-2', label: 'שורה 2', planes: ['WB1','WB2','WB3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-W-3', label: 'שורה 3', planes: ['HYH','HLR','HMZ'], active: true  }, // ✓ real
-    { rowId: 'lower-W-4', label: 'שורה 4', planes: ['WD1','WD2','WD3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-W-5', label: 'שורה 5', planes: ['WE1','WE2','WE3'], active: false }, // ⚠ dummy
-    { rowId: 'lower-W-6', label: 'שורה 6', planes: ['WF1','WF2','WF3'], active: false }, // ⚠ dummy
-  ],
+// ROW_CONFIG — loaded from Firestore config collection at boot
+// Keys: 'upper-N', 'upper-S', 'lower-E', 'lower-W'
+// Each value: array of { rowId, label, planes[] } sorted by rowId
+let ROW_CONFIG = {
+  'upper-N': [],
+  'upper-S': [],
+  'lower-E': [],
+  'lower-W': [],
 };
+
+async function loadRowConfig() {
+  if (!window._firebaseReady) return;
+  const { doc, getDoc } = window._dbOps;
+  const db = window._db;
+  const keys = ['upper-N', 'upper-S', 'lower-E', 'lower-W'];
+  for (const key of keys) {
+    try {
+      const snap = await getDoc(doc(db, 'config', key));
+      if (snap.exists()) {
+        const rows = snap.data().rows || [];
+        // Sort by rowId (e.g. upper-N-1 before upper-N-2)
+        rows.sort((a, b) => {
+          const numA = parseInt(a.rowId.split('-').pop());
+          const numB = parseInt(b.rowId.split('-').pop());
+          return numA - numB;
+        });
+        ROW_CONFIG[key] = rows;
+      }
+    } catch(e) {
+      console.warn('Failed to load config for', key, e);
+    }
+  }
+}
 
 let selH = null, selDir = null, selRowId = null;
 let currentRowData = null;
@@ -1013,13 +929,7 @@ function goTo(id) {
   const nameSteps  = document.getElementById('step-wrap-name');
   const hangarSteps = document.getElementById('step-wrap-hangar');
   if (nameSteps)   nameSteps.style.display   = (id === 's-name'   && isOnboarding) ? 'flex' : 'none';
-  if (hangarSteps) hangarSteps.style.display = (id === 's-hangar' && isOnboarding) ? 'flex' : 'none';
-  if (id === 's-hangar') {
-    const strip = document.getElementById('entrance-confirm-strip');
-    if (strip) strip.classList.remove('visible');
-    selH = null; selDir = null; selRowId = null;
-    populateRecentHangar();
-  }
+  if (hangarSteps) hangarSteps.style.display = 'none';
 }
 
 function showToast(msg, color) {
@@ -1122,14 +1032,14 @@ function step1Next() {
     return;
   }
 
-  // No match → go to hangar selection
-  goTo('s-hangar');
+  // No match → pilot not in system
+  goTo('s-notfound');
 }
 
 // Search all rows for a tail number — returns { hangar, dir, rowId, rowLabel } or null
 function findRowByTail(tail) {
   const tailUpper = tail.toUpperCase();
-  for (const [key, rows] of Object.entries(DEMO_ROWS)) {
+  for (const [key, rows] of Object.entries(ROW_CONFIG)) {
     const lastDash = key.lastIndexOf('-');
     const hangar = key.slice(0, lastDash);
     const dir    = key.slice(lastDash + 1);
@@ -1180,10 +1090,18 @@ function matchConfirm() {
   goTo('s-main');
 }
 
+function openWhatsApp() {
+  const user = LS.get('user') || {};
+  const name = user.name || '';
+  const tail = user.tail || '';
+  const msg = encodeURIComponent('היי אלי, אני ' + name + ' טייס ' + tail + ' ואשמח להצטרף ל-AirPark 🛫');
+  window.open('https://wa.me/972544873523?text=' + msg, '_blank');
+}
+
 function matchCancel() {
   _pendingMatch = null;
   closeMatchModal();
-  goTo('s-hangar');
+  goTo('s-main');
 }
 
 // ════════════════════════════════════════════
@@ -1248,7 +1166,7 @@ function showEntrancePicker(hangar) {
   list.innerHTML = '';
   entrances.forEach(({ dir, label }) => {
     const key = hangar + '-' + dir;
-    const dirRows = DEMO_ROWS[key] || [];
+    const dirRows = ROW_CONFIG[key] || [];
     const hasActive = dirRows.some(r => r.active !== false);
     const div = document.createElement('div');
     div.className = 'list-item' + (hasActive ? '' : ' disabled');
@@ -1273,7 +1191,7 @@ function populateRecentHangar() {
   const wrap = document.getElementById('hangar-recent-wrap');
   if (!loc || !loc.rowId) { if (wrap) wrap.style.display = 'none'; return; }
   const dirLabel = { N:'כניסה צפונית', S:'כניסה דרומית', E:'כניסה מזרחית', W:'כניסה מערבית' }[loc.dir] || '';
-  const rows = DEMO_ROWS[loc.hangar + '-' + loc.dir] || [];
+  const rows = ROW_CONFIG[loc.hangar + '-' + loc.dir] || [];
   const row = rows.find(r => r.rowId === loc.rowId);
   if (row) document.getElementById('hangar-recent-main').textContent = HANGAR_NAMES[loc.hangar] + ' · ' + dirLabel + ' · ' + row.label;
   const ts = LS.get('lastSaved');
@@ -1293,7 +1211,7 @@ function pickEntrance(hangar, dir, el) {
   }
 
   const key = hangar + '-' + dir;
-  const rows = DEMO_ROWS[key] || [];
+  const rows = ROW_CONFIG[key] || [];
   document.getElementById('row-modal-title').textContent = HANGAR_NAMES[hangar] + ' · ' + DIR_NAMES[dir];
   const list = document.getElementById('row-modal-list');
   list.innerHTML = '';
@@ -1436,7 +1354,7 @@ function loadMainScreen() {
   const hangarLabel = HANGAR_NAMES[loc.hangar] || loc.hangar;
   const dirLabel    = DIR_NAMES[loc.dir]    || DIR_LABELS[loc.dir] || loc.dir;
   const key = loc.hangar + '-' + loc.dir;
-  const rows = DEMO_ROWS[key] || [];
+  const rows = ROW_CONFIG[key] || [];
   const row  = rows.find(r => r.rowId === loc.rowId);
   const rowLabel = row ? row.label : loc.rowId;
 
@@ -2033,86 +1951,67 @@ function triggerReset() {
   localStorage.removeItem('user');
   localStorage.removeItem('location');
   localStorage.removeItem('launched');
-  // Remove instant-hide in case it was set for returning user
-  const loader = document.getElementById('loader');
-  loader.classList.remove('instant-hide');
-  loader.classList.remove('hide');
-  loader.classList.remove('lean');
+  // Reload page so boot() runs fresh with isFirstLaunch = true
+  window.location.reload();
+}
 
-  // Reset progress bar animation
-  const bar = document.getElementById('loader-bar');
-  if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+// Splash starts immediately on DOMContentLoaded.
+window._appStart = Date.now();
 
-  const statusEl = document.getElementById('loader-status');
-  if (statusEl) statusEl.textContent = 'מתחבר...';
-  const steps = [
-    { text: 'מחפש חניות...', delay: 1500 },
-    { text: 'טוען מטוסים...', delay: 3200 },
-    { text: 'מסדר שורות...', delay: 5200 },
-    { text: 'מוכן להמראה ✈', delay: 7000 },
-  ];
-  steps.forEach(({ text, delay }) => {
-    setTimeout(() => { if (statusEl) statusEl.textContent = text; }, delay);
-  });
-  setTimeout(() => {
-    loader.classList.add('hide');
-    setTimeout(() => goTo('s-name'), 400);
-  }, 8000);
+function navigateAfterSplash() {
+  document.getElementById('loader').classList.add('hide');
+  const user = LS.get('user');
+  const loc  = LS.get('location');
+  if (user && loc) {
+    loadMainScreen();
+    goTo('s-main');
+  } else if (user) {
+    const match = findRowByTail(user.tail.replace('4X-',''));
+    if (match) { showMatchModal(match); } else { goTo('s-notfound'); }
+  } else {
+    goTo('s-name');
+  }
 }
 
 function boot() {
-  if (window.location.search.includes('reset')) {
-    localStorage.removeItem('user');
-    localStorage.removeItem('location');
-    localStorage.removeItem('launched');
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-
   const isFirstLaunch = !localStorage.getItem('launched');
   localStorage.setItem('launched', '1');
 
-  const hideSplash = () => {
-    document.getElementById('loader').classList.add('hide');
-    const user = LS.get('user');
-    const loc  = LS.get('location');
-    if (user && loc) {
-      loadMainScreen();
-      goTo('s-main');
-    } else if (user) {
-      goTo('s-hangar');
-    } else {
-      goTo('s-name');
-    }
-  };
-
   if (isFirstLaunch) {
-    // First launch — full 8-second splash with progress bar and status messages
     const statusEl = document.getElementById('loader-status');
-    const elapsed = Date.now() - (window._appStart || Date.now());
-    const remaining = Math.max(0, 8000 - elapsed);
+    const bar = document.getElementById('loader-bar');
+    if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+    if (statusEl) statusEl.textContent = 'מתחבר...';
     const steps = [
-      { text: 'מחפש חניות...', delay: 1500 },
-      { text: 'טוען מטוסים...', delay: 3200 },
-      { text: 'מסדר שורות...', delay: 5200 },
-      { text: 'מוכן להמראה ✈', delay: 7000 },
+      { text: 'בודק את מיקום המטוס שלך בחניה...', delay: 2000 },
+      { text: 'מממ... 🤔<br>יש מצב שזו פעם ראשונה שלך כאן?', delay: 4500 },
+      { text: 'אין בעיה, רק שאלה אחת', delay: 7500 },
+      { text: 'ואנחנו מתחילים <span style="display:inline-block;transform:scaleX(-1)">✈</span>', delay: 10000 },
     ];
     steps.forEach(({ text, delay }) => {
-      setTimeout(() => { if (statusEl) statusEl.textContent = text; }, delay);
+      setTimeout(() => { if (statusEl) statusEl.innerHTML = text; }, delay);
     });
-    setTimeout(hideSplash, remaining);
+    setTimeout(navigateAfterSplash, 12000);
   } else {
-    // Returning user — lean 1.5s icon-only splash
-    document.getElementById('loader').classList.add('lean');
-    setTimeout(hideSplash, 1500);
+    // Returning user — short 2-message splash
+    const statusEl = document.getElementById('loader-status');
+    const bar = document.getElementById('loader-bar');
+    if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+    if (statusEl) statusEl.innerHTML = 'מתחבר...';
+    setTimeout(() => { if (statusEl) statusEl.innerHTML = 'בודק את מיקום המטוס שלך בחניה...'; }, 1800);
+    setTimeout(navigateAfterSplash, 4500);
   }
 }
 
-// Boot immediately — Firebase syncs in background when ready
+// Load row config from Firestore — runs in background, app boots independently
+async function initFirebaseAndConfig() {
+  await loadRowConfig();
+}
+document.addEventListener('firebase-ready', initFirebaseAndConfig);
+
+// Boot immediately — don't wait for Firebase
 let booted = false;
-window._appStart = Date.now();
 function tryBoot() { if (!booted) { booted = true; boot(); } }
-document.addEventListener('firebase-ready', tryBoot);
-// Boot right away — don't wait for Firebase at all
 document.addEventListener('DOMContentLoaded', tryBoot);
 setTimeout(tryBoot, 50);
 </script>
