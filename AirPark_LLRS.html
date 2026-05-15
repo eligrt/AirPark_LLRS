@@ -625,7 +625,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.050</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.051</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.050</span>
+      <span class="footer-center">built by eligrt · v1.85.051</span>
     </div>
   </div>
 
@@ -722,7 +722,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.050</span>
+      <span class="footer-center">built by eligrt · v1.85.051</span>
     </div>
   </div>
 
@@ -800,7 +800,7 @@ input[type="file"] { display: none; }
     <div style="padding:28px 20px 16px;text-align:center;">
       <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:56px;height:56px;border-radius:14px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;" />
       <div style="font-size:22px;margin-bottom:8px;">✅</div>
-      <div style="font-size:17px;font-weight:700;color:#111827;font-family:'DM Sans',sans-serif;">סדר החנייה עודכן בהצלחה</div>
+      <div id="save-confirm-title" style="font-size:17px;font-weight:700;color:#111827;font-family:'DM Sans',sans-serif;">סדר החנייה עודכן בהצלחה</div>
     </div>
     <div style="padding:0 16px 22px;">
       <button onclick="closeSaveConfirm()" style="width:100%;padding:14px;border-radius:9px;background:#0F3F6E;color:white;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">אישור</button>
@@ -857,7 +857,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.050</span>
+      <span class="footer-center">built by eligrt · v1.85.051</span>
     </div>
   </div>
 
@@ -1065,9 +1065,8 @@ function step1Next() {
     window._photoEditModeActive = false;
     loadMainScreen();
     goTo('s-main');
-    // Show save-confirm modal
-    openSaveConfirm();
-    document.getElementById('save-confirm-modal').querySelector('div[style*="font-size:17px"]').textContent = 'תמונת המטוס עודכנה';
+    // Show photo saved modal
+    showPhotoSavedModal();
     return;
   }
   const name = document.getElementById('inp-name').value.trim();
@@ -1159,6 +1158,21 @@ function openPhotoEdit() {
   // Set photo-edit mode flag
   window._photoEditMode = true;
   goTo('s-name');
+}
+
+function showPhotoSavedModal() {
+  const overlay = document.getElementById('save-confirm-overlay');
+  const modal   = document.getElementById('save-confirm-modal');
+  // Update modal text for photo context
+  const titleEl = modal.querySelector('#save-confirm-title');
+  if (titleEl) titleEl.textContent = 'תמונת המטוס עודכנה';
+  overlay.style.display = 'block';
+  modal.style.display   = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    modal.style.opacity   = '1';
+    modal.style.transform = 'translate(-50%,-50%) scale(1)';
+  }));
 }
 
 function cancelPhotoEdit() {
@@ -2026,7 +2040,12 @@ function closeSaveConfirm() {
   overlay.style.opacity = '0';
   modal.style.opacity   = '0';
   modal.style.transform = 'translate(-50%,-50%) scale(0.92)';
-  setTimeout(() => { overlay.style.display = 'none'; modal.style.display = 'none'; }, 200);
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    modal.style.display = 'none';
+    const t = document.getElementById('save-confirm-title');
+    if (t) t.textContent = 'סדר החנייה עודכן בהצלחה';
+  }, 200);
 }
 
 function confirmReset() {
