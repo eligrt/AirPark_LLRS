@@ -149,6 +149,10 @@
         <span class="cfg-col-del"></span>
       </div>`;
       for (const key of CONFIG_KEYS) {
+        const hangarType = key.split('-')[0];
+        const entrance   = key.split('-')[1];
+        const hangarShort = { upper:'עליון', lower:'תחתון', hangar3:'הנגר 3', hangar4:'הנגר 4' }[hangarType] || hangarType;
+        const entranceShort = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' }[entrance] || entrance;
         const rows = CONFIG[key].rows;
         let rowsHtml = '';
         rows.forEach(row => {
@@ -189,9 +193,7 @@
             if (row.planes.length === i) return `<span class="cfg-plane-pill cfg-plane-add" onclick="showAddPlane('${key}','${row.rowId}')">+ Add</span>`;
             return `<span class="cfg-plane-empty-slot">—</span>`;
           }).join('');
-          const hangarShort = { upper:'עליון', lower:'תחתון', hangar3:'הנגר 3', hangar4:'הנגר 4' }[hangarType] || hangarType;
-          const entranceShort = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' }[entrance] || entrance;
-          rowsHtml += `<div class="cfg-row row-item" data-days="${bucket}" data-photo="${rowHasPhoto}">
+  rowsHtml += `<div class="cfg-row row-item" data-days="${bucket}" data-photo="${rowHasPhoto}">
             <span class="cfg-col-hangar">${hangarShort}</span>
             <span class="cfg-col-entrance">${entranceShort}</span>
             <span class="cfg-col-num">${num}</span>
@@ -201,8 +203,6 @@
           </div>`;
         });
 
-        const hangarType = key.split('-')[0];
-        const entrance   = key.split('-')[1];
         html += `<div class="cfg-hangar-section" data-hangar="${hangarType}" data-entrance="${entrance}" style="margin-bottom:8px;">
           ${rowsHtml}
         </div>`;
