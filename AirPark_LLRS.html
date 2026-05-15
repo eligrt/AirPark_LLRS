@@ -625,7 +625,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.052</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.054</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.052</span>
+      <span class="footer-center">built by eligrt · v1.85.054</span>
     </div>
   </div>
 
@@ -722,7 +722,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.052</span>
+      <span class="footer-center">built by eligrt · v1.85.054</span>
     </div>
   </div>
 
@@ -825,6 +825,11 @@ input[type="file"] { display: none; }
       </div>
     </div>
 
+    <!-- Demo banner -->
+    <div id="demo-banner" onclick="openWhatsApp()" style="display:none;background:#185FA5;color:white;padding:10px 16px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-align:center;">
+      מצב הדגמה · רוצה להצטרף? שלח הודעה לאלי 📲
+    </div>
+
     <div class="main-body">
 
       <div class="drag-hint-bar" style="text-align:center;width:100%;font-size:19px;font-weight:700;color:var(--text);margin:24px 0;opacity:1;">גרור את המטוסים למיקום הנכון 🖐️</div>
@@ -857,7 +862,8 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.052</span>
+      <span class="footer-center">built by eligrt · v1.85.054</span>
+      <span class="footer-reset" onclick="window.open(location.pathname+'?demo','_blank')" style="opacity:0.25;">demo</span>
     </div>
   </div>
 
@@ -2089,6 +2095,43 @@ function triggerReset() {
 // Splash starts immediately on DOMContentLoaded.
 window._appStart = Date.now();
 
+const DEMO_ROW = {
+  rowId: 'demo-row',
+  label: 'שורה לדוגמה',
+  planes: ['AAA','BBB','CCC']
+};
+const DEMO_USER = { name: 'טייס לדוגמה', tail: '4X-AAA', photoURL: null };
+
+function loadDemoMode() {
+  // Lean splash then demo hangar
+  const statusEl = document.getElementById('loader-status');
+  const bar = document.getElementById('loader-bar');
+  if (bar) { bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = ''; }
+  if (statusEl) statusEl.innerHTML = 'מתחבר...';
+  setTimeout(() => { if (statusEl) statusEl.innerHTML = 'בודק את מיקום המטוס שלך בחניה...'; }, 1800);
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+    showDemoScreen();
+  }, 4500);
+}
+
+function showDemoScreen() {
+  // Set up demo titles
+  document.getElementById('main-title').textContent = 'AirPark · הדגמה';
+  document.getElementById('main-sub').textContent = 'מצב הדגמה';
+
+  // Render demo cards
+  const demoOrder = DEMO_ROW.planes.map(t => ({
+    tail: '4X-' + t, name: t === 'AAA' ? 'טייס לדוגמה' : '', photoURL: null
+  }));
+  renderCards(demoOrder, DEMO_USER, DEMO_ROW);
+
+  // Show demo banner
+  document.getElementById('demo-banner').style.display = 'flex';
+
+  goTo('s-main');
+}
+
 function navigateAfterSplash() {
   document.getElementById('loader').classList.add('hide');
   const user = LS.get('user');
@@ -2105,6 +2148,11 @@ function navigateAfterSplash() {
 }
 
 function boot() {
+  // Demo mode — ?demo in URL
+  if (window.location.search.includes('demo')) {
+    loadDemoMode();
+    return;
+  }
   const isFirstLaunch = !localStorage.getItem('launched');
   localStorage.setItem('launched', '1');
 
