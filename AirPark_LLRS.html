@@ -625,7 +625,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">מתחבר...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.054</div>
+  <div style="position:absolute;bottom:20px;font-size:10px;color:#D1D5DB;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · v1.85.056</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -690,7 +690,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.054</span>
+      <span class="footer-center">built by eligrt · v1.85.056</span>
     </div>
   </div>
 
@@ -722,7 +722,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.054</span>
+      <span class="footer-center">built by eligrt · v1.85.056</span>
     </div>
   </div>
 
@@ -862,7 +862,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">built by eligrt · v1.85.054</span>
+      <span class="footer-center">built by eligrt · v1.85.056</span>
       <span class="footer-reset" onclick="window.open(location.pathname+'?demo','_blank')" style="opacity:0.25;">demo</span>
     </div>
   </div>
@@ -1187,10 +1187,16 @@ function cancelPhotoEdit() {
 }
 
 function openWhatsApp() {
-  const user = LS.get('user') || {};
-  const name = user.name || '';
-  const tail = user.tail || '';
-  const msg = encodeURIComponent('היי אלי, אני ' + name + ' טייס ' + tail + ' ואשמח להצטרף ל-AirPark 🛫');
+  const isDemo = window.location.search.includes('demo');
+  let msg;
+  if (isDemo) {
+    msg = encodeURIComponent('היי אלי, ראיתי את AirPark ואני מעוניין להצטרף למנחת ריאל 🛫');
+  } else {
+    const user = LS.get('user') || {};
+    const name = user.name || '';
+    const tail = user.tail || '';
+    msg = encodeURIComponent('היי אלי, אני ' + name + ' טייס ' + tail + ' ואשמח להצטרף ל-AirPark 🛫');
+  }
   window.open('https://wa.me/972544873523?text=' + msg, '_blank');
 }
 
@@ -1587,6 +1593,7 @@ async function notifyEmail(rowId, order, byName, byTail, ts) {
 }
 
 async function saveRowOrder(rowId, order, byName, byTail) {
+  if (window.location.search.includes('demo')) return; // demo mode — no real writes
   if (!window._firebaseReady) return;
   const { doc, setDoc } = window._dbOps;
   const now = new Date();
@@ -1750,11 +1757,12 @@ function persistOrder() {
     const img   = row.querySelector('.plane-thumb img');
     return { tail, name, photoURL: img ? img.src : null };
   });
-  saveRowOrder(loc.rowId, order, user.name, user.tail);
+  const saveUser = window.location.search.includes('demo') ? DEMO_USER : user;
+  saveRowOrder(loc.rowId, order, saveUser.name, saveUser.tail);
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   document.getElementById('updated-text').textContent =
-    `עודכן ע"י ${user.name} (${user.tail}) · ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    `עודכן ע"י ${saveUser.name} (${saveUser.tail}) · ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   showToast('סדר החנייה עודכן ✓');
 }
 
@@ -2098,9 +2106,9 @@ window._appStart = Date.now();
 const DEMO_ROW = {
   rowId: 'demo-row',
   label: 'שורה לדוגמה',
-  planes: ['AAA','BBB','CCC']
+  planes: ['HHH','HII','HJJ']
 };
-const DEMO_USER = { name: 'טייס לדוגמה', tail: '4X-AAA', photoURL: null };
+const DEMO_USER = { name: 'ישראל ישראלי', tail: '4X-HHH', photoURL: null };
 
 function loadDemoMode() {
   // Lean splash then demo hangar
@@ -2121,8 +2129,8 @@ function showDemoScreen() {
   document.getElementById('main-sub').textContent = 'מצב הדגמה';
 
   // Render demo cards
-  const demoOrder = DEMO_ROW.planes.map(t => ({
-    tail: '4X-' + t, name: t === 'AAA' ? 'טייס לדוגמה' : '', photoURL: null
+  const demoOrder = DEMO_ROW.planes.map((t, i) => ({
+    tail: '4X-' + t, name: i === 0 ? 'ישראל ישראלי' : '', photoURL: null
   }));
   renderCards(demoOrder, DEMO_USER, DEMO_ROW);
 
