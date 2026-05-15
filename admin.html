@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -27,18 +27,18 @@
 
     const CONFIG_KEYS = ['upper-N','upper-S','lower-E','lower-W','hangar3-N','hangar3-S','hangar3-E','hangar3-W','hangar4-N','hangar4-S','hangar4-E','hangar4-W'];
     const HANGAR_LABELS = {
-      'upper-N': 'האנגר העליון · כניסה צפונית',
-      'upper-S': 'האנגר העליון · כניסה דרומית',
-      'lower-E': 'האנגר התחתון · כניסה מזרחית',
-      'lower-W': 'האנגר התחתון · כניסה מערבית',
-      'hangar3-N': 'הנגר 3 · כניסה צפונית',
-      'hangar3-S': 'הנגר 3 · כניסה דרומית',
-      'hangar3-E': 'הנגר 3 · כניסה מזרחית',
-      'hangar3-W': 'הנגר 3 · כניסה מערבית',
-      'hangar4-N': 'הנגר 4 · כניסה צפונית',
-      'hangar4-S': 'הנגר 4 · כניסה דרומית',
-      'hangar4-E': 'הנגר 4 · כניסה מזרחית',
-      'hangar4-W': 'הנגר 4 · כניסה מערבית',
+      'upper-N': 'Upper · Entrance North',
+      'upper-S': 'Upper · Entrance South',
+      'lower-E': 'Lower · Entrance East',
+      'lower-W': 'Lower · Entrance West',
+      'hangar3-N': 'Hangar 3 · Entrance North',
+      'hangar3-S': 'Hangar 3 · Entrance South',
+      'hangar3-E': 'Hangar 3 · Entrance East',
+      'hangar3-W': 'Hangar 3 · Entrance West',
+      'hangar4-N': 'Hangar 4 · Entrance North',
+      'hangar4-S': 'Hangar 4 · Entrance South',
+      'hangar4-E': 'Hangar 4 · Entrance East',
+      'hangar4-W': 'Hangar 4 · Entrance West',
     };
 
     // Loaded from Firestore config collection
@@ -68,9 +68,9 @@
     window.addRow = async function(key) {
       const input = document.getElementById('new-row-num-' + key);
       const num = parseInt(input.value.trim());
-      if (!num || num < 1 || num > 50) { showAdminToast('מספר שורה לא תקין'); return; }
+      if (!num || num < 1 || num > 50) { showAdminToast('Invalid row number'); return; }
       const rowId = key + '-' + num;
-      if (CONFIG[key].rows.find(r => r.rowId === rowId)) { showAdminToast('שורה זו כבר קיימת'); return; }
+      if (CONFIG[key].rows.find(r => r.rowId === rowId)) { showAdminToast('Row already exists'); return; }
       CONFIG[key].rows.push({ rowId, label: 'שורה ' + num, planes: [] });
       CONFIG[key].rows.sort((a, b) => parseInt(a.rowId.split('-').pop()) - parseInt(b.rowId.split('-').pop()));
       await saveConfig(key);
@@ -92,7 +92,7 @@
 
       document.getElementById('stat-pilots').textContent = totalPilots;
       document.getElementById('stat-photos').textContent = totalPhotos;
-      document.getElementById('stat-last').textContent = lastUpdated ? ('עודכן לאחרונה: ' + (lastUpdatedBy || '') + (lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : '') + ' · ' + formatAge(lastUpdated)) : '';
+      document.getElementById('stat-last').innerHTML = lastUpdated ? `<span style="font-size:11px;color:var(--text2);">Last updated: ${formatAge(lastUpdated)}</span><br><span style="font-size:11px;color:var(--text2);">By: <span style="direction:rtl;unicode-bidi:embed;">${lastUpdatedBy || ''}</span>${lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : ''}</span>` : '';
 
       renderConfigSection(rowsMap, pilotsMap, rowPhotos);
       updateHighlights();
@@ -122,11 +122,11 @@
     window.addPlane = async function(key, rowId) {
       const input = document.getElementById('new-tail-' + rowId);
       const tail = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-      if (tail.length < 2 || tail.length > 4) { showAdminToast('זנב לא תקין'); return; }
+      if (tail.length < 2 || tail.length > 4) { showAdminToast('Invalid tail'); return; }
       const row = CONFIG[key].rows.find(r => r.rowId === rowId);
       if (!row) return;
-      if (row.planes.includes(tail)) { showAdminToast('מטוס זה כבר בשורה'); return; }
-      if (row.planes.length >= 3) { showAdminToast('שורה מלאה — מקסימום 3 מטוסים'); return; }
+      if (row.planes.includes(tail)) { showAdminToast('Plane already in row'); return; }
+      if (row.planes.length >= 3) { showAdminToast('Row full — max 3 planes'); return; }
       row.planes.push(tail);
       await saveConfig(key);
       input.value = '';
@@ -152,18 +152,18 @@
       let html = `<div class="cfg-grid-header">
         <span>Hangar</span>
         <span>Entrance</span>
-        <span class="cfg-col-num">Row</span>
-        <span class="cfg-col-plane">Plane 1</span>
-        <span class="cfg-col-plane">Plane 2</span>
-        <span class="cfg-col-plane">Plane 3</span>
-        <span class="cfg-col-age">Last update</span>
-        <span class="cfg-col-del"></span>
+        <span>Row</span>
+        <span>Plane 1</span>
+        <span>Plane 2</span>
+        <span>Plane 3</span>
+        <span>Last update</span>
+        <span></span>
       </div>`;
       for (const key of CONFIG_KEYS) {
         const hangarType = key.split('-')[0];
         const entrance   = key.split('-')[1];
-        const hangarShort = { upper:'עליון', lower:'תחתון', hangar3:'הנגר 3', hangar4:'הנגר 4' }[hangarType] || hangarType;
-        const entranceShort = { N:'צפון', S:'דרום', E:'מזרח', W:'מערב' }[entrance] || entrance;
+        const hangarShort = { upper:'Upper', lower:'Lower', hangar3:'Hangar 3', hangar4:'Hangar 4' }[hangarType] || hangarType;
+        const entranceShort = { N:'North', S:'South', E:'East', W:'West' }[entrance] || entrance;
         const rows = CONFIG[key].rows;
         let rowsHtml = '';
         rows.forEach(row => {
@@ -214,7 +214,7 @@
             <span class="cfg-col-num">${num}</span>
             ${planeCols}
             <span class="cfg-col-age">${ageShort !== '—' ? ageShort : '—'}</span>
-            <button class="cfg-remove-row" onclick="openDeleteRowModal('${key}','${row.rowId}','${num}')">Delete</button>
+            <button class="cfg-remove-row" onclick="openDeleteRowModal('${key}','${row.rowId}','${num}')">🗑 Delete</button>
           </div>`;
         });
 
@@ -321,7 +321,7 @@
 
       document.getElementById('stat-pilots').textContent = totalPilots;
       document.getElementById('stat-photos').textContent = totalPhotos;
-      document.getElementById('stat-last').textContent = lastUpdated ? ('עודכן לאחרונה: ' + (lastUpdatedBy || '') + (lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : '') + ' · ' + formatAge(lastUpdated)) : '';
+      document.getElementById('stat-last').innerHTML = lastUpdated ? `<span style="font-size:11px;color:var(--text2);">Last updated: ${formatAge(lastUpdated)}</span><br><span style="font-size:11px;color:var(--text2);">By: <span style="direction:rtl;unicode-bidi:embed;">${lastUpdatedBy || ''}</span>${lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : ''}</span>` : '';
 
       renderConfigSection(rowsMap, pilotsMap, rowPhotos);
 
@@ -330,7 +330,7 @@
       for (const key of CONFIG_KEYS) {
         CONFIG[key].rows.forEach(r => {
           const num = r.rowId.split('-').pop();
-          r.planes.forEach(tail => { tailLocMap[tail] = `${HANGAR_LABELS[key]} · שורה ${num}`; });
+          r.planes.forEach(tail => { tailLocMap[tail] = `${HANGAR_LABELS[key]} · Row ${num}`; });
         });
       }
 
@@ -365,7 +365,7 @@
     }
 
     load().catch(err => {
-      document.getElementById('loader').textContent = 'שגיאה בטעינה: ' + err.message;
+      document.getElementById('loader').textContent = 'Error loading: ' + err.message;
     });
 
     window.toggleHangar = id => document.getElementById(id).classList.toggle('collapsed');
@@ -380,7 +380,7 @@
       _planeModalNewPhoto = null;
       _planeModalDeletePhoto = false;
       document.getElementById('plane-modal-input').value = tail;
-      document.getElementById('plane-modal-title').textContent = 'עריכת מטוס — 4X-' + tail;
+      document.getElementById('plane-modal-title').textContent = 'Edit plane — 4X-' + tail;
       // Reset photo circle
       const circle = document.getElementById('plane-modal-photo-circle');
       circle.innerHTML = '✈';
@@ -394,7 +394,7 @@
           withPhoto.sort((a,b) => (b.data().updatedAt||'').localeCompare(a.data().updatedAt||''));
           circle.innerHTML = `<img src="${withPhoto[0].data().photoURL}" style="width:100%;height:100%;object-fit:cover;"/>`;
           circle.style.fontSize = '';
-          document.getElementById('plane-modal-del-photo-btn').style.display = 'block';
+          document.getElementById('plane-modal-del-photo-btn').style.display = 'flex';
           window._editPhotoDocId = withPhoto[0].id;
         } else {
           document.getElementById('plane-modal-del-photo-btn').style.display = 'none';
@@ -437,7 +437,7 @@
           const circle = document.getElementById('plane-modal-photo-circle');
           circle.innerHTML = `<img src="${resized}" style="width:100%;height:100%;object-fit:cover;"/>`;
           circle.style.fontSize = '';
-          document.getElementById('plane-modal-del-photo-btn').style.display = 'block';
+          document.getElementById('plane-modal-del-photo-btn').style.display = 'flex';
         };
         img.src = ev.target.result;
       };
@@ -462,15 +462,15 @@
 
     window.savePlaneModal = async function() {
       const newTail = document.getElementById('plane-modal-input').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-      if (!newTail || newTail.length < 2) { showAdminToast('זנב לא תקין'); return; }
+      if (!newTail || newTail.length < 2) { showAdminToast('Invalid tail'); return; }
       const row = CONFIG[_editKey].rows.find(r => r.rowId === _editRowId);
       if (!row) return;
       if (_editOldTail) {
         const idx = row.planes.indexOf(_editOldTail);
         if (idx !== -1) row.planes[idx] = newTail;
       } else {
-        if (row.planes.includes(newTail)) { showAdminToast('מטוס זה כבר בשורה'); return; }
-        if (row.planes.length >= 3) { showAdminToast('שורה מלאה'); return; }
+        if (row.planes.includes(newTail)) { showAdminToast('Plane already in row'); return; }
+        if (row.planes.length >= 3) { showAdminToast('Row full'); return; }
         row.planes.push(newTail);
       }
       await saveConfig(_editKey);
@@ -499,7 +499,7 @@
 
       closePlaneModal();
       renderConfigSection();
-      showAdminToast('מטוס עודכן ✓');
+      showAdminToast('Plane updated ✓');
     };
 
     window.deletePlaneModal = function() {
@@ -550,7 +550,7 @@
       const dirMap = { upper: ['N','S'], lower: ['E','W'], hangar3: ['N','S','E','W'], hangar4: ['N','S','E','W'] };
       const dirs = dirMap[h] || ['N'];
       const allDirs = ['N','S','E','W'];
-      const labels = { N:'צפונית', S:'דרומית', E:'מזרחית', W:'מערבית' };
+      const labels = { N:'North', S:'South', E:'East', W:'West' };
       const container = document.getElementById('ar-entrance-pills');
       container.innerHTML = allDirs.map((d,i) => {
         const relevant = dirs.includes(d);
@@ -576,12 +576,12 @@
       const existing = (CONFIG[key]?.rows || []).map(r => parseInt(r.rowId.split('-').pop()));
       const sel = document.getElementById('ar-row-num');
       if (!sel) return;
-      sel.innerHTML = '<option value="">-- בחר שורה --</option>';
+      sel.innerHTML = '<option value="">-- Select row --</option>';
       for (let i = 1; i <= 8; i++) {
         const taken = existing.includes(i);
         const opt = document.createElement('option');
         opt.value = i;
-        opt.textContent = 'שורה ' + i + (taken ? ' ✓' : '');
+        opt.textContent = 'Row ' + i + (taken ? ' ✓' : '');
         if (taken) { opt.style.color = '#9ca3af'; opt.disabled = true; }
         sel.appendChild(opt);
       }
@@ -589,12 +589,12 @@
 
     window.saveAddRow = async function() {
       const num = parseInt(document.getElementById('ar-row-num').value || '0');
-      if (!num || num < 1 || num > 50) { showAdminToast('מספר שורה לא תקין'); return; }
+      if (!num || num < 1 || num > 50) { showAdminToast('Invalid row number'); return; }
       const key = _arHangar + '-' + _arDir;
       if (!CONFIG[key]) CONFIG[key] = { rows: [] };
       const rowId = key + '-' + num;
       if (!CONFIG[key]) CONFIG[key] = { rows: [] };
-      if (CONFIG[key].rows.find(r => r.rowId === rowId)) { showAdminToast('שורה זו כבר קיימת'); return; }
+      if (CONFIG[key].rows.find(r => r.rowId === rowId)) { showAdminToast('Row already exists'); return; }
       const planes = ['ar-plane-1','ar-plane-2','ar-plane-3']
         .map(id => document.getElementById(id).value.trim())
         .filter(v => v.length >= 2);
@@ -635,7 +635,7 @@
 
     window.saveRenamePilot = async function() {
       const newName = document.getElementById('rename-pilot-input').value.trim();
-      if (!newName) { showAdminToast('נא להזין שם'); return; }
+      if (!newName) { showAdminToast('Please enter a name'); return; }
       try {
         await setDoc(doc(db, 'pilots', _renameDocId), { updatedBy: newName }, { merge: true });
         // Update local data
@@ -643,9 +643,9 @@
         if (p) p.name = newName;
         closeRenamePilot();
         renderPilots();
-        showAdminToast('שם עודכן ✓');
+        showAdminToast('Name updated ✓');
       } catch(e) {
-        showAdminToast('שגיאה: ' + e.message);
+        showAdminToast('Error: ' + e.message);
       }
     };
 
@@ -758,14 +758,28 @@
         </tr>`).join('');
     };
 
-    window.deletePilot = async function(docId) {
-      if (!confirm('מחוק את הטייס ' + docId + '?')) return;
+    let _deletePilotDocId = null;
+
+    window.deletePilot = function(docId) {
+      _deletePilotDocId = docId;
+      const p = (window._pilotsData || []).find(p => p.docId === docId);
+      document.getElementById('del-pilot-name').textContent = (p ? p.name + ' · ' + p.tail : docId);
+      document.getElementById('del-pilot-overlay').style.display = 'flex';
+    };
+
+    window.closeDeletePilot = function() {
+      document.getElementById('del-pilot-overlay').style.display = 'none';
+    };
+
+    window.confirmDeletePilot = async function() {
       try {
-        await deleteDoc(doc(db, 'pilots', docId));
-        window._pilotsData = window._pilotsData.filter(p => p.docId !== docId);
+        await deleteDoc(doc(db, 'pilots', _deletePilotDocId));
+        window._pilotsData = window._pilotsData.filter(p => p.docId !== _deletePilotDocId);
         document.getElementById('pilots-count').textContent = '(' + window._pilotsData.length + ')';
+        closeDeletePilot();
         renderPilots();
-      } catch(e) { showAdminToast('שגיאה במחיקה: ' + e.message); }
+        showAdminToast('Pilot deleted ✓');
+      } catch(e) { showAdminToast('Delete error: ' + e.message); }
     };
 
     window.sortPilots = function(col) {
@@ -786,8 +800,8 @@
       --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
       --text: #111827; --text2: #6B7280; --radius: 12px;
     }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; }
-    #loader { display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 14px; color: var(--text2); gap: 8px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);  min-height: 100vh; }
+    #loader { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 44px); font-size: 14px; color: var(--text2); gap: 8px; }
     .spinner { width: 18px; height: 18px; border: 2px solid var(--blue-m); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     #main { display: none; max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
@@ -846,14 +860,14 @@
     .pilots-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); }
     .pilots-wrap { background: var(--white); border: 0.5px solid var(--border-med); border-radius: var(--radius); overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .pilots-table { width: 100%; border-collapse: collapse; }
-    .pilots-table th { font-size: 11px; font-weight: 600; color: var(--text2); padding: 8px 10px; text-align: right; border-bottom: 0.5px solid var(--border-med); background: var(--bg); cursor: pointer; user-select: none; white-space: nowrap; }
+    .pilots-table th { font-size: 10px; font-weight: 600; color: var(--text2); padding: 8px 10px; text-align: left; border-bottom: 0.5px solid var(--border-med); background: var(--bg); cursor: pointer; user-select: none; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; }
     .pilots-table th:hover { color: var(--blue); }
     .pilots-table th.sort-asc::after  { content: ' ↑'; color: var(--blue); }
     .pilots-table th.sort-desc::after { content: ' ↓'; color: var(--blue); }
-    .pilots-table td { font-size: 12px; color: var(--text); padding: 8px 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+    .pilots-table td { font-size: 12px; color: var(--text); padding: 8px 10px; border-bottom: 0.5px solid var(--border); vertical-align: middle; text-align: left; }
     .pilots-table tr:last-child td { border-bottom: none; }
     .pilots-table tr:hover td { background: var(--bg); }
-    .p-name { font-weight: 500; }
+    .p-name { font-weight: 500; direction: rtl; }
     .p-tail { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 11px; }
     .p-loc  { font-size: 11px; color: var(--text2); }
     .p-photo-yes { color: #065F46; font-size: 11px; font-family: 'DM Mono', monospace; }
@@ -883,7 +897,8 @@
     .cfg-row { background: var(--white); border: 0.5px solid var(--border-med); border-radius: 8px; padding: 10px 12px; }
     .cfg-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .cfg-row-label { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
-    .cfg-remove-row { font-size: 10px; color: #DC2626; background: #FEE2E2; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+    .cfg-remove-row { font-size: 10px; color: #DC2626; background: #FEE2E2; border: 0.5px solid #FCA5A5; border-radius: 4px; padding: 0; cursor: pointer; height: 28px; box-sizing: border-box; white-space: nowrap; width: 100%; }
+    .cfg-remove-row:hover { background: #FEE2E2; border-color: #DC2626; }
     .cfg-planes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex: 1; }
     .cfg-plane { display: flex; align-items: center; gap: 4px; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; }
     .cfg-plane button { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 11px; padding: 0 2px; line-height: 1; }
@@ -906,21 +921,14 @@
     .collapsible-header:hover { opacity: 0.8; }
     .cfg-table-header { display: flex; align-items: center; gap: 8px; padding: 4px 10px 6px; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 0.5px solid var(--border); margin-bottom: 6px; }
     .cfg-col-row   { width: 28px; flex-shrink: 0; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text); }
-    .cfg-grid-header, .cfg-row { display: grid; grid-template-columns: 55px 55px 30px 90px 90px 90px 65px 75px; align-items: center; gap: 6px; padding: 8px 10px; }
-    .cfg-grid-header { font-size: 10px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid var(--border-med); padding-bottom: 6px; margin-bottom: 4px; text-align: center; }
-    .cfg-grid-header span:first-child { text-align: center; }
-    .cfg-col-hangar { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; }
-    .cfg-col-entrance { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; }
-    .cfg-col-num { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; text-align: center; }
-    .cfg-col-plane { font-size: 10px; font-weight: 600; color: var(--text2); }
-    .cfg-col-age { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; }
-    .cfg-col-del { font-size: 10px; font-weight: 600; color: var(--text2); }
-    .cfg-plane-pill { display: inline-flex; justify-content: center; align-items: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 7px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; box-sizing: border-box; height: 38px; gap: 4px; flex-direction: column; line-height: 1.2; }
+    .cfg-grid-header, .cfg-row { display: grid; grid-template-columns: 60px 60px 32px 90px 90px 90px 65px 90px; align-items: center; gap: 6px; padding: 8px 10px; }
+    .cfg-grid-header { font-size: 10px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 2px; text-align: center; font-family: 'DM Sans', sans-serif; }
+    .cfg-col-hangar, .cfg-col-entrance, .cfg-col-num, .cfg-col-plane, .cfg-col-age, .cfg-col-del { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; font-family: 'DM Sans', sans-serif; }
+    .cfg-col-age { font-family: 'DM Mono', monospace; }
+    .cfg-plane-pill { display: inline-flex; justify-content: center; align-items: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 7px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; box-sizing: border-box; height: 28px; gap: 3px; flex-direction: column; line-height: 1.1; }
     .cfg-plane-pill:hover { background: var(--blue-l); border-color: var(--blue-m); }
     .cfg-plane-add { background: transparent; border-style: dashed; color: var(--blue); font-weight: 500; }
     .cfg-plane-empty-slot { display: inline-flex; justify-content: center; color: var(--border-med); font-size: 12px; width: 100%; }
-    .cfg-col-age { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; text-align: center; }
-    .cfg-col-age   { min-width: 44px; text-align: center; flex-shrink: 0; font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; }
     .cfg-col-del   { min-width: 64px; flex-shrink: 0; text-align: left; }
 
     .tail-wrap { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
@@ -938,8 +946,10 @@
 </head>
 <body>
   <div id="loader">
-    <div class="spinner"></div>
-    טוען נתונים מ-Firestore...
+    <div>
+      <div class="spinner" style="margin:0 auto 12px;"></div>
+      Loading data from Firestore...
+    </div>
   </div>
 
   <div id="main">
@@ -947,8 +957,8 @@
       <div class="page-logo">
         <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" alt="AirPark"/>
         <div>
-          <div class="page-title">AirPark · מבט על</div>
-          <div class="page-sub">admin · LLRS</div>
+          <div class="page-title">AirPark · Admin</div>
+          <div class="page-sub">LLRS</div>
         </div>
       </div>
       <button id="refresh-btn" onclick="refreshData()" style="display:flex;align-items:center;gap:5px;background:none;border:0.5px solid #e5e7eb;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;">
@@ -961,91 +971,91 @@
     <div id="stat-last" style="font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:8px;min-height:14px;"></div>
     <div class="stats">
 
-      <div class="stat"><div class="stat-label">Pilots</div><div class="stat-val" id="stat-pilots">—</div></div>
-      <div class="stat"><div class="stat-label">With photo</div><div class="stat-val" id="stat-photos">—</div></div>
+      <div class="stat"><div class="stat-label">👨‍✈️ Pilots</div><div class="stat-val" id="stat-pilots">—</div></div>
+      <div class="stat"><div class="stat-label">📷 With plane photo</div><div class="stat-val" id="stat-photos">—</div></div>
 
     </div>
 
     <!-- ══ ROW CONFIG MANAGEMENT ══ -->
     <div class="config-section" style="margin-top:20px;">
       <div class="collapsible-header" onclick="toggleSection('cfg-section-body','cfg-section-chevron')">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">ניהול שורות וחניות</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Row Management</span>
         <span id="cfg-section-chevron" class="chevron" style="font-size:11px;">▼</span>
       </div>
       <div id="cfg-section-body">
       <div class="filter-group" style="margin-bottom:14px;">
         <div class="filter-row">
-          <div class="filter-label">הנגר</div>
-          <div class="pill active" data-filter="hangar" data-val="all" onclick="applyFilter(this)">הכל</div>
-          <div class="pill" data-filter="hangar" data-val="upper" onclick="applyFilter(this)">עליון</div>
-          <div class="pill" data-filter="hangar" data-val="lower" onclick="applyFilter(this)">תחתון</div>
-          <div class="pill" data-filter="hangar" data-val="hangar3" onclick="applyFilter(this)">הנגר 3</div>
-          <div class="pill" data-filter="hangar" data-val="hangar4" onclick="applyFilter(this)">הנגר 4</div>
+          <div class="filter-label">Hangar</div>
+          <div class="pill active" data-filter="hangar" data-val="all" onclick="applyFilter(this)">All</div>
+          <div class="pill" data-filter="hangar" data-val="upper" onclick="applyFilter(this)">Upper</div>
+          <div class="pill" data-filter="hangar" data-val="lower" onclick="applyFilter(this)">Lower</div>
+          <div class="pill" data-filter="hangar" data-val="hangar3" onclick="applyFilter(this)">Hangar 3</div>
+          <div class="pill" data-filter="hangar" data-val="hangar4" onclick="applyFilter(this)">Hangar 4</div>
         </div>
         <div class="filter-row" id="entrance-filter-row">
-          <div class="filter-label">כניסה</div>
-          <div class="pill active" data-filter="entrance" data-val="all" onclick="applyFilter(this)">הכל</div>
-          <div class="pill" data-filter="entrance" data-val="N" data-hangar="upper" onclick="applyFilter(this)">צפונית</div>
-          <div class="pill" data-filter="entrance" data-val="S" data-hangar="upper" onclick="applyFilter(this)">דרומית</div>
-          <div class="pill" data-filter="entrance" data-val="E" data-hangar="lower" onclick="applyFilter(this)">מזרחית</div>
-          <div class="pill" data-filter="entrance" data-val="W" data-hangar="lower" onclick="applyFilter(this)">מערבית</div>
+          <div class="filter-label">Entrance</div>
+          <div class="pill active" data-filter="entrance" data-val="all" onclick="applyFilter(this)">All</div>
+          <div class="pill" data-filter="entrance" data-val="N" data-hangar="upper" onclick="applyFilter(this)">North</div>
+          <div class="pill" data-filter="entrance" data-val="S" data-hangar="upper" onclick="applyFilter(this)">South</div>
+          <div class="pill" data-filter="entrance" data-val="E" data-hangar="lower" onclick="applyFilter(this)">East</div>
+          <div class="pill" data-filter="entrance" data-val="W" data-hangar="lower" onclick="applyFilter(this)">West</div>
         </div>
         <div class="filter-row">
-          <div class="filter-label">עדכון</div>
-          <div class="pill active" data-filter="activity" data-val="all" onclick="applyFilter(this)">הכל</div>
-          <div class="pill" data-filter="activity" data-val="7" onclick="applyFilter(this)">7 ימים</div>
-          <div class="pill" data-filter="activity" data-val="30" onclick="applyFilter(this)">30 ימים</div>
-          <div class="pill" data-filter="activity" data-val="90" onclick="applyFilter(this)">90 ימים</div>
-          <div class="pill" data-filter="activity" data-val="inactive" onclick="applyFilter(this)">לא פעיל</div>
+          <div class="filter-label">Last updated</div>
+          <div class="pill active" data-filter="activity" data-val="all" onclick="applyFilter(this)">All</div>
+          <div class="pill" data-filter="activity" data-val="7" onclick="applyFilter(this)">7 days</div>
+          <div class="pill" data-filter="activity" data-val="30" onclick="applyFilter(this)">30 days</div>
+          <div class="pill" data-filter="activity" data-val="90" onclick="applyFilter(this)">90 days</div>
+          <div class="pill" data-filter="activity" data-val="inactive" onclick="applyFilter(this)">Inactive</div>
         </div>
         <div class="filter-row">
-          <div class="filter-label">תמונה</div>
-          <div class="pill active" data-filter="photo" data-val="all" onclick="applyFilter(this)">הכל</div>
-          <div class="pill" data-filter="photo" data-val="yes" onclick="applyFilter(this)">יש תמונה</div>
-          <div class="pill" data-filter="photo" data-val="no" onclick="applyFilter(this)">אין תמונה</div>
+          <div class="filter-label">Photo</div>
+          <div class="pill active" data-filter="photo" data-val="all" onclick="applyFilter(this)">All</div>
+          <div class="pill" data-filter="photo" data-val="yes" onclick="applyFilter(this)">Has photo</div>
+          <div class="pill" data-filter="photo" data-val="no" onclick="applyFilter(this)">No photo</div>
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-start;margin-bottom:12px;">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div id="config-body" style="margin-top:0;min-width:510px;display:inline-block;"></div></div>
+      <div style="display:flex;justify-content:flex-start;margin-top:12px;">
         <button onclick="openAddRowModal()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#185FA5;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
-          + הוסף שורה חדשה
+          + Add new row
         </button>
       </div>
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div id="config-body" style="margin-top:0;min-width:560px;"></div></div>
       </div><!-- end cfg-section-body -->
     </div>
 
     <!-- ══ ADD ROW MODAL ══ -->
     <div id="add-row-overlay" onclick="closeAddRowModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 22px;width:calc(100% - 40px);max-width:380px;direction:rtl;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 22px;width:calc(100% - 40px);max-width:380px;">
         <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:18px;">הוסף שורה חדשה</div>
 
         <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">הנגר</div>
+          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">Hangar</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ar-hangar-pills">
-            <div class="pill active" data-h="upper" onclick="selectAddRowHangar('upper')" style="cursor:pointer;">עליון</div>
-            <div class="pill" data-h="lower" onclick="selectAddRowHangar('lower')" style="cursor:pointer;">תחתון</div>
-            <div class="pill" data-h="hangar3" onclick="selectAddRowHangar('hangar3')" style="cursor:pointer;">הנגר 3</div>
-            <div class="pill" data-h="hangar4" onclick="selectAddRowHangar('hangar4')" style="cursor:pointer;">הנגר 4</div>
+            <div class="pill active" data-h="upper" onclick="selectAddRowHangar('upper')" style="cursor:pointer;">Upper</div>
+            <div class="pill" data-h="lower" onclick="selectAddRowHangar('lower')" style="cursor:pointer;">Lower</div>
+            <div class="pill" data-h="hangar3" onclick="selectAddRowHangar('hangar3')" style="cursor:pointer;">Hangar 3</div>
+            <div class="pill" data-h="hangar4" onclick="selectAddRowHangar('hangar4')" style="cursor:pointer;">Hangar 4</div>
           </div>
         </div>
 
         <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">כניסה</div>
+          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">Entrance</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;" id="ar-entrance-pills">
-            <div class="pill active" id="ar-dir-N" onclick="selectAddRowDir('N')" style="cursor:pointer;">צפונית</div>
-            <div class="pill" id="ar-dir-S" onclick="selectAddRowDir('S')" style="cursor:pointer;">דרומית</div>
+            <div class="pill active" id="ar-dir-N" onclick="selectAddRowDir('N')" style="cursor:pointer;">North</div>
+            <div class="pill" id="ar-dir-S" onclick="selectAddRowDir('S')" style="cursor:pointer;">South</div>
           </div>
         </div>
 
         <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">מספר שורה</div>
+          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">Row number</div>
           <select id="ar-row-num" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;color:#111827;background:white;">
-            <option value="">-- בחר שורה --</option>
+            <option value="">-- Select row --</option>
           </select>
         </div>
 
         <div style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">מטוסים (אופציונלי)</div>
+          <div style="font-size:11px;font-weight:600;color:#6B7280;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;">Planes (optional)</div>
           <div style="display:flex;gap:8px;">
             <div class="tail-wrap" style="flex:1;margin-bottom:0;">
               <span class="tail-prefix" style="font-size:12px;">4X-</span>
@@ -1066,21 +1076,21 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;">
-          <button onclick="saveAddRow()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">הוסף שורה</button>
-          <button onclick="closeAddRowModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+          <button onclick="saveAddRow()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Add row</button>
+          <button onclick="closeAddRowModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
         </div>
       </div>
     </div>
 
     <!-- ══ DELETE ROW MODAL ══ -->
     <div id="del-row-overlay" onclick="closeDeleteRowModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:28px 20px 20px;width:calc(100% - 40px);max-width:320px;direction:rtl;text-align:center;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:28px 20px 20px;width:calc(100% - 40px);max-width:320px;text-align:center;">
         <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
-        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:8px;">מחיקת שורה</div>
-        <div style="font-size:13px;color:#6B7280;margin-bottom:20px;">האם למחוק את שורה <strong id="del-row-confirm-num"></strong>?<br/>הפעולה לא ניתנת לביטול.</div>
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:8px;">Delete row</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:20px;">Delete row <strong id="del-row-confirm-num"></strong>?<br/>This cannot be undone.</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="confirmDeleteRow()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">כן, מחק</button>
-          <button onclick="closeDeleteRowModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+          <button onclick="confirmDeleteRow()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Yes, delete</button>
+          <button onclick="closeDeleteRowModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
         </div>
       </div>
     </div>
@@ -1088,14 +1098,14 @@
     <!-- ══ PLANE EDIT MODAL ══ -->
     <input type="file" id="plane-modal-file" accept="image/*" style="display:none;" onchange="handlePlaneModalPhoto(event)"/>
     <div id="plane-modal-overlay" onclick="closePlaneModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:rtl;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;">
         <div id="plane-modal-main">
-          <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:14px;" id="plane-modal-title">עריכת מטוס</div>
+          <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:14px;" id="plane-modal-title">Edit plane</div>
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
             <div id="plane-modal-photo-circle" style="width:72px;height:72px;border-radius:50%;background:#f3f4f6;border:0.5px solid #e5e7eb;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;">✈</div>
             <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-              <button onclick="document.getElementById('plane-modal-file').click()" style="padding:7px 12px;background:#f3f4f6;border:0.5px solid #e5e7eb;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:right;">📷 החלף תמונה</button>
-              <button id="plane-modal-del-photo-btn" onclick="markDeletePlanePhoto()" style="padding:7px 12px;background:#FEE2E2;border:none;border-radius:7px;font-size:12px;font-weight:600;color:#DC2626;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:right;display:none;">🗑 מחק תמונה</button>
+              <button onclick="document.getElementById('plane-modal-file').click()" style="padding:7px 12px;background:#EFF6FF;border:0.5px solid #BFDBFE;border-radius:7px;font-size:12px;font-weight:600;color:#1D4ED8;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;width:100%;"><span style="width:20px;text-align:center;">📷</span><span>Replace photo</span></button>
+              <button id="plane-modal-del-photo-btn" onclick="markDeletePlanePhoto()" style="padding:7px 12px;background:#FEE2E2;border:0.5px solid #FCA5A5;border-radius:7px;font-size:12px;font-weight:600;color:#DC2626;cursor:pointer;font-family:'DM Sans',sans-serif;display:none;width:100%;"><span style="width:20px;text-align:center;">🗑</span><span>Remove photo</span></button>
             </div>
           </div>
           <div class="tail-wrap" style="margin-bottom:16px;">
@@ -1105,9 +1115,9 @@
               onkeydown="if(event.key==='Enter') savePlaneModal()"/>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">עדכן</button>
-            <button id="plane-modal-delete" onclick="deletePlaneModal()" style="width:100%;padding:12px;background:#FEE2E2;color:#DC2626;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">מחק מטוס</button>
-            <button onclick="closePlaneModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+            <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#EFF6FF;color:#1D4ED8;border:0.5px solid #BFDBFE;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Update</button>
+            <button id="plane-modal-delete" onclick="deletePlaneModal()" style="width:100%;padding:12px;background:#FEE2E2;color:#DC2626;border:0.5px solid #FCA5A5;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Delete plane</button>
+            <button onclick="closePlaneModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
           </div>
         </div>
         <div id="plane-modal-confirm" style="display:none;">
@@ -1117,8 +1127,8 @@
             <div style="font-size:13px;color:#6B7280;" id="plane-modal-confirm-msg">האם למחוק את 4X-<span id="plane-modal-confirm-tail"></span> מהשורה?</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <button onclick="confirmDeletePlane()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">כן, מחק</button>
-            <button onclick="cancelDeletePlane()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+            <button onclick="confirmDeletePlane()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Yes, delete</button>
+            <button onclick="cancelDeletePlane()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
           </div>
         </div>
       </div>
@@ -1126,7 +1136,7 @@
 
         <div class="config-section" style="margin-top:20px;">
       <div class="collapsible-header" onclick="toggleSection('pilots-section-body','pilots-section-chevron')">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">ניהול טייסים ומטוסים <span id="pilots-count" style="font-weight:400;color:var(--text2);"></span></span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Pilots & Planes <span id="pilots-count" style="font-weight:400;color:var(--text2);"></span></span>
         <span id="pilots-section-chevron" class="chevron" style="font-size:11px;">▼</span>
       </div>
       <div id="pilots-section-body">
@@ -1135,11 +1145,11 @@
         <table class="pilots-table" id="pilots-table">
           <thead>
             <tr>
-              <th onclick="sortPilots('name')"    id="th-name">שם</th>
-              <th onclick="sortPilots('tail')"    id="th-tail">מטוס</th>
-              <th onclick="sortPilots('location'" id="th-location">מיקום</th>
-              <th onclick="sortPilots('photo')"   id="th-photo">תמונה עודכנה</th>
-              <th onclick="sortPilots('updated')" id="th-updated">עדכון אחרון</th>
+              <th onclick="sortPilots('name')"    id="th-name">Name</th>
+              <th onclick="sortPilots('tail')"    id="th-tail">Plane</th>
+              <th onclick="sortPilots('location'" id="th-location">Location</th>
+              <th onclick="sortPilots('photo')"   id="th-photo">Photo updated</th>
+              <th onclick="sortPilots('updated')" id="th-updated">Last updated</th>
               <th style="width:36px;"></th>
             </tr>
           </thead>
@@ -1152,24 +1162,37 @@
       </div><!-- end pilots-section-body -->
     </div>
 
-    <div id="admin-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#111827;color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
-
-    <!-- ══ RENAME PILOT MODAL ══ -->
-    <div id="rename-pilot-overlay" onclick="closeRenamePilot()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:rtl;">
-        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:6px;">שינוי שם טייס</div>
-        <div style="font-size:12px;color:#6B7280;margin-bottom:14px;" id="rename-pilot-sub"></div>
-        <input id="rename-pilot-input" type="text" placeholder="שם הטייס"
-          style="width:100%;padding:11px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;direction:rtl;"
-          onkeydown="if(event.key==='Enter') saveRenamePilot()"/>
+    <!-- ══ DELETE PILOT MODAL ══ -->
+    <div id="del-pilot-overlay" onclick="closeDeletePilot()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:28px 20px 20px;width:calc(100% - 40px);max-width:320px;direction:ltr;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:8px;">Delete pilot</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:20px;" id="del-pilot-name"></div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="saveRenamePilot()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">שמור</button>
-          <button onclick="closeRenamePilot()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+          <button onclick="confirmDeletePilot()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Yes, delete</button>
+          <button onclick="closeDeletePilot()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
         </div>
       </div>
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.63</span></div>
+    <div id="admin-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#111827;color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
+
+    <!-- ══ RENAME PILOT MODAL ══ -->
+    <div id="rename-pilot-overlay" onclick="closeRenamePilot()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:ltr;">
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:6px;">Rename pilot</div>
+        <div style="font-size:12px;color:#6B7280;margin-bottom:14px;" id="rename-pilot-sub"></div>
+        <input id="rename-pilot-input" type="text" placeholder="Pilot name" style="direction:rtl;"
+          style="width:100%;padding:11px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;"
+          onkeydown="if(event.key==='Enter') saveRenamePilot()"/>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="saveRenamePilot()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Save</button>
+          <button onclick="closeRenamePilot()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
   </div>
+  <div style="text-align:center;padding:14px;font-size:10px;color:#9ca3af;font-family:'DM Mono',monospace;letter-spacing:0.3px;">built by eligrt · admin · v0.76.008</div>
 </body>
 </html>
