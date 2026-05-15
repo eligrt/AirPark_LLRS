@@ -76,10 +76,10 @@
       await saveConfig(key);
       input.value = '';
       // Stats
-      let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0;
+      let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0, lastUpdatedBy = '', lastUpdatedTail = '';
       for (const [, row] of Object.entries(rowsMap)) {
         const rowTs = parseTs(row.updatedAt);
-        if (rowTs) { totalActive++; if (rowTs > lastUpdated) lastUpdated = rowTs; }
+        if (rowTs) { totalActive++; if (rowTs > lastUpdated) { lastUpdated = rowTs; lastUpdatedBy = row.updatedBy || ''; lastUpdatedTail = row.updatedTail || ''; } }
       }
       for (const [tail, pilots] of Object.entries(pilotsMap)) {
         totalPilots += pilots.length;
@@ -89,10 +89,10 @@
       for (const tail of Object.keys(rowPhotos)) {
         if (!pilotsMap[tail]) totalPhotos++;
       }
-      document.getElementById('stat-active').textContent = totalActive;
+
       document.getElementById('stat-pilots').textContent = totalPilots;
       document.getElementById('stat-photos').textContent = totalPhotos;
-      document.getElementById('stat-last').textContent   = lastUpdated ? formatAge(lastUpdated) : '—';
+      document.getElementById('stat-last').textContent = lastUpdated ? ('עודכן לאחרונה: ' + (lastUpdatedBy || '') + (lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : '') + ' · ' + formatAge(lastUpdated)) : '';
 
       renderConfigSection(rowsMap, pilotsMap, rowPhotos);
       updateHighlights();
@@ -304,10 +304,10 @@
         if (d.photoURL) rowPhotos[tail] = true;
       });
 
-      let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0;
+      let totalActive = 0, totalPilots = 0, totalPhotos = 0, lastUpdated = 0, lastUpdatedBy = '', lastUpdatedTail = '';
       for (const [, row] of Object.entries(rowsMap)) {
         const rowTs = parseTs(row.updatedAt);
-        if (rowTs) { totalActive++; if (rowTs > lastUpdated) lastUpdated = rowTs; }
+        if (rowTs) { totalActive++; if (rowTs > lastUpdated) { lastUpdated = rowTs; lastUpdatedBy = row.updatedBy || ''; lastUpdatedTail = row.updatedTail || ''; } }
       }
       for (const [tail, pilots] of Object.entries(pilotsMap)) {
         totalPilots += pilots.length;
@@ -318,10 +318,10 @@
         if (!pilotsMap[tail]) totalPhotos++;
       }
 
-      document.getElementById('stat-active').textContent = totalActive;
+
       document.getElementById('stat-pilots').textContent = totalPilots;
       document.getElementById('stat-photos').textContent = totalPhotos;
-      document.getElementById('stat-last').textContent   = lastUpdated ? formatAge(lastUpdated) : '—';
+      document.getElementById('stat-last').textContent = lastUpdated ? ('עודכן לאחרונה: ' + (lastUpdatedBy || '') + (lastUpdatedTail ? ' (' + lastUpdatedTail + ')' : '') + ' · ' + formatAge(lastUpdated)) : '';
 
       renderConfigSection(rowsMap, pilotsMap, rowPhotos);
 
@@ -618,6 +618,47 @@
       }, 2500);
     };
 
+    let _renameDocId, _renameTail;
+
+    window.openRenamePilot = function(docId, currentName, tail) {
+      _renameDocId = docId;
+      _renameTail = tail;
+      document.getElementById('rename-pilot-input').value = currentName;
+      document.getElementById('rename-pilot-sub').textContent = tail;
+      document.getElementById('rename-pilot-overlay').style.display = 'flex';
+      setTimeout(() => document.getElementById('rename-pilot-input').focus(), 80);
+    };
+
+    window.closeRenamePilot = function() {
+      document.getElementById('rename-pilot-overlay').style.display = 'none';
+    };
+
+    window.saveRenamePilot = async function() {
+      const newName = document.getElementById('rename-pilot-input').value.trim();
+      if (!newName) { showAdminToast('נא להזין שם'); return; }
+      try {
+        await setDoc(doc(db, 'pilots', _renameDocId), { updatedBy: newName }, { merge: true });
+        // Update local data
+        const p = window._pilotsData.find(p => p.docId === _renameDocId);
+        if (p) p.name = newName;
+        closeRenamePilot();
+        renderPilots();
+        showAdminToast('שם עודכן ✓');
+      } catch(e) {
+        showAdminToast('שגיאה: ' + e.message);
+      }
+    };
+
+    window.refreshData = async function() {
+      const icon = document.getElementById('refresh-icon');
+      const btn = document.getElementById('refresh-btn');
+      if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+      if (btn) btn.disabled = true;
+      try { await load(); } catch(e) {}
+      if (icon) icon.style.animation = '';
+      if (btn) btn.disabled = false;
+    };
+
     window.toggleSection = function(bodyId, chevronId) {
       const body = document.getElementById(bodyId);
       const chev = document.getElementById(chevronId);
@@ -708,7 +749,7 @@
       const tbody = document.getElementById('pilots-body');
       tbody.innerHTML = data.map(p => `
         <tr>
-          <td><div class="p-name">${p.name}</div></td>
+          <td><div class="p-name" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">${p.name}<button data-docid="${p.docId}" data-name="${p.name}" data-tail="${p.tail}" onclick="openRenamePilot(this.dataset.docid,this.dataset.name,this.dataset.tail)" style="background:none;border:none;cursor:pointer;font-size:12px;opacity:0.4;padding:0 2px;flex-shrink:0;" title="שנה שם">✏️</button></div></td>
           <td><div class="p-tail">${p.tail}</div></td>
           <td><div class="p-loc">${p.location}</div></td>
           <td class="${p.photo ? 'p-photo-yes' : 'p-photo-no'}">${p.photo ? p.photoDate : '—'}</td>
@@ -886,6 +927,8 @@
     .tail-input-modal { width: 100%; padding: 12px 14px; padding-left: 52px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 15px; font-weight: 600; color: #111827; font-family: 'DM Mono', monospace; outline: none; direction: ltr; text-align: left; letter-spacing: 2px; text-transform: uppercase; }
     .tail-input-modal:focus { border-color: #185FA5; }
 
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
     @media (max-width: 480px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
       .stat-val { font-size: 18px; }
@@ -907,16 +950,19 @@
           <div class="page-sub">admin · LLRS</div>
         </div>
       </div>
-
+      <button id="refresh-btn" onclick="refreshData()" style="display:flex;align-items:center;gap:5px;background:none;border:0.5px solid #e5e7eb;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;">
+        <span id="refresh-icon" style="font-size:14px;line-height:1;">↻</span> Refresh
+      </button>
     </div>
 
 
 
+    <div id="stat-last" style="font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-bottom:8px;min-height:14px;"></div>
     <div class="stats">
-      <div class="stat"><div class="stat-label">Active rows</div><div class="stat-val" id="stat-active">—</div></div>
+
       <div class="stat"><div class="stat-label">Pilots</div><div class="stat-val" id="stat-pilots">—</div></div>
       <div class="stat"><div class="stat-label">With photo</div><div class="stat-val" id="stat-photos">—</div></div>
-      <div class="stat"><div class="stat-label">Last update</div><div class="stat-val" id="stat-last" style="font-size:14px;padding-top:4px;">—</div></div>
+
     </div>
 
     <!-- ══ ROW CONFIG MANAGEMENT ══ -->
@@ -1107,7 +1153,22 @@
 
     <div id="admin-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#111827;color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.55</span></div>
+    <!-- ══ RENAME PILOT MODAL ══ -->
+    <div id="rename-pilot-overlay" onclick="closeRenamePilot()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:rtl;">
+        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:6px;">שינוי שם טייס</div>
+        <div style="font-size:12px;color:#6B7280;margin-bottom:14px;" id="rename-pilot-sub"></div>
+        <input id="rename-pilot-input" type="text" placeholder="שם הטייס"
+          style="width:100%;padding:11px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;direction:rtl;"
+          onkeydown="if(event.key==='Enter') saveRenamePilot()"/>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="saveRenamePilot()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">שמור</button>
+          <button onclick="closeRenamePilot()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.61</span></div>
   </div>
 </body>
 </html>
