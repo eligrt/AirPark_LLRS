@@ -122,7 +122,14 @@
       if (pilotsMap) _pilotsMap = pilotsMap;
       const container = document.getElementById('config-body');
       if (!container) return;
-      let html = '';
+      let html = `<div class="cfg-grid-header">
+        <span class="cfg-col-num">Row</span>
+        <span class="cfg-col-plane">Plane 1</span>
+        <span class="cfg-col-plane">Plane 2</span>
+        <span class="cfg-col-plane">Plane 3</span>
+        <span class="cfg-col-age">Last update</span>
+        <span class="cfg-col-del"></span>
+      </div>`;
       for (const key of CONFIG_KEYS) {
         const rows = CONFIG[key].rows;
         let rowsHtml = '';
@@ -158,19 +165,17 @@
             if (hours < 24) return hours + 'hr ago';
             return days + 'd ago';
           })() : '—';
-          const planePills = row.planes.map(t =>
-            `<span class="cfg-plane-pill" onclick="editPlane('${key}','${row.rowId}','${t}')">4X-${t}</span>`
-          ).join('');
-          const addPill = row.planes.length < 3
-            ? `<span class="cfg-plane-pill cfg-plane-add" onclick="showAddPlane('${key}','${row.rowId}')">+ הוסף</span>`
-            : '';
+          const planeCols = [0,1,2].map(i => {
+            const t = row.planes[i];
+            if (t) return `<span class="cfg-plane-pill" onclick="editPlane('${key}','${row.rowId}','${t}')">4X-${t}</span>`;
+            if (row.planes.length === i) return `<span class="cfg-plane-pill cfg-plane-add" onclick="showAddPlane('${key}','${row.rowId}')">+ Add</span>`;
+            return `<span class="cfg-plane-empty-slot">—</span>`;
+          }).join('');
           rowsHtml += `<div class="cfg-row row-item" data-days="${bucket}" data-photo="${rowHasPhoto}">
-            <div class="cfg-row-top">
-              <span class="cfg-row-num">שורה ${num}</span>
-              <span class="cfg-age-badge">${ageShort}</span>
-              <button class="cfg-remove-row" onclick="removeRow('${key}','${row.rowId}')">מחק שורה</button>
-            </div>
-            <div class="cfg-row-planes">${planePills}${addPill}</div>
+            <span class="cfg-col-num">${num}</span>
+            ${planeCols}
+            <span class="cfg-col-age">${ageShort !== '—' ? ageShort : '—'}</span>
+            <button class="cfg-remove-row" onclick="removeRow('${key}','${row.rowId}')">Delete</button>
           </div>`;
         });
 
@@ -217,9 +222,9 @@
       const mins  = Math.floor((Date.now() - ts) / 60000);
       const hours = Math.floor(mins / 60);
       const days  = Math.floor(hours / 24);
-      if (mins  < 60)  return `לפני ${mins}ד׳`;
-      if (hours < 24)  return `לפני ${hours}ש׳`;
-      return `לפני ${days}י׳`;
+      if (mins  < 60)  return `${mins}min ago`;
+      if (hours < 24)  return `${hours}hr ago`;
+      return `${days}d ago`;
     }
 
     async function load() {
@@ -291,9 +296,9 @@
         });
       });
 
-      document.getElementById('pilots-title').textContent = `טייסים רשומים — ${window._pilotsData.length}`;
-      window._pilotsSortCol = 'name';
-      window._pilotsSortDir = 'asc';
+      document.getElementById('pilots-count').textContent = `(${window._pilotsData.length})`;
+      window._pilotsSortCol = 'updated';
+      window._pilotsSortDir = 'desc';
       renderPilots();
 
       document.getElementById('loader').style.display = 'none';
@@ -327,6 +332,8 @@
 
     window.closePlaneModal = function() {
       document.getElementById('plane-modal-overlay').style.display = 'none';
+      document.getElementById('plane-modal-confirm').style.display = 'none';
+      document.getElementById('plane-modal-main').style.display = 'block';
     };
 
     window.savePlaneModal = async function() {
@@ -349,14 +356,24 @@
       renderConfigSection();
     };
 
-    window.deletePlaneModal = async function() {
+    window.deletePlaneModal = function() {
       if (!_editOldTail) return;
-      if (!confirm('האם למחוק את 4X-' + _editOldTail + ' מהשורה?')) return;
+      document.getElementById('plane-modal-confirm-tail').textContent = _editOldTail;
+      document.getElementById('plane-modal-confirm').style.display = 'block';
+      document.getElementById('plane-modal-main').style.display = 'none';
+    };
+
+    window.confirmDeletePlane = async function() {
       const row = CONFIG[_editKey].rows.find(r => r.rowId === _editRowId);
       if (row) row.planes = row.planes.filter(t => t !== _editOldTail);
       await saveConfig(_editKey);
       closePlaneModal();
       renderConfigSection();
+    };
+
+    window.cancelDeletePlane = function() {
+      document.getElementById('plane-modal-confirm').style.display = 'none';
+      document.getElementById('plane-modal-main').style.display = 'block';
     };
 
     window.toggleSection = function(bodyId, chevronId) {
@@ -378,19 +395,21 @@
       document.querySelectorAll(`.pill[data-filter="${filter}"]`).forEach(p => p.classList.remove('active'));
       el.classList.add('active');
       if (filter === 'hangar') {
-        activeHangar   = val;
-        activeEntrance = 'all';
+        activeHangar = val;
+        // Only reset entrance to 'all' if current entrance is not compatible with new hangar selection
+        const currentEntrancePill = document.querySelector(`.pill[data-filter="entrance"][data-val="${activeEntrance}"]`);
+        const entranceCompatible = val === 'all' || !currentEntrancePill?.dataset.hangar || currentEntrancePill?.dataset.hangar === val;
+        if (!entranceCompatible) {
+          activeEntrance = 'all';
+          document.querySelectorAll('.pill[data-filter="entrance"]').forEach(p => p.classList.remove('active'));
+          document.querySelector('.pill[data-filter="entrance"][data-val="all"]')?.classList.add('active');
+        }
+        // Gray out incompatible entrance pills
         document.querySelectorAll('.pill[data-filter="entrance"]').forEach(p => {
-          p.classList.remove('active');
-          if (p.dataset.val === 'all') {
-            p.classList.add('active');
-            p.style.opacity = '1';
-            p.style.pointerEvents = '';
-          } else {
-            const relevant = val === 'all' || p.dataset.hangar === val;
-            p.style.opacity = relevant ? '1' : '0.35';
-            p.style.pointerEvents = relevant ? '' : 'none';
-          }
+          if (p.dataset.val === 'all') { p.style.opacity = '1'; p.style.pointerEvents = ''; return; }
+          const relevant = val === 'all' || p.dataset.hangar === val;
+          p.style.opacity = relevant ? '1' : '0.35';
+          p.style.pointerEvents = relevant ? '' : 'none';
         });
       }
       if (filter === 'entrance') activeEntrance = val;
@@ -461,7 +480,7 @@
       try {
         await deleteDoc(doc(db, 'pilots', docId));
         window._pilotsData = window._pilotsData.filter(p => p.docId !== docId);
-        document.getElementById('pilots-title').textContent = 'טייסים רשומים — ' + window._pilotsData.length;
+        document.getElementById('pilots-count').textContent = '(' + window._pilotsData.length + ')';
         renderPilots();
       } catch(e) { alert('שגיאה במחיקה: ' + e.message); }
     };
@@ -603,16 +622,25 @@
     .collapsible-header:hover { opacity: 0.8; }
     .cfg-table-header { display: flex; align-items: center; gap: 8px; padding: 4px 10px 6px; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 0.5px solid var(--border); margin-bottom: 6px; }
     .cfg-col-row   { width: 28px; flex-shrink: 0; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text); }
-    .cfg-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .cfg-row-num { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; flex: 1; }
-    .cfg-age-badge { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--bg); padding: 2px 7px; border-radius: 99px; }
-    .cfg-row-planes { display: flex; flex-wrap: wrap; gap: 7px; }
-    .cfg-plane-pill { display: inline-flex; align-items: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .cfg-grid-header, .cfg-row { display: grid; grid-template-columns: 32px 1fr 1fr 1fr 70px 72px; align-items: center; gap: 6px; padding: 8px 10px; }
+    .cfg-grid-header { font-size: 10px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid var(--border-med); padding-bottom: 6px; margin-bottom: 4px; text-align: center; }
+    .cfg-grid-header span:first-child { text-align: center; }
+    .cfg-col-num { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; text-align: center; }
+    .cfg-col-plane { font-size: 10px; font-weight: 600; color: var(--text2); }
+    .cfg-col-age { font-size: 10px; font-weight: 600; color: var(--text2); text-align: center; }
+    .cfg-col-del { font-size: 10px; font-weight: 600; color: var(--text2); }
+    .cfg-plane-pill { display: inline-flex; justify-content: center; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 7px; padding: 5px 8px; font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; box-sizing: border-box; }
     .cfg-plane-pill:hover { background: var(--blue-l); border-color: var(--blue-m); }
-    .cfg-plane-add { background: transparent; border-style: dashed; color: var(--blue); font-weight: 500; font-family: 'DM Sans', monospace; }
-    .cfg-plane-add:hover { background: var(--blue-l); }
+    .cfg-plane-add { background: transparent; border-style: dashed; color: var(--blue); font-weight: 500; }
+    .cfg-plane-empty-slot { display: inline-flex; justify-content: center; color: var(--border-med); font-size: 12px; width: 100%; }
+    .cfg-col-age { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; text-align: center; }
     .cfg-col-age   { min-width: 44px; text-align: center; flex-shrink: 0; font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; }
     .cfg-col-del   { min-width: 64px; flex-shrink: 0; text-align: left; }
+
+    .tail-wrap { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
+    .tail-prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #6B7280; font-family: 'DM Mono', monospace; pointer-events: none; z-index: 1; direction: ltr; unicode-bidi: embed; letter-spacing: 1px; }
+    .tail-input-modal { width: 100%; padding: 12px 14px; padding-left: 52px; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 15px; font-weight: 600; color: #111827; font-family: 'DM Mono', monospace; outline: none; direction: ltr; text-align: left; letter-spacing: 2px; text-transform: uppercase; }
+    .tail-input-modal:focus { border-color: #185FA5; }
 
     @media (max-width: 480px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
@@ -635,18 +663,16 @@
           <div class="page-sub">admin · LLRS</div>
         </div>
       </div>
-      <div class="page-sub" style="text-align:left;">
-        <a href="https://eligrt.github.io/AirPark_LLRS/AirPark_LLRS.html" style="color:var(--blue);text-decoration:none;">← חזור לאפליקציה</a>
-      </div>
+
     </div>
 
 
 
     <div class="stats">
-      <div class="stat"><div class="stat-label">שורות פעילות</div><div class="stat-val" id="stat-active">—</div></div>
-      <div class="stat"><div class="stat-label">טייסים רשומים</div><div class="stat-val" id="stat-pilots">—</div></div>
-      <div class="stat"><div class="stat-label">עם תמונה</div><div class="stat-val" id="stat-photos">—</div></div>
-      <div class="stat"><div class="stat-label">עדכון אחרון</div><div class="stat-val" id="stat-last" style="font-size:14px;padding-top:4px;">—</div></div>
+      <div class="stat"><div class="stat-label">Active rows</div><div class="stat-val" id="stat-active">—</div></div>
+      <div class="stat"><div class="stat-label">Pilots</div><div class="stat-val" id="stat-pilots">—</div></div>
+      <div class="stat"><div class="stat-label">With photo</div><div class="stat-val" id="stat-photos">—</div></div>
+      <div class="stat"><div class="stat-label">Last update</div><div class="stat-val" id="stat-last" style="font-size:14px;padding-top:4px;">—</div></div>
     </div>
 
     <!-- ══ ROW CONFIG MANAGEMENT ══ -->
@@ -693,30 +719,43 @@
     <!-- ══ PLANE EDIT MODAL ══ -->
     <div id="plane-modal-overlay" onclick="closePlaneModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:white;border-radius:16px;padding:20px 18px 18px;width:calc(100% - 40px);max-width:340px;direction:rtl;">
-        <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:14px;" id="plane-modal-title">עריכת מטוס</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
-          <span style="font-size:13px;font-family:'DM Mono',monospace;color:#6B7280;">4X-</span>
-          <input id="plane-modal-input" type="text" maxlength="4" placeholder="HHH"
-            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
-            onkeydown="if(event.key==='Enter') savePlaneModal()"
-            style="flex:1;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:15px;font-family:'DM Mono',monospace;font-weight:600;"/>
+        <!-- Main state -->
+        <div id="plane-modal-main">
+          <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:14px;" id="plane-modal-title">עריכת מטוס</div>
+          <div class="tail-wrap">
+            <span class="tail-prefix">4X-</span>
+            <input class="tail-input-modal" id="plane-modal-input" type="text" maxlength="4" placeholder="HHH"
+              oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+              onkeydown="if(event.key==='Enter') savePlaneModal()"/>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">שמור</button>
+            <button id="plane-modal-delete" onclick="deletePlaneModal()" style="width:100%;padding:12px;background:#FEE2E2;color:#DC2626;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">מחק מטוס</button>
+            <button onclick="closePlaneModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="savePlaneModal()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">שמור</button>
-          <button id="plane-modal-delete" onclick="deletePlaneModal()" style="width:100%;padding:12px;background:#FEE2E2;color:#DC2626;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">מחק מטוס</button>
-          <button onclick="closePlaneModal()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+        <!-- Confirm delete state -->
+        <div id="plane-modal-confirm" style="display:none;">
+          <div style="text-align:center;padding:8px 0 16px;">
+            <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+            <div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:6px;" id="plane-modal-confirm-title">מחיקת מטוס</div>
+            <div style="font-size:13px;color:#6B7280;" id="plane-modal-confirm-msg">האם למחוק את 4X-<span id="plane-modal-confirm-tail"></span> מהשורה?</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button onclick="confirmDeletePlane()" style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">כן, מחק</button>
+            <button onclick="cancelDeletePlane()" style="width:100%;padding:10px;background:transparent;border:0.5px solid #e5e7eb;border-radius:9px;font-size:13px;color:#6B7280;cursor:pointer;font-family:'DM Sans',sans-serif;">ביטול</button>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="config-section" style="margin-top:20px;">
       <div class="collapsible-header" onclick="toggleSection('pilots-section-body','pilots-section-chevron')">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">ניהול טייסים ומטוסים</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">ניהול טייסים ומטוסים <span id="pilots-count" style="font-weight:400;color:var(--text2);"></span></span>
         <span id="pilots-section-chevron" class="chevron" style="font-size:11px;">▼</span>
       </div>
       <div id="pilots-section-body">
       <div class="pilots-section" style="margin-top:12px;">
-      <div class="pilots-title" id="pilots-title">טייסים רשומים</div>
       <div class="pilots-wrap">
         <table class="pilots-table" id="pilots-table">
           <thead>
@@ -738,7 +777,7 @@
       </div><!-- end pilots-section-body -->
     </div>
 
-    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.37</span></div>
+    <div class="footer"><span class="footer-center">built by eligrt · admin · v0.44</span></div>
   </div>
 </body>
 </html>
