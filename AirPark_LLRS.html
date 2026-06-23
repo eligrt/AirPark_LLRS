@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="https://eligrt.github.io/AirPark_LLRS/icon.png" />
 <link rel="apple-touch-icon" href="https://eligrt.github.io/AirPark_LLRS/icon.png" />
   <link rel="manifest" href="/AirPark_LLRS/manifest.json" />
-<meta name="theme-color" content="#1c3d6e" />
+<meta name="theme-color" content="#fbf6e8" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -141,12 +141,11 @@ body {
 .sub-bar {
   background: var(--paper-hi);
   border-bottom: 1px solid var(--paper-edge);
-  padding: 7px 16px 6px;
+  padding: 7px 14px 6px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0;
   flex-shrink: 0;
-  gap: 10px;
 }
 .sub-bar-info {
   font-family: var(--font-ui);
@@ -162,12 +161,41 @@ body {
 .sub-bar-btn {
   font-size: 11px; color: var(--ink); cursor: pointer; font-weight: 600;
   border: 1px solid var(--paper-edge); border-radius: 4px;
-  padding: 4px 10px; background: var(--paper);
+  padding: 5px 12px; background: var(--paper);
   display: inline-flex; align-items: center; gap: 4px;
   white-space: nowrap; font-family: var(--font-ui);
   flex-shrink: 0;
 }
 .sub-bar-btn:active { background: var(--paper-edge); }
+
+/* ── APP MINI HEADER (replaces navy topbar) ── */
+.app-mini-header {
+  background: var(--paper-hi);
+  border-bottom: 1px solid var(--paper-edge);
+  padding: 8px 16px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.app-mini-brand {
+  display: flex; align-items: center; gap: 7px;
+}
+.app-mini-title {
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .04em;
+  direction: ltr;
+}
+.app-mini-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
 
 /* ── CONTENT ── */
 .content { flex: 1; padding: 14px 18px 10px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: var(--paper-hi); }
@@ -693,7 +721,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="loader-status" id="loader-status">בודק את מיקום המטוס שלך בחניה...</div>
   </div>
-  <div style="position:absolute;bottom:20px;font-size:9px;color:var(--ink-faint);font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;">AirCheck+ · AirPark · LLRS · v1.86.007</div>
+  <div style="position:absolute;bottom:20px;font-size:9px;color:var(--ink-faint);font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;">AirCheck+ · AirPark · LLRS · v1.86.009</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -702,17 +730,12 @@ input[type="file"] { display: none; }
 
   <!-- ══ SCREEN 1: WHO ARE YOU ══ -->
   <div class="screen" id="s-name">
-    <div class="topbar">
-      <div class="topbar-brand">
-        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:24px;height:24px;border-radius:6px;flex-shrink:0;" alt="AirPark"/>
-        <div class="topbar-titles">
-          <div class="topbar-title" dir="ltr">AirPark · LLRS</div>
-          <div class="topbar-sub" id="s-name-sub">הגדרה ראשונית</div>
-        </div>
+    <div class="app-mini-header">
+      <div class="app-mini-brand">
+        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:20px;height:20px;border-radius:4px;flex-shrink:0;" alt="AirPark"/>
+        <span class="app-mini-title">AirPark · LLRS</span>
       </div>
-      <div class="topbar-links">
-        <button onclick="goToAirCheck()" class="aircheck-back">חזרה ל&thinsp;<span dir="ltr">AirCheck+</span></button>
-      </div>
+      <span class="app-mini-sub" id="s-name-sub">הגדרה ראשונית</span>
     </div>
     <div class="content">
       <div class="step-wrap" id="step-wrap-name">
@@ -758,24 +781,19 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.007</span>
+      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.009</span>
     </div>
   </div>
 
   <!-- ══ SCREEN 2: WHERE DO YOU PARK ══ -->
   <!-- ══ SCREEN: NOT FOUND ══ -->
   <div class="screen" id="s-notfound">
-    <div class="topbar">
-      <div class="topbar-brand">
-        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:24px;height:24px;border-radius:6px;flex-shrink:0;" alt="AirPark"/>
-        <div class="topbar-titles">
-          <div class="topbar-title" dir="ltr">AirPark · LLRS</div>
-          <div class="topbar-sub">מטוס לא נמצא</div>
-        </div>
+    <div class="app-mini-header">
+      <div class="app-mini-brand">
+        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:20px;height:20px;border-radius:4px;flex-shrink:0;" alt="AirPark"/>
+        <span class="app-mini-title">AirPark · LLRS</span>
       </div>
-      <div class="topbar-links">
-        <button onclick="goToAirCheck()" class="aircheck-back">חזרה ל&thinsp;<span dir="ltr">AirCheck+</span></button>
-      </div>
+      <span class="app-mini-sub">מטוס לא נמצא</span>
     </div>
     <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 24px;text-align:center;gap:20px;">
       <div style="font-size:52px;line-height:1;">✈️</div>
@@ -791,7 +809,7 @@ input[type="file"] { display: none; }
     </div>
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.007</span>
+      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.009</span>
     </div>
   </div>
 
@@ -886,24 +904,19 @@ input[type="file"] { display: none; }
 
   <!-- ══ SCREEN 3: MAIN ROW VIEW ══ -->
   <div class="screen" id="s-main">
-    <div class="topbar">
-      <div class="topbar-brand">
-        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:24px;height:24px;border-radius:6px;flex-shrink:0;" alt="AirPark"/>
-        <div class="topbar-titles">
-          <div class="topbar-title" dir="ltr">AirPark · LLRS</div>
+    <!-- Combined header: branding + context -->
+    <div class="sub-bar" id="main-sub-bar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="https://eligrt.github.io/AirPark_LLRS/icon.png" style="width:38px;height:38px;border-radius:9px;flex-shrink:0;" alt="AirPark"/>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span class="app-mini-title" style="font-size:14px;font-weight:700;" dir="ltr">AirPark · LLRS</span>
+            <span class="sub-bar-btn" onclick="openPhotoEdit()">📷 עדכן תמונה</span>
+          </div>
+          <div class="sub-bar-info" id="main-title" style="font-size:11px;">טוען...</div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);letter-spacing:.04em;" id="main-sub"></div>
         </div>
       </div>
-      <div class="topbar-links">
-        <button onclick="goToAirCheck()" class="aircheck-back">חזרה ל&thinsp;<span dir="ltr">AirCheck+</span></button>
-      </div>
-    </div>
-    <!-- Sub-bar: hangar context + photo button -->
-    <div class="sub-bar" id="main-sub-bar">
-      <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;">
-        <div class="sub-bar-info" id="main-title">טוען...</div>
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);letter-spacing:.04em;" id="main-sub"></div>
-      </div>
-      <span class="sub-bar-btn" onclick="openPhotoEdit()">📷 עדכן תמונה</span>
     </div>
 
     <!-- Demo banner -->
@@ -943,7 +956,7 @@ input[type="file"] { display: none; }
 
     <div class="footer">
       <span class="footer-reset" onclick="confirmReset()">איפוס</span>
-      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.007</span>
+      <span class="footer-center">AirCheck+ · AirPark · LLRS · v1.86.009</span>
       <span class="footer-reset" onclick="window.open(location.pathname+'?demo','_blank')" style="opacity:0.25;">demo</span>
     </div>
   </div>
